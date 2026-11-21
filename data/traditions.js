@@ -1,4 +1,424 @@
 // Sanatan Dharma Mahakosh - Traditions & Daily Rituals Database
+// Attaches to window.TRADITIONS and window.TRADITIONS_DATA
+
+// Flat array for search engine compatibility
+window.TRADITIONS_DATA = [
+  // Daily Rituals
+  {
+    id: "bramha-muhurta",
+    name: "ब्रह्म मुहूर्त",
+    nameEnglish: "Brahma Muhurta",
+    category: "Daily Ritual",
+    description: "The sacred time of pre-dawn, 1 hour and 36 minutes before sunrise",
+    significance: "Optimal time for meditation, yoga practice, and spiritual disciplines",
+    timing: "Arrives 96 minutes before sunrise"
+  },
+  {
+    id: "surya-arghya",
+    name: "सूर्य आर्घ्य",
+    nameEnglish: "Surya Arghya",
+    category: "Daily Ritual",
+    description: "Offering of water to the sun god at sunrise",
+    significance: "Honors Surya Dev, source of life and energy",
+    timing: "At sunrise"
+  },
+  {
+    id: "tilak",
+    name: "तिलक",
+    nameEnglish: "Tilak",
+    category: "Daily Ritual",
+    description: "Sacred mark on the forehead",
+    types: "Sandalwood paste, Kumkum saffron, Red vermilion"
+  },
+  // Sankars - 16 Sacred Life-Ceremonies
+  {
+    id: "garbhadhana",
+    name: "गर्भधान संस्कार",
+    nameEnglish: "Garbhadhana Sanskar",
+    category: "Sanskar",
+    timing: "Before conception / Wedding night",
+    significance: "Invokes divine consciousness for the incoming soul"
+  },
+  {
+    id: "namakarana",
+    name: "नामकरण संकार",
+    nameEnglish: "Namakarana Sanskar",
+    category: "Sanskar",
+    timing: "Between 9-12 months",
+    significance: "Gift of the divine name, soul's first identity"
+  },
+  {
+    id: "chudakarana",
+    name: "चूड़ाकरण संकार",
+    nameEnglish: "Chudakarana Sanskar",
+    category: "Sanskar",
+    timing: "1 year old (boy), 8 years old (girl)",
+    significance: "First hair-cutting ceremony, symbolic of cutting ego"
+  },
+  {
+    id: "kartigandan",
+    name: "कार्तिक दग्धा संकार",
+    nameEnglish: "Kartigandan Sanskar",
+    category: "Sanskar",
+    timing: "Vishukleicha month",
+    significance: "First participation in Linga worship and decoration"
+  },
+  {
+    id: "upanayana",
+    name: "उपनयन संकार",
+    nameEnglish: "Upanayana Sanskar",
+    category: "Sanskar",
+    timing: "After horoscope matching",
+    significance: "Sacred thread ceremony, beginning of formal education"
+  },
+  {
+    id: "vivaha",
+    name: "विवाह संकार",
+    nameEnglish: "Vivaha Sanskar",
+    category: "Sanskar",
+    timing: "When both partners are of marriageable age",
+    significance: "Union of souls, commitment to dharma"
+  },
+  {
+    id: "antyeshti",
+    name: "अन्त्येष्टि संकार",
+    nameEnglish: "Antyeshti Sanskar",
+    category: "Sanskar",
+    timing: "End of life",
+    significance: "Transition from physical to spiritual form"
+  },
+  // Additional Sanskars to complete the 16
+  {
+    id: "pumsavana",
+    name: "पुंसवन संस्कार",
+    nameEnglish: "Pumsavana Sanskar",
+    category: "Sanskar",
+    timing: "3rd month of pregnancy",
+    significance: "Rite for the protection and development of the fetus"
+  },
+  {
+    id: "simantonnayana",
+    name: "सीमन्तोन्नयन संकार",
+    nameEnglish: "Simantonnayana Sanskar",
+    category: "Sanskar",
+    timing: "4th, 6th, or 8th month of pregnancy",
+    significance: "Parting the hair ceremony; invoking blessings for safe delivery"
+  },
+  {
+    id: "jatakarma",
+    name: "जातकर्म संस्कार",
+    nameEnglish: "Jatakarma Sanskar",
+    category: "Sanskar",
+    timing: "Immediately after birth",
+    significance: "Birth ceremony welcoming the newborn"
+  },
+  {
+    id: "nishkramana",
+    name: "निष्क्रमण संस्कार",
+    nameEnglish: "Nishkramana Sanskar",
+    category: "Sanskar",
+    timing: "4th month after birth",
+    significance: "First outing; showing the child the sun, moon, and world"
+  },
+  {
+    id: "annaprashana",
+    name: "अन्नप्राशन संस्कार",
+    nameEnglish: "Annaprashana Sanskar",
+    category: "Sanskar",
+    timing: "6th month (boy) / 5th or 7th month (girl)",
+    significance: "First solid food feeding; transition from milk to grains"
+  },
+  {
+    id: "karnavedha",
+    name: "कर्णवेध संस्कार",
+    nameEnglish: "Karnavedha Sanskar",
+    category: "Sanskar",
+    timing: "3rd or 5th year",
+    significance: "Ear piercing; opening the auditory channel for sacred sounds"
+  },
+  {
+    id: "vidyarambha",
+    name: "विद्यारम्भ संस्कार",
+    nameEnglish: "Vidyarambha Sanskar",
+    category: "Sanskar",
+    timing: "5th year (Aksharabhyasa)",
+    significance: "Initiation into learning; first writing of alphabets"
+  },
+  // Philosophical Concepts
+  {
+    id: "dharma",
+    name: "धर्म",
+    nameEnglish: "Dharma",
+    category: "Philosophy",
+    meaning: "Righteousness, duty, moral order",
+    description: "The eternal law that upholds the universe, individual and social duties"
+  },
+  {
+    id: "artha",
+    name: "अर्थ",
+    nameEnglish: "Artha",
+    category: "Philosophy",
+    meaning: "Wealth, prosperity, material needs",
+    description: "Legitimate means to acquire wealth and provide for family"
+  },
+  {
+    id: "kama",
+    name: "काम",
+    nameEnglish: "Kama",
+    category: "Philosophy",
+    meaning: "Desire, love, pleasure",
+    description: "Legitimate enjoyment of life, relations with loved ones"
+  },
+  {
+    id: "moksha",
+    name: "मोक्ष",
+    nameEnglish: "Moksha",
+    category: "Philosophy",
+    meaning: "Liberation, ultimate happiness",
+    description: "Freedom from the cycle of rebirth, union with the Divine"
+  },
+  // Ashramas
+  {
+    id: "brahmacarya",
+    name: "ब्राह्मचर्य अश्रम",
+    nameEnglish: "Brahmacarya Ashrama",
+    category: "Philosophy",
+    duration: "Student life (25 years)",
+    focus: "Education, discipline, self-study, celibacy"
+  },
+  {
+    id: "grihastha",
+    name: "गृहास्थ अश्रम",
+    nameEnglish: "Grihastha Ashrama",
+    category: "Philosophy",
+    duration: "Householder life (50-60 years)",
+    focus: "Marriage, family, career, dharma in daily life"
+  },
+  {
+    id: "vanaprastha",
+    name: "वाणिक अश्रम",
+    nameEnglish: "Vanaprastha Ashrama",
+    category: "Philosophy",
+    duration: "Retirement (10-15 years)",
+    focus: "Relaxation, spiritual study, detachment"
+  },
+  {
+    id: "samnyasa",
+    name: "संन्यास अश्रम",
+    nameEnglish: "Samnyasa Ashrama",
+    category: "Philosophy",
+    duration: "Renunciation (until death)",
+    focus: "Complete liberation, living as an enlightened being"
+  },
+  // Yugas
+  {
+    id: "satya",
+    name: "सत् यuga",
+    nameEnglish: "Satya Yuga",
+    category: "Philosophy",
+    duration: "1,728,000 years",
+    description: "Truth and righteousness are the norms, highest spiritual awareness"
+  },
+  {
+    id: "treta",
+    name: "त्रेता यuga",
+    nameEnglish: "Treta Yuga",
+    category: "Philosophy",
+    duration: "1,296,000 years",
+    description: "Dharma maintained but in lesser measure, three-pronged sacrifice introduced"
+  },
+  {
+    id: "dvapara",
+    name: "द्वापर यuga",
+    nameEnglish: "Dvapara Yuga",
+    category: "Philosophy",
+    duration: "864,000 years",
+    description: "Dharma diminishes further, Krishna's avatar brings spiritual knowledge"
+  },
+  {
+    id: "kali",
+    name: "कालिय यuga",
+    nameEnglish: "Kali Yuga",
+    category: "Philosophy",
+    duration: "432,000 years",
+    description: "Darkest age, moral confusion, Dharma established by grace alone"
+  },
+  // Vratham/Festivals
+  {
+    id: "ekadashi-vrat",
+    name: "एकादशी व्रत",
+    nameEnglish: "Ekadashi Vrat",
+    category: "Festival",
+    timing: "Every lunar month - 24 times per year",
+    description: "Fasting and devotion on Ekadashi days"
+  },
+  {
+    id: "pradosh-vrat",
+    name: "प्रदोष व्रत",
+    nameEnglish: "Pradosh Vrat",
+    category: "Festival",
+    timing: "13 days each month (Krishna Paksha Krishnashtami)",
+    description: "Evening worship during Pradosh time"
+  },
+  {
+    id: "maha-shivaratri",
+    name: "महाशिवरात्रि",
+    nameEnglish: "Maha Shivaratri",
+    category: "Festival",
+    timing: "February/March (Krishna Paksha Chaturdashi)",
+    description: "All-night Shiva worship, fasting, and meditation"
+  },
+  {
+    id: "navratri",
+    name: "नवरात्रि",
+    nameEnglish: "Navratri",
+    category: "Festival",
+    timing: "September/October (Ashwin Krishna Paksha)",
+    description: "Nine nights of Devi worship"
+  },
+  {
+    id: "janmashtami",
+    name: "जन्माष्टमी",
+    nameEnglish: "Janmashtami",
+    category: "Festival",
+    timing: "August (Krishna Paksha Ashtami)",
+    description: "Celebration of Lord Krishna's birth"
+  },
+  {
+    id: "ram-navami",
+    name: "राम नवमी",
+    nameEnglish: "Ram Navami",
+    category: "Festival",
+    timing: "March/August (Chaitra/Shravana month)",
+    description: "Celebration of Lord Rama's birth"
+  },
+  {
+    id: "diwali",
+    name: "दिवाली",
+    nameEnglish: "Diwali",
+    category: "Festival",
+    timing: "October/November (Kartik Krishna Paksha)",
+    description: "Festival of Lights celebrating Lord Rama's return"
+  },
+  // Daily Observances
+  {
+    id: "brahma-muhurta-practice",
+    name: "ब्रह्म मुहूर्त अभ्यास",
+    nameEnglish: "Brahma Muhurta Practice",
+    category: "Daily",
+    timing: "1 घंटा पहले सूर्योदय",
+    practice: "ध्यान, योग, मंत्र जाप",
+    benefits: "मन का शांति, ऊर्जा वृद्धि"
+  },
+  {
+    id: "surya-arghya-practice",
+    name: "सूर्य आर्घ्य अभ्यास",
+    nameEnglish: "Surya Arghya Practice",
+    category: "Daily",
+    timing: "सुबह 6-7 बजे",
+    practice: "पानी का आर्घ्य करना, सूर्य को समर्पन",
+    benefits: "आहार गुणवत्ता, रक्त चलन"
+  },
+  // Navagraha - Nine Planets
+  {
+    id: "surya-dev",
+    name: "सूर्य",
+    nameEnglish: "Surya",
+    category: "Navagraha",
+    deity: "सूर्य देव",
+    symbol: "धनु",
+    element: "आग",
+    favorable: "Monday",
+    remedy: "Surya Namaskar, wheat, milk, turmeric"
+  },
+  {
+    id: "chandra-amardev",
+    name: "चंद्र",
+    nameEnglish: "Chandra",
+    category: "Navagraha",
+    deity: "चंद्र अमर",
+    symbol: "चाँद",
+    element: "पानी",
+    favorable: "Monday",
+    remedy: "Milk, coconut water, white flowers"
+  },
+  {
+    id: "mangal",
+    name: "मंगल",
+    nameEnglish: "Mangal",
+    category: "Navagraha",
+    deity: "मंगल",
+    symbol: "चालू",
+    element: "आग",
+    remedy: "Lemon, mustard seeds"
+  },
+  {
+    id: "rahudeva",
+    name: "राहु",
+    nameEnglish: "Rahu",
+    category: "Navagraha",
+    deity: "राहु",
+    symbol: "बिंदास",
+    element: "एक",
+    favorable: "Tuesday, Thursday",
+    remedy: "Honey, milk, jaggery"
+  },
+  {
+    id: "ketu",
+    name: "केतु",
+    nameEnglish: "Ketu",
+    category: "Navagraha",
+    deity: "केतु",
+    symbol: "त्रिपुट",
+    element: "दो",
+    favorable: "Wednesday, Saturday",
+    remedy: "Grapes, watermelon"
+  },
+  {
+    id: "brihaspati",
+    name: "बृहस्पति",
+    nameEnglish: "Brihaspati",
+    category: "Navagraha",
+    deity: "बृहस्पति",
+    symbol: "सास",
+    element: "आग",
+    favorable: "Thursday",
+    remedy: "Red flowers, sweets made of wheat"
+  },
+  {
+    id: "shukra",
+    name: "शुक्र",
+    nameEnglish: "Shukra",
+    category: "Navagraha",
+    deity: "शुक्र",
+    symbol: "टेला",
+    element: "पानी",
+    favorable: "Friday",
+    remedy: "Coconut, milk, betel leaves"
+  },
+  {
+    id: "shanima",
+    name: "शनि",
+    nameEnglish: "Shani",
+    category: "Navagraha",
+    deity: "शनि",
+    symbol: "त्रिकोण",
+    element: "एक",
+    favorable: "Saturday",
+    remedy: "Black sesame, mustard seeds, black gram"
+  },
+  {
+    id: "grha",
+    name: "ग्रह",
+    nameEnglish: "Graha",
+    category: "Navagraha",
+    deity: "ग्रह",
+    symbol: "गोल",
+    element: "दो",
+    favorable: "All days",
+    remedy: "General offerings"
+  }
+];
 
 window.TRADITIONS = {
     dailyRituals: [

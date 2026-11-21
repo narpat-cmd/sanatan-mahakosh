@@ -1,9 +1,8 @@
 // Sanatan Dharma Mahakosh - Scriptures Data
 // Attaches to window.SCRIPTURES_DATA
 
-window.SCRIPTURES_DATA = [
-  {
-    id: 'bhagavad-gita',
+window.SCRIPTURES_DATA = [{
+  id: 'bhagavad-gita',
     title: 'Shrimad Bhagavad Gita',
     subtitle: 'The Song Divine',
     category: 'Scripture',

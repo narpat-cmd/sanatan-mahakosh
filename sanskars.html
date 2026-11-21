@@ -1,0 +1,261 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="description" content="Sanatan Dharma Mahakosh - 16 Sanskars: Garbhadhana through Antyeshti">
+<title>16 Sanskars | Sanatan Dharma Mahakosh</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;500;600;700&family=Noto+Serif+Devanagari:wght@400;500;600;700&family=Rozha+One&family=Tiro+Devanagari+Sanskrit:wght@400;500&display=swap" rel="stylesheet">
+<script src="https://cdn.tailwindcss.com"></script>
+<script>
+  tailwind.config = {
+  theme: {
+    extend: {
+      colors: {
+        maroon: '#6B0F1A',
+        saffron: '#E85D04',
+        gold: '#D4AF37',
+        parchment: '#FAF3E0',
+        sandalwood: '#2C1810',
+        bhojpatra: '#F9F1DF',
+        bhojpatraDark: '#F2E2C4',
+        verse: '#800000'
+      },
+      fontFamily: {
+        cinzel: ['Cinzel', 'serif'],
+        rozha: ['Rozha One', 'serif'],
+        sanskrit: ['Tiro Devanagari Sanskrit', 'Noto Serif Devanagari', 'serif'],
+        notosans: ['Noto Serif Devanagari', 'serif']
+      }
+    }
+  }
+}
+</script>
+<style>
+  :root {
+    --maroon: #6B0F1A;
+    --saffron: #E85D04;
+    --gold: #D4AF37;
+    --parchment: #FAF3E0;
+    --sandalwood: #2C1810;
+    --bhojpatra: #F9F1DF;
+    --bhojpatraDark: #F2E2C4;
+    --verse: #800000;
+  }
+
+  * { box-sizing: border-box; }
+
+  html { scroll-behavior: smooth; overflow-x: hidden; }
+
+  body {
+    font-family: 'Cinzel', serif;
+    background: var(--parchment);
+    color: var(--sandalwood);
+    min-height: 100vh;
+    transition: background 0.4s ease, color 0.4s ease;
+  }
+
+  body.dark {
+    --parchment: #1a120a;
+    --sandalwood: #f5e6d3;
+    --bhojpatra: #2d1f12;
+    --bhojpatraDark: #23180c;
+    --verse: #ff6b35;
+    background: #1a120a;
+    color: #f5e6d3;
+  }
+
+  .parchment-bg {
+    background: var(--parchment);
+  }
+
+  body.dark .parchment-bg {
+    background: #1a120a;
+  }
+
+  .gold-mandala {
+    background-image: url("data:image/svg+xml,%3Csvg width='200' height='200' viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' stroke='%23D4AF37' stroke-width='0.5' opacity='0.04'%3E%3Ccircle cx='100' cy='100' r='90'/%3E%3Ccircle cx='100' cy='100' r='70'/%3E%3Ccircle cx='100' cy='100' r='50'/%3E%3Ccircle cx='100' cy='100' r='30'/%3E%3C/g%3E%3C/svg%3E");
+  }
+
+  .glassmorphic {
+    background: rgba(250, 243, 224, 0.85);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    border: 1px solid rgba(212, 175, 55, 0.2);
+  }
+
+  body.dark .glassmorphic {
+    background: rgba(26, 18, 10, 0.9);
+    border: 1px solid rgba(212, 175, 55, 0.15);
+  }
+
+  @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+
+  .animate-fade-in { animation: fadeIn 0.5s ease-out forwards; }
+
+  .touch-target { min-height: 44px; min-width: 44px; }
+
+  @media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after {
+      animation-duration: 0.01ms !important;
+      animation-iteration-count: 1 !important;
+      transition-duration: 0.01ms !important;
+    }
+  }
+</style>
+</head>
+<body class="parchment-bg gold-mandala">
+  <!-- Sticky Glassmorphic Header -->
+  <header class="fixed top-0 left-0 right-0 z-50 glassmorphic border-b border-gold/20" role="banner">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div class="flex items-center justify-between h-16 sm:h-18 gap-4">
+        <!-- Left: Om Emblem + Title -->
+        <div class="flex items-center gap-3 flex-shrink-0" aria-label="Sanatan Mahakosh Home">
+          <button onclick="window.location.href='index.html'" class="touch-target flex items-center justify-center p-2 rounded-lg hover:bg-gold/10 transition-colors" aria-label="Go to Home">
+            <svg width="28" height="28" viewBox="0 0 28 28" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true" class="text-gold">
+              <path d="M14 2C10.134 2 7 5.134 7 9C7 11.25 9.5 13 11.5 13.5V22C11.5 23.1 12.4 24 13.5 24C14.6 24 15.5 23.1 15.5 22V13.5C17.5 13 20 11.25 20 9C20 5.134 16.866 2 14 2Z" stroke="currentColor" stroke-width="1.5" fill="currentColor" fill-opacity="0.2"/>
+              <path d="M14 7C15.1046 7 16 7.89543 16 9C16 10.1046 15.1046 11 14 11C12.8954 11 12 10.1046 12 9C12 7.89543 12.8954 7 14 7Z" stroke="currentColor" stroke-width="1.5" fill="currentColor" fill-opacity="0.3"/>
+              <path d="M7 13.5C7 12.5 8.5 12 9.5 12H10V9C10 7.34315 11.3431 6 13 6C14.6569 6 16 7.34315 16 9V12H16.5C17.5 12 19 12.5 19 13.5V22" stroke="currentColor" stroke-width="1.5" fill="none"/>
+              <circle cx="14" cy="9" r="1.5" fill="currentColor"/>
+            </svg>
+          </button>
+          <div>
+            <h1 class="font-cinzel text-xl sm:text-2xl font-bold text-maroon tracking-tight">SANATAN MAHAKOSH</h1>
+            <p class="font-sanskrit text-xs sm:text-sm text-saffron hidden sm:block">सनातन महाकोश</p>
+          </div>
+        </div>
+
+        <!-- Center Nav -->
+        <nav class="hidden md:flex items-center gap-1 mx-auto" role="navigation" aria-label="Main navigation">
+          <a href="index.html" class="nav-tab touch-target px-4 py-2 rounded-lg text-sm font-medium text-sandalwood hover:bg-gold/10 transition-colors">Home</a>
+          <a href="scriptures.html" class="nav-tab touch-target px-4 py-2 rounded-lg text-sm font-medium text-sandalwood hover:bg-gold/10 transition-colors">Scriptures</a>
+          <a href="temples.html" class="nav-tab touch-target px-4 py-2 rounded-lg text-sm font-medium text-sandalwood hover:bg-gold/10 transition-colors">Temples</a>
+          <a href="traditions.html" class="nav-tab touch-target px-4 py-2 rounded-lg text-sm font-medium text-sandalwood hover:bg-gold/10 transition-colors">Traditions</a>
+          <span class="nav-tab touch-target px-4 py-2 rounded-lg text-sm font-medium text-gold bg-gold/20 font-semibold" aria-current="page">Sanskars</span>
+          <a href="aarti.html" class="nav-tab touch-target px-4 py-2 rounded-lg text-sm font-medium text-sandalwood hover:bg-gold/10 transition-colors">Aarti & Stotras</a>
+        </nav>
+
+        <!-- Right Controls -->
+        <div class="flex items-center gap-2 flex-shrink-0">
+          <!-- Universal Search -->
+          <button id="openSearch" class="touch-target p-2 rounded-lg bg-gold/10 hover:bg-gold/20 transition-colors" aria-label="Open search">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" class="text-gold" aria-hidden="true">
+              <circle cx="11" cy="11" r="8"/>
+              <path d="M21 21l-4.35-4.35"/>
+            </svg>
+          </button>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <!-- Universal Search Overlay -->
+  <div id="searchOverlay" class="fixed inset-0 z-40 hidden" role="dialog" aria-modal="true" aria-label="Universal Search">
+    <div class="absolute inset-0 bg-black/50 backdrop-blur-sm" aria-hidden="true"></div>
+    <div class="relative max-w-3xl mx-auto mt-20 sm:mt-32 p-4">
+      <div class="glassmorphic rounded-2xl shadow-2xl overflow-hidden diya-glow">
+        <div class="relative p-4 sm:p-6">
+          <div class="relative">
+            <svg class="absolute left-4 top-1/2 -translate-y-1/2 text-gold/60" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true">
+              <circle cx="11" cy="11" r="8"/>
+              <path d="M21 21l-4.35-4.35"/>
+            </svg>
+            <input
+              type="text"
+              id="universalSearch"
+              class="input-field w-full pl-12 pr-16 py-4 text-lg font-cinzel placeholder:text-gold/40"
+              placeholder="Search sanskars... (e.g., Upanayana, Vivaha, Namakarana, Jatakarma)"
+              autocomplete="off"
+              aria-label="Universal search"
+            >
+          </div>
+          <div id="searchResults" class="search-dropdown absolute top-full left-0 right-0 mt-2 glassmorphic rounded-xl shadow-2xl max-h-96 overflow-y-auto hidden z-50 border border-gold/20" role="listbox" aria-label="Search results"></div>
+        </div>
+        <div class="px-4 sm:px-6 pb-4 sm:pb-6 text-center">
+          <p class="text-xs text-gold/60 font-sanskrit">Try: "Upanayana", "Vivaha", "Namakarana", "Jatakarma", "Antyeshti"</p>
+        </div>
+      </div>
+      <button id="closeSearch" class="absolute top-2 right-2 sm:top-4 sm:right-4 touch-target p-2 rounded-full bg-gold/10 hover:bg-gold/20 transition-colors text-gold" aria-label="Close search">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+          <line x1="18" y1="6" x2="6" y2="18"/>
+          <line x1="6" y1="6" x2="18" y2="18"/>
+        </svg>
+      </button>
+    </div>
+  </div>
+
+  <main id="mainContent" class="pt-16 sm:pt-18 min-h-screen pb-16">
+    <!-- Hero Section -->
+    <section class="relative min-h-[60vh] flex items-center justify-center px-4 sm:px-6 lg:px-8" aria-labelledby="sanskars-hero-title">
+      <div class="absolute inset-0 overflow-hidden pointer-events-none" aria-hidden="true">
+        <div class="absolute top-20 left-10 w-72 h-72 bg-saffron/10 rounded-full blur-3xl animate-float"></div>
+        <div class="absolute bottom-20 right-10 w-96 h-96 bg-gold/10 rounded-full blur-3xl"></div>
+      </div>
+
+      <div class="relative z-10 text-center max-w-4xl mx-auto animate-fade-in">
+        <h1 id="sanskars-hero-title" class="font-cinzel text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-bold text-maroon tracking-tight mb-4 animate-fade-in">षोडश संस्काराः</h1>
+        <h2 class="font-cinzel text-2xl sm:text-3xl md:text-4xl font-semibold text-saffron tracking-tight mb-6 animate-fade-in" style="animation-delay: 0.1s;">The 16 Sacred Sanskars</h2>
+        <p class="text-lg sm:text-xl text-sandalwood/70 max-w-2xl mx-auto mb-8 animate-fade-in" style="animation-delay: 0.2s;">The traditional sacraments purifying and elevating human life from conception to cremation</p>
+      </div>
+    </section>
+
+    <!-- Sanskars Grid -->
+    <section class="py-16 sm:py-24 px-4 sm:px-6 lg:px-8" aria-labelledby="sanskars-grid-title">
+      <div class="max-w-7xl mx-auto">
+        <header class="text-center mb-12 animate-fade-in">
+          <h2 id="sanskars-grid-title" class="font-cinzel text-3xl sm:text-4xl font-bold text-maroon mb-3">Complete 16 Sacraments</h2>
+          <p class="font-sanskrit text-xl text-saffron mb-2">जीवनस्य षोडश संस्काराः</p>
+          <p class="text-sandalwood/70 max-w-2xl mx-auto">Click any sanskar to explore its deep spiritual significance and rituals</p>
+        </header>
+
+        <div id="sanskarsGrid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 sm:gap-8" role="list" aria-label="Sanskars list">
+          <!-- Rendered by JS -->
+        </div>
+      </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="bg-sandalwood text-parchment py-8 px-4 sm:px-6 lg:px-8" role="contentinfo">
+      <div class="max-w-7xl mx-auto text-center">
+        <p class="font-sanskrit text-sm text-gold/60">सर्वे भवन्तु सुखिनः</p>
+        <p class="text-xs text-sandalwood/50 mt-2">Sanatan Dharma Mahakosh © 2025 — Complete Encyclopedia</p>
+      </div>
+    </footer>
+  </main>
+
+  <!-- Tradition Detail Modal -->
+  <div id="traditionModal" class="fixed inset-0 z-50 hidden" role="dialog" aria-modal="true" aria-label="Sanskar Detail">
+    <div class="absolute inset-0 bg-black/80 backdrop-blur-sm" aria-hidden="true"></div>
+    <div class="relative h-full w-full flex flex-col overflow-y-auto max-w-3xl mx-auto">
+      <!-- Top Toolbar -->
+      <div class="glassmorphic border-b border-gold/20 px-4 py-3 flex items-center justify-between flex-wrap gap-2 sticky top-0 z-10">
+        <button id="traditionClose" class="touch-target p-2 rounded-lg hover:bg-gold/20 transition-colors text-gold" aria-label="Close sanskar detail">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+            <line x1="18" y1="6" x2="6" y2="18"/>
+            <line x1="6" y1="6" x2="18" y2="18"/>
+          </svg>
+        </button>
+        <div id="traditionTitle" class="font-cinzel text-lg font-bold text-maroon truncate flex-1 text-center"></div>
+        <div class="w-10"></div>
+      </div>
+
+      <div id="traditionContent" class="flex-1 p-4 sm:p-6 overflow-y-auto">
+        <!-- Rendered by JS -->
+      </div>
+    </div>
+  </div>
+
+  <!-- Load Data & JS Files -->
+  <script src="./data/scriptures.js"></script>
+  <script src="./data/temples.js"></script>
+  <script src="./data/traditions.js"></script>
+  <script src="./data/sanskars.js"></script>
+  <script src="./js/book-reader.js"></script>
+  <script src="./js/temple-viewer.js"></script>
+  <script src="./js/search-engine.js"></script>
+  <script src="./js/app.js"></script>
+  <script src="./js/live-encyclopedia.js"></script>
+</body>
+</html>

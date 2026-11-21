@@ -1,0 +1,388 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="description" content="Sanatan Dharma Mahakosh - Sacred Scriptures: Bhagavad Gita, Ramayan, Vedas & 18 Puranas">
+<title>Scriptures | Sanatan Dharma Mahakosh</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;500;600;700&family=Noto+Serif+Devanagari:wght@400;500;600;700&family=Rozha+One&family=Tiro+Devanagari+Sanskrit:wght@400;500&display=swap" rel="stylesheet">
+<script src="https://cdn.tailwindcss.com"></script>
+<script>
+  tailwind.config = {
+  theme: {
+    extend: {
+      colors: {
+        maroon: '#6B0F1A',
+        saffron: '#E85D04',
+        gold: '#D4AF37',
+        parchment: '#FAF3E0',
+        sandalwood: '#2C1810',
+        bhojpatra: '#F9F1DF',
+        bhojpatraDark: '#F2E2C4',
+        verse: '#800000'
+      },
+      fontFamily: {
+        cinzel: ['Cinzel', 'serif'],
+        rozha: ['Rozha One', 'serif'],
+        sanskrit: ['Tiro Devanagari Sanskrit', 'Noto Serif Devanagari', 'serif'],
+        notosans: ['Noto Serif Devanagari', 'serif']
+      }
+    }
+  }
+}
+</script>
+<style>
+  :root {
+    --maroon: #6B0F1A;
+    --saffron: #E85D04;
+    --gold: #D4AF37;
+    --parchment: #FAF3E0;
+    --sandalwood: #2C1810;
+    --bhojpatra: #F9F1DF;
+    --bhojpatraDark: #F2E2C4;
+    --verse: #800000;
+  }
+
+  * { box-sizing: border-box; }
+
+  html { scroll-behavior: smooth; overflow-x: hidden; }
+
+  body {
+    font-family: 'Cinzel', serif;
+    background: var(--parchment);
+    color: var(--sandalwood);
+    min-height: 100vh;
+    transition: background 0.4s ease, color 0.4s ease;
+  }
+
+  body.dark {
+    --parchment: #1a120a;
+    --sandalwood: #f5e6d3;
+    --bhojpatra: #2d1f12;
+    --bhojpatraDark: #23180c;
+    --verse: #ff6b35;
+    background: #1a120a;
+    color: #f5e6d3;
+  }
+
+  .parchment-bg {
+    background-image:
+      radial-gradient(ellipse at 20% 30%, rgba(212, 175, 55, 0.08) 0%, transparent 50%),
+      radial-gradient(ellipse at 80% 70%, rgba(107, 15, 26, 0.06) 0%, transparent 50%),
+      url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.03'/%3E%3C/svg%3E");
+    background-color: var(--parchment);
+  }
+
+  body.dark .parchment-bg {
+    background-image:
+      radial-gradient(ellipse at 20% 30%, rgba(212, 175, 55, 0.05) 0%, transparent 50%),
+      radial-gradient(ellipse at 80% 70%, rgba(255, 107, 53, 0.04) 0%, transparent 50%),
+      url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.05'/%3E%3C/svg%3E");
+    background-color: #1a120a;
+  }
+
+  .gold-mandala {
+    background-image: url("data:image/svg+xml,%3Csvg width='200' height='200' viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' stroke='%23D4AF37' stroke-width='0.5' opacity='0.04'%3E%3Ccircle cx='100' cy='100' r='90'/%3E%3Ccircle cx='100' cy='100' r='70'/%3E%3Ccircle cx='100' cy='100' r='50'/%3E%3Ccircle cx='100' cy='100' r='30'/%3E%3Cpath d='M100 10L120 50H80Z'/%3E%3Cpath d='M100 190L120 150H80Z'/%3E%3Cpath d='M10 100Q15 30 15 15 Q15 0 30 0' stroke='%23D4AF37' stroke-width='1.5' fill='none'/%3E%3Cpath d='M60 100Q45 30 45 15 Q45 0 30 0' stroke='%23D4AF37' stroke-width='1.5' fill='none' transform='rotate(180 30 30)'/%3E%3C/g%3E%3C/svg%3E");
+  }
+
+  .glassmorphic {
+    background: rgba(250, 243, 224, 0.85);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    border: 1px solid rgba(212, 175, 55, 0.2);
+  }
+
+  body.dark .glassmorphic {
+    background: rgba(26, 18, 10, 0.9);
+    border: 1px solid rgba(212, 175, 55, 0.15);
+  }
+
+  @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+  @keyframes slideUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+
+  .animate-fade-in { animation: fadeIn 0.5s ease-out forwards; }
+  .animate-slide-up { animation: slideUp 0.4s ease-out forwards; }
+
+  .touch-target { min-height: 44px; min-width: 44px; }
+
+  @media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after {
+      animation-duration: 0.01ms !important;
+      animation-iteration-count: 1 !important;
+      transition-duration: 0.01ms !important;
+    }
+  }
+</style>
+</head>
+<body class="parchment-bg gold-mandala">
+  <!-- Sticky Glassmorphic Header -->
+  <header class="fixed top-0 left-0 right-0 z-50 glassmorphic border-b border-gold/20" role="banner">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div class="flex items-center justify-between h-16 sm:h-18 gap-4">
+        <!-- Left: Om Emblem + Title -->
+        <div class="flex items-center gap-3 flex-shrink-0" aria-label="Sanatan Mahakosh Home">
+          <button onclick="window.location.href='index.html'" class="touch-target flex items-center justify-center p-2 rounded-lg hover:bg-gold/10 transition-colors" aria-label="Go to Home">
+            <svg width="28" height="28" viewBox="0 0 28 28" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true" class="text-gold">
+              <path d="M14 2C10.134 2 7 5.134 7 9C7 11.25 9.5 13 11.5 13.5V22C11.5 23.1 12.4 24 13.5 24C14.6 24 15.5 23.1 15.5 22V13.5C17.5 13 20 11.25 20 9C20 5.134 16.866 2 14 2Z" stroke="currentColor" stroke-width="1.5" fill="currentColor" fill-opacity="0.2"/>
+              <path d="M14 7C15.1046 7 16 7.89543 16 9C16 10.1046 15.1046 11 14 11C12.8954 11 12 10.1046 12 9C12 7.89543 12.8954 7 14 7Z" stroke="currentColor" stroke-width="1.5" fill="currentColor" fill-opacity="0.3"/>
+              <path d="M7 13.5C7 12.5 8.5 12 9.5 12H10V9C10 7.34315 11.3431 6 13 6C14.6569 6 16 7.34315 16 9V12H16.5C17.5 12 19 12.5 19 13.5V22" stroke="currentColor" stroke-width="1.5" fill="none"/>
+              <circle cx="14" cy="9" r="1.5" fill="currentColor"/>
+            </svg>
+          </button>
+          <div>
+            <h1 class="font-cinzel text-xl sm:text-2xl font-bold text-maroon tracking-tight">SANATAN MAHAKOSH</h1>
+            <p class="font-sanskrit text-xs sm:text-sm text-saffron hidden sm:block">सनातन महाकोश</p>
+          </div>
+        </div>
+
+        <!-- Center Nav -->
+        <nav class="hidden md:flex items-center gap-1 mx-auto" role="navigation" aria-label="Main navigation">
+          <a href="index.html" class="nav-tab touch-target px-4 py-2 rounded-lg text-sm font-medium text-sandalwood hover:bg-gold/10 transition-colors">Home</a>
+          <span class="nav-tab touch-target px-4 py-2 rounded-lg text-sm font-medium text-gold bg-gold/20 font-semibold" aria-current="page">Scriptures</span>
+          <a href="temples.html" class="nav-tab touch-target px-4 py-2 rounded-lg text-sm font-medium text-sandalwood hover:bg-gold/10 transition-colors">Temples</a>
+          <a href="traditions.html" class="nav-tab touch-target px-4 py-2 rounded-lg text-sm font-medium text-sandalwood hover:bg-gold/10 transition-colors">Traditions</a>
+          <a href="sanskars.html" class="nav-tab touch-target px-4 py-2 rounded-lg text-sm font-medium text-sandalwood hover:bg-gold/10 transition-colors">Sanskars</a>
+          <a href="aarti.html" class="nav-tab touch-target px-4 py-2 rounded-lg text-sm font-medium text-sandalwood hover:bg-gold/10 transition-colors">Aarti & Stotras</a>
+        </nav>
+
+        <!-- Right Controls -->
+        <div class="flex items-center gap-2 flex-shrink-0">
+          <!-- Universal Search -->
+          <button id="openSearch" class="touch-target p-2 rounded-lg bg-gold/10 hover:bg-gold/20 transition-colors" aria-label="Open search">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" class="text-gold" aria-hidden="true">
+              <circle cx="11" cy="11" r="8"/>
+              <path d="M21 21l-4.35-4.35"/>
+            </svg>
+          </button>
+
+          <!-- Font Size Controls -->
+          <div class="hidden sm:flex items-center gap-1 bg-gold/10 rounded-lg p-1" role="group" aria-label="Font size controls">
+            <button id="fontDecrease" class="touch-target px-3 py-1.5 text-xs font-bold text-sandalwood rounded-md hover:bg-gold/20 transition-colors" aria-label="Decrease font size">A−</button>
+            <button id="fontReset" class="touch-target px-3 py-1.5 text-xs font-bold text-sandalwood rounded-md hover:bg-gold/20 transition-colors" aria-label="Reset font size">A</button>
+            <button id="fontIncrease" class="touch-target px-3 py-1.5 text-xs font-bold text-sandalwood rounded-md hover:bg-gold/20 transition-colors" aria-label="Increase font size">A+</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <!-- Universal Search Overlay -->
+  <div id="searchOverlay" class="fixed inset-0 z-40 hidden" role="dialog" aria-modal="true" aria-label="Universal Search">
+    <div class="absolute inset-0 bg-black/50 backdrop-blur-sm" aria-hidden="true"></div>
+    <div class="relative max-w-3xl mx-auto mt-20 sm:mt-32 p-4">
+      <div class="glassmorphic rounded-2xl shadow-2xl overflow-hidden diya-glow">
+        <div class="relative p-4 sm:p-6">
+          <div class="relative">
+            <svg class="absolute left-4 top-1/2 -translate-y-1/2 text-gold/60" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true">
+              <circle cx="11" cy="11" r="8"/>
+              <path d="M21 21l-4.35-4.35"/>
+            </svg>
+            <input
+              type="text"
+              id="universalSearch"
+              class="input-field w-full pl-12 pr-16 py-4 text-lg font-cinzel placeholder:text-gold/40"
+              placeholder="Search scriptures, temples, traditions... (e.g., Gita 2.47, Kedarnath, Tilak)"
+              autocomplete="off"
+              aria-label="Universal search"
+            >
+            <button id="clearSearch" class="absolute right-4 top-1/2 -translate-y-1/2 p-1 rounded-lg hover:bg-gold/20 transition-colors hidden" aria-label="Clear search">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="text-gold/60" aria-hidden="true">
+                <line x1="18" y1="6" x2="6" y2="18"/>
+                <line x1="6" y1="6" x2="18" y2="18"/>
+              </svg>
+            </button>
+          </div>
+          <div id="searchResults" class="search-dropdown absolute top-full left-0 right-0 mt-2 glassmorphic rounded-xl shadow-2xl max-h-96 overflow-y-auto hidden z-50 border border-gold/20" role="listbox" aria-label="Search results"></div>
+        </div>
+        <div class="px-4 sm:px-6 pb-4 sm:pb-6 text-center">
+          <p class="text-xs text-gold/60 font-sanskrit">Try: "Gita 2.47", "Rama", "Vedas", "Mahabharata", "Tilak types"</p>
+        </div>
+      </div>
+      <button id="closeSearch" class="absolute top-2 right-2 sm:top-4 sm:right-4 touch-target p-2 rounded-full bg-gold/10 hover:bg-gold/20 transition-colors text-gold" aria-label="Close search">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+          <line x1="18" y1="6" x2="6" y2="18"/>
+          <line x1="6" y1="6" x2="18" y2="18"/>
+        </svg>
+      </button>
+    </div>
+  </div>
+
+  <main id="mainContent" class="pt-16 sm:pt-18 min-h-screen pb-16">
+    <!-- Hero Section -->
+    <section class="relative min-h-[60vh] flex items-center justify-center px-4 sm:px-6 lg:px-8" aria-labelledby="scriptures-hero-title">
+      <div class="absolute inset-0 overflow-hidden pointer-events-none" aria-hidden="true">
+        <div class="absolute top-20 left-10 w-72 h-72 bg-saffron/10 rounded-full blur-3xl animate-float"></div>
+        <div class="absolute bottom-20 right-10 w-96 h-96 bg-gold/10 rounded-full blur-3xl"></div>
+      </div>
+
+      <div class="relative z-10 text-center max-w-4xl mx-auto animate-fade-in">
+        <h1 id="scriptures-hero-title" class="font-cinzel text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-bold text-maroon tracking-tight mb-4 animate-fade-in">पवित्र ग्रन्थाः</h1>
+        <h2 class="font-cinzel text-2xl sm:text-3xl md:text-4xl font-semibold text-saffron tracking-tight mb-6 animate-fade-in" style="animation-delay: 0.1s;">Sacred Scriptures</h2>
+        <p class="text-lg sm:text-xl text-sandalwood/70 max-w-2xl mx-auto mb-8 animate-fade-in" style="animation-delay: 0.2s;">Complete texts with Sanskrit, transliteration & meaning from Sanatan Dharma Mahakosh</p>
+      </div>
+    </section>
+
+    <!-- Scriptures Grid -->
+    <section class="py-16 sm:py-24 px-4 sm:px-6 lg:px-8" aria-labelledby="scriptures-grid-title">
+      <div class="max-w-7xl mx-auto">
+        <header class="text-center mb-12 animate-fade-in">
+          <h2 id="scriptures-grid-title" class="font-cinzel text-3xl sm:text-4xl font-bold text-maroon mb-3">Scriptures Collection</h2>
+          <p class="font-sanskrit text-xl text-saffron mb-2">ग्रन्थ सङ्ख्याः</p>
+          <p class="text-sandalwood/70 max-w-2xl mx-auto">Discover timeless wisdom through our complete library</p>
+        </header>
+
+        <!-- Filter Buttons -->
+        <div class="flex flex-wrap justify-center gap-2 mb-10 animate-fade-in" role="group" aria-label="Scripture categories">
+          <button data-filter="all" class="filter-btn touch-target px-5 py-2.5 rounded-full text-sm font-medium bg-maroon text-parchment border border-gold" aria-pressed="true">All</button>
+          <button data-filter="gita" class="filter-btn touch-target px-5 py-2.5 rounded-full text-sm font-medium text-maroon bg-gold/20 hover:bg-gold/30 border border-gold/30 transition-colors" aria-pressed="false">Bhagavad Gita</button>
+          <button data-filter="ramayan" class="filter-btn touch-target px-5 py-2.5 rounded-full text-sm font-medium text-maroon bg-gold/20 hover:bg-gold/30 border border-gold/30 transition-colors" aria-pressed="false">Ramayan</button>
+          <button data-filter="vedas" class="filter-btn touch-target px-5 py-2.5 rounded-full text-sm font-medium text-maroon bg-gold/20 hover:bg-gold/30 border border-gold/30 transition-colors" aria-pressed="false">Vedas & Upanishads</button>
+          <button data-filter="puranas" class="filter-btn touch-target px-5 py-2.5 rounded-full text-sm font-medium text-maroon bg-gold/20 hover:bg-gold/30 border border-gold/30 transition-colors" aria-pressed="false">Mahapuranas</button>
+        </div>
+
+        <div id="scripturesGrid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 sm:gap-8" role="list" aria-label="Scriptures list">
+          <!-- Scriptures rendered by JS -->
+          <div class="glassmorphic rounded-2xl p-6 sm:p-8 card-hover shadow-lg flex flex-col" style="animation-delay: 0.1s;">
+            <div class="flex items-center gap-3 mb-4">
+              <div class="w-12 h-12 rounded-full bg-gradient-to-br from-saffron to-gold flex items-center justify-center">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="text-parchment" aria-hidden="true">
+                  <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/>
+                  <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/>
+                </svg>
+              </div>
+              <div>
+                <h3 class="font-cinzel text-lg font-bold text-maroon">भगवद्गीता</h3>
+                <p class="font-sanskrit text-sm text-saffron">Bhagavad Gita</p>
+              </div>
+            </div>
+            <p class="text-sandalwood/70 text-sm mb-4">The supreme yoga text - 18 chapters, 700 verses with commentary</p>
+            <div class="mt-auto flex items-center justify-between text-xs">
+              <span class="text-gold/60">700 verses</span>
+              <button class="open-scripture-btn touch-target px-3 py-1.5 rounded-lg bg-maroon text-parchment text-xs font-medium hover:bg-gold/10 transition-colors" data-book="bhagavad-gita" data-title="भगवद्गीता (Bhagavad Gita)" aria-label="Read Bhagavad Gita">Read</button>
+            </div>
+          </div>
+
+          <div class="glassmorphic rounded-2xl p-6 sm:p-8 card-hover shadow-lg flex flex-col" style="animation-delay: 0.2s;">
+            <div class="flex items-center gap-3 mb-4">
+              <div class="w-12 h-12 rounded-full bg-gradient-to-br from-saffron to-gold flex items-center justify-center">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="text-parchment" aria-hidden="true">
+                  <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/>
+                </svg>
+              </div>
+              <div>
+                <h3 class="font-cinzel text-lg font-bold text-maroon">रामायणम्</h3>
+                <p class="font-sanskrit text-sm text-saffron">Ramayan</p>
+              </div>
+            </div>
+            <p class="text-sandalwood/70 text-sm mb-4">Valmiki Ramayan & Ramcharitmanas - 7 Kands with complete verses</p>
+            <div class="mt-auto flex items-center justify-between text-xs">
+              <span class="text-gold/60">24,000+ verses</span>
+              <button class="open-scripture-btn touch-target px-3 py-1.5 rounded-lg bg-maroon text-parchment text-xs font-medium hover:bg-gold/10 transition-colors" data-book="ramayan" data-title="रामायणम् (Ramayan)" aria-label="Read Ramayan">Read</button>
+            </div>
+          </div>
+
+          <div class="glassmorphic rounded-2xl p-6 sm:p-8 card-hover shadow-lg flex flex-col" style="animation-delay: 0.3s;">
+            <div class="flex items-center gap-3 mb-4">
+              <div class="w-12 h-12 rounded-full bg-gradient-to-br from-saffron to-gold flex items-center justify-center">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="text-parchment" aria-hidden="true">
+                  <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/>
+                  <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/>
+                </svg>
+              </div>
+              <div>
+                <h3 class="font-cinzel text-lg font-bold text-maroon">वेदाः</h3>
+                <p class="font-sanskrit text-sm text-saffron">Vedas & Upanishads</p>
+              </div>
+            </div>
+            <p class="text-sandalwood/70 text-sm mb-4">Rigveda, Yajurveda, Samaveda, Atharvaveda + Principal Upanishads</p>
+            <div class="mt-auto flex items-center justify-between text-xs">
+              <span class="text-gold/60">4 Vedas, 12 Upanishads</span>
+              <button class="open-scripture-btn touch-target px-3 py-1.5 rounded-lg bg-maroon text-parchment text-xs font-medium hover:bg-gold/10 transition-colors" data-book="vedas" data-title="वेदाः (Vedas)" aria-label="Read Vedas">Read</button>
+            </div>
+          </div>
+
+          <div class="glassmorphic rounded-2xl p-6 sm:p-8 card-hover shadow-lg flex flex-col" style="animation-delay: 0.4s;">
+            <div class="flex items-center gap-3 mb-4">
+              <div class="w-12 h-12 rounded-full bg-gradient-to-br from-saffron to-gold flex items-center justify-center">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="text-parchment" aria-hidden="true">
+                  <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/>
+                  <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/>
+                </svg>
+              </div>
+              <div>
+                <h3 class="font-cinzel text-lg font-bold text-maroon">पुराणाः</h3>
+                <p class="font-sanskrit text-sm text-saffron">Mahapuranas</p>
+              </div>
+            </div>
+            <p class="text-sandalwood/70 text-sm mb-4">18 great Puranas with stories, philosophy & cosmology</p>
+            <div class="mt-auto flex items-center justify-between text-xs">
+              <span class="text-gold/60">18 Puranas</span>
+              <button class="open-scripture-btn touch-target px-3 py-1.5 rounded-lg bg-maroon text-parchment text-xs font-medium hover:bg-gold/10 transition-colors" data-book="puranas" data-title="पुराणाः (Mahapuranas)" aria-label="Read Puranas">Read</button>
+            </div>
+          </div>
+
+          <div class="glassmorphic rounded-2xl p-6 sm:p-8 card-hover shadow-lg flex flex-col" style="animation-delay: 0.5s;">
+            <div class="flex items-center gap-3 mb-4">
+              <div class="w-12 h-12 rounded-full bg-gradient-to-br from-saffron to-gold flex items-center justify-center">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="text-parchment" aria-hidden="true">
+                  <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/>
+                  <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/>
+                </svg>
+              </div>
+              <div>
+                <h3 class="font-cinzel text-lg font-bold text-maroon">भारतीय एकादशी</h3>
+              <p class="font-sanskrit text-sm text-saffron">Ekadashi</p>
+              </div>
+            </div>
+            <p class="text-sandalwood/70 text-sm mb-4">Fasting guidelines and significance of 24 Ekadashi days</p>
+            <div class="mt-auto flex items-center justify-between text-xs">
+              <span class="text-gold/60">24 days</span>
+              <button class="open-scripture-btn touch-target px-3 py-1.5 rounded-lg bg-maroon text-parchment text-xs font-medium hover:bg-gold/10 transition-colors" data-book="ekadashi" data-title="भारतीय एकादशी" aria-label="Read Ekadashi">Read</button>
+            </div>
+          </div>
+
+          <div class="glassmorphic rounded-2xl p-6 sm:p-8 card-hover shadow-lg flex flex-col" style="animation-delay: 0.6s;">
+            <div class="flex items-center gap-3 mb-4">
+              <div class="w-12 h-12 rounded-full bg-gradient-to-br from-saffron to-gold flex items-center justify-center">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="text-parchment" aria-hidden="true">
+                  <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/>
+                  <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/>
+                </svg>
+              </div>
+              <div>
+                <h3 class="font-cinzel text-lg font-bold text-maroon">त्रिपुरारी शास्त्र</h3>
+                <p class="font-sanskrit text-sm text-saffron">Tripraarayana</p>
+              </div>
+            </div>
+            <p class="text-sandalwood/70 text-sm mb-4">Trikāla, Āgama & Pūrāṇic scriptures for Tantric practice</p>
+            <div class="mt-auto flex items-center justify-between text-xs">
+              <span class="text-gold/60">3 categories</span>
+              <button class="open-scripture-btn touch-target px-3 py-1.5 rounded-lg bg-maroon text-parchment text-xs font-medium hover:bg-gold/10 transition-colors" data-book="trik" data-title="त्रिपुरारी शास्त्र" aria-label="Read Triprarayana">Read</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="bg-sandalwood text-parchment py-8 px-4 sm:px-6 lg:px-8" role="contentinfo">
+      <div class="max-w-7xl mx-auto text-center">
+        <p class="font-sanskrit text-sm text-gold/60">सर्वे भवन्तु सुखिनः</p>
+        <p class="text-xs text-sandalwood/50 mt-2">Sanatan Dharma Mahakosh © 2025 — Complete Encyclopedia</p>
+      </div>
+    </footer>
+  </main>
+
+  <!-- Load Data & JS Files -->
+  <script src="./data/scriptures.js"></script>
+  <script src="./data/temples.js"></script>
+  <script src="./data/traditions.js"></script>
+  <script src="./js/book-reader.js"></script>
+  <script src="./js/temple-viewer.js"></script>
+  <script src="./js/search-engine.js"></script>
+  <script src="./js/app.js"></script>
+  <script src="./js/live-encyclopedia.js"></script>
+</body>
+</html>

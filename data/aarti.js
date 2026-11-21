@@ -49,7 +49,7 @@ window.AARTI_DATA = [
 
 जय जय जय त्रिपुरारी जय जय जय त्रिपुरारी ।
 जय जय जय त्रिपुरारी त्रिपुरारी त्रिपुरारी त्रिपुरारी ॥`,
-    translation: `Victory to Lord Shiva, destroyer of evil, wearing the moon on his head and Himalayan jewels as ornaments. The Lord of meditation and liberation.",
+    translation: "Victory to Lord Shiva, destroyer of evil, wearing the moon on his head and Himalayan jewels as ornaments. The Lord of meditation and liberation.",
     significance: "The fierce destroyer of darkness and ignorance. Shiva Aarti is sung during evening worship, especially on Maha Shivaratri and Pradosh."
   },
   {
