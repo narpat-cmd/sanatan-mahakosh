@@ -67,6 +67,47 @@ tailwind.config = {
     color: #f5e6d3;
   }
 
+  body.diya-mode {
+    --parchment: #1a120a;
+    --sandalwood: #f5e6d3;
+    --bhojpatra: #2d1f12;
+    --bhojpatraDark: #23180c;
+    --verse: #ff6b35;
+    background: #1a120a;
+    color: #f5e6d3;
+    position: relative;
+    overflow-x: hidden;
+  }
+
+  body.diya-mode::before {
+    content: '';
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    pointer-events: none;
+    z-index: -1;
+    background: radial-gradient(ellipse at 30% 30%, rgba(232, 93, 4, 0.1) 0%, transparent 40%),
+                radial-gradient(ellipse at 70% 70%, rgba(212, 155, 39, 0.15) 0%, transparent 40%),
+                linear-gradient(135deg, transparent 45%, rgba(212, 155, 39, 0.05) 50%, transparent 55%);
+  }
+
+  body.diya-mode .glassmorphic {
+    background: rgba(26, 18, 10, 0.95);
+    border: 1px solid rgba(212, 155, 39, 0.3);
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.4);
+  }
+
+  body.diya-mode .diya-glow {
+    box-shadow:
+      0 0 30px rgba(232, 93, 4, 0.6),
+      0 0 60px rgba(232, 93, 4, 0.4),
+      0 0 90px rgba(232, 93, 4, 0.2),
+      0 0 120px rgba(212, 155, 39, 0.1);
+    animation: diyaFlicker 3s ease-in-out infinite alternate;
+  }
+
   .parchment-bg {
     background-image:
       radial-gradient(ellipse at 20% 30%, rgba(212, 175, 55, 0.08) 0%, transparent 50%),
@@ -84,7 +125,8 @@ tailwind.config = {
   }
 
   .gold-mandala {
-    background-image: url("data:image/svg+xml,%3Csvg width='200' height='200' viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' stroke='%23D4AF37' stroke-width='0.5' opacity='0.04'%3E%3Ccircle cx='100' cy='100' r='90'/%3E%3Ccircle cx='100' cy='100' r='70'/%3E%3Ccircle cx='100' cy='100' r='50'/%3E%3Ccircle cx='100' cy='100' r='30'/%3E%3Cpath d='M100 10L120 50H80Z'/%3E%3Cpath d='M100 190L120 150H80Z'/%3E%3Cpath d='M10 100L50 120V80Z'/%3E%3Cpath d='M190 100L150 120V80Z'/%3E%3C/g%3E%3C/svg%3E");
+    background-image: url("data:image/svg+xml,%3Csvg width='200' height='200' viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' stroke='%23D4AF37' stroke-width='0.5' opacity='0.04'%3E%3Ccircle cx='100' cy='100' r='90'/%3E%3Ccircle cx='100' cy='100' r='70'/%3E%3Ccircle cx='100' cy='100' r='50'/%3E%3Ccircle cx='100' cy='100' r='30'/%3E%3C/g%3E%3C/svg%3E");
+    pointer-events: none;
   }
 
   .wood-shelf {
@@ -318,7 +360,7 @@ tailwind.config = {
   }
 </style>
 </head>
-<body class="parchment-bg gold-mandala">
+<body class="parchment-bg">
   <!-- Sticky Glassmorphic Header -->
   <header class="fixed top-0 left-0 right-0 z-50 glassmorphic border-b border-gold/20" role="banner">
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -341,12 +383,12 @@ tailwind.config = {
 
         <!-- Center Nav -->
         <nav class="hidden md:flex items-center gap-1 mx-auto" role="navigation" aria-label="Main navigation">
-          <button data-tab="home" class="nav-tab touch-target px-4 py-2 rounded-lg text-sm font-medium text-sandalwood hover:bg-gold/10 transition-colors" aria-current="page">Home</button>
-          <button data-tab="scriptures" class="nav-tab touch-target px-4 py-2 rounded-lg text-sm font-medium text-sandalwood hover:bg-gold/10 transition-colors">Scriptures</button>
-          <button data-tab="temples" class="nav-tab touch-target px-4 py-2 rounded-lg text-sm font-medium text-sandalwood hover:bg-gold/10 transition-colors">Temples</button>
-          <button data-tab="traditions" class="nav-tab touch-target px-4 py-2 rounded-lg text-sm font-medium text-sandalwood hover:bg-gold/10 transition-colors">Traditions</button>
-          <button data-tab="sanskars" class="nav-tab touch-target px-4 py-2 rounded-lg text-sm font-medium text-sandalwood hover:bg-gold/10 transition-colors">Sanskars</button>
-          <button data-tab="aarti" class="nav-tab touch-target px-4 py-2 rounded-lg text-sm font-medium text-sandalwood hover:bg-gold/10 transition-colors">Aarti & Stotras</button>
+          <a href="./index.html" class="nav-tab touch-target px-4 py-2 rounded-lg text-sm font-medium text-sandalwood hover:bg-gold/10 transition-colors" aria-current="page">Home</a>
+          <a href="./scriptures.html" class="nav-tab touch-target px-4 py-2 rounded-lg text-sm font-medium text-sandalwood hover:bg-gold/10 transition-colors">Scriptures</a>
+          <a href="./temples.html" class="nav-tab touch-target px-4 py-2 rounded-lg text-sm font-medium text-sandalwood hover:bg-gold/10 transition-colors">Temples</a>
+          <a href="./traditions.html" class="nav-tab touch-target px-4 py-2 rounded-lg text-sm font-medium text-sandalwood hover:bg-gold/10 transition-colors">Traditions</a>
+          <a href="./sanskars.html" class="nav-tab touch-target px-4 py-2 rounded-lg text-sm font-medium text-sandalwood hover:bg-gold/10 transition-colors">Sanskars</a>
+          <span class="nav-tab touch-target px-4 py-2 rounded-lg text-sm font-medium text-gold bg-gold/20 font-semibold" aria-current="page">Aarti & Stotras</span>
         </nav>
 
         <!-- Right Controls -->
@@ -396,12 +438,12 @@ tailwind.config = {
       <!-- Mobile Menu -->
       <div id="mobileMenu" class="md:hidden hidden overflow-hidden transition-all duration-300 max-h-0" role="navigation" aria-label="Mobile menu">
         <div class="py-4 space-y-1 border-t border-gold/20">
-          <button data-tab="home" class="mobile-nav-tab w-full text-left px-4 py-3 rounded-lg text-base font-medium text-sandalwood hover:bg-gold/10 transition-colors flex items-center gap-3">Home</button>
-          <button data-tab="scriptures" class="mobile-nav-tab w-full text-left px-4 py-3 rounded-lg text-base font-medium text-sandalwood hover:bg-gold/10 transition-colors flex items-center gap-3">Scriptures</button>
-          <button data-tab="temples" class="mobile-nav-tab w-full text-left px-4 py-3 rounded-lg text-base font-medium text-sandalwood hover:bg-gold/10 transition-colors flex items-center gap-3">Temples</button>
-          <button data-tab="traditions" class="mobile-nav-tab w-full text-left px-4 py-3 rounded-lg text-base font-medium text-sandalwood hover:bg-gold/10 transition-colors flex items-center gap-3">Traditions</button>
-          <button data-tab="sanskars" class="mobile-nav-tab w-full text-left px-4 py-3 rounded-lg text-base font-medium text-sandalwood hover:bg-gold/10 transition-colors flex items-center gap-3">Sanskars</button>
-          <button data-tab="aarti" class="mobile-nav-tab w-full text-left px-4 py-3 rounded-lg text-base font-medium text-sandalwood hover:bg-gold/10 transition-colors flex items-center gap-3">Aarti & Stotras</button>
+          <a href="./index.html" class="mobile-nav-tab w-full text-left px-4 py-3 rounded-lg text-base font-medium text-sandalwood hover:bg-gold/10 transition-colors flex items-center gap-3">Home</a>
+          <a href="./scriptures.html" class="mobile-nav-tab w-full text-left px-4 py-3 rounded-lg text-base font-medium text-sandalwood hover:bg-gold/10 transition-colors flex items-center gap-3">Scriptures</a>
+          <a href="./temples.html" class="mobile-nav-tab w-full text-left px-4 py-3 rounded-lg text-base font-medium text-sandalwood hover:bg-gold/10 transition-colors flex items-center gap-3">Temples</a>
+          <a href="./traditions.html" class="mobile-nav-tab w-full text-left px-4 py-3 rounded-lg text-base font-medium text-sandalwood hover:bg-gold/10 transition-colors flex items-center gap-3">Traditions</a>
+          <a href="./sanskars.html" class="mobile-nav-tab w-full text-left px-4 py-3 rounded-lg text-base font-medium text-sandalwood hover:bg-gold/10 transition-colors flex items-center gap-3">Sanskars</a>
+          <span class="mobile-nav-tab w-full text-left px-4 py-3 rounded-lg text-base font-medium text-gold bg-gold/20 flex items-center gap-3" aria-current="page">Aarti & Stotras</span>
         </div>
       </div>
     </div>

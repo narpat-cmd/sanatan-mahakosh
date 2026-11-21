@@ -104,52 +104,6 @@
       }
     },
 
-    bindEvents: function() {
-      const that = this;
-
-      // Search input events
-      document.addEventListener('input', function(e) {
-        if (e.target && (e.target.id === 'search-input' || e.target.closest('#search-input'))) {
-          const query = e.target.value.trim();
-          if (query.length > 0) {
-            that.performSearch(query);
-            that.displayResults(query);
-          } else {
-            that.clearResults();
-          }
-        }
-      });
-
-      // Handle clicks on search results (event delegation)
-      document.addEventListener('click', function(e) {
-        const resultItem = e.target.closest('.search-result-item');
-        if (resultItem) {
-          e.preventDefault();
-          const page = resultItem.dataset.page;
-          const url = resultItem.dataset.url;
-
-          if (url) {
-            window.location.href = url;
-          }
-        }
-
-        // Search suggestions
-        const suggestion = e.target.closest('.search-suggestion');
-        if (suggestion) {
-          e.preventDefault();
-          const query = suggestion.dataset.query;
-          that.searchGlobal(query);
-        }
-      });
-
-      // Escape key closes search
-      document.addEventListener('keydown', function(e) {
-        if (e.key === 'Escape') {
-          that.closeSearch();
-        }
-      });
-    },
-
     performSearch: function(query) {
       this.searchQuery = query.toLowerCase();
       this.results = [];

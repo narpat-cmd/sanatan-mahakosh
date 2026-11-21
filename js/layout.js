@@ -70,9 +70,9 @@
   function applyTheme() {
     const body = document.body;
     if (state.darkMode) {
-      body.classList.add('dark-mode');
+      body.classList.add('dark');
     } else {
-      body.classList.remove('dark-mode');
+      body.classList.remove('dark');
     }
     if (state.diyaMode) {
       body.classList.add('diya-mode');
@@ -88,21 +88,23 @@
     localStorage.setItem('sanatan-diya-mode', state.diyaMode);
   }
 
-  // Toggle dark/diya mode
+  // Toggle dark/diya mode (cycles: Light -> Dark -> Diya -> Light)
   function toggleMode() {
     if (state.darkMode && state.diyaMode) {
-      // Switch from diya to dark
-      state.diyaMode = false;
-      applyTheme();
-    } else if (state.darkMode) {
-      // Switch from dark to regular/light
+      // Switch from diya to light
       state.darkMode = false;
-      applyTheme();
+      state.diyaMode = false;
+    } else if (state.darkMode) {
+      // Switch from dark to diya mode
+      state.diyaMode = true;
+    } else if (state.diyaMode) {
+      // Switch from diya to light
+      state.diyaMode = false;
     } else {
       // Switch from light to dark mode
       state.darkMode = true;
-      applyTheme();
     }
+    applyTheme();
     updateModeButton();
   }
 
