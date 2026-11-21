@@ -1,46 +1,49 @@
-// Sanatan Dharma Mahakosh - Temple Darshan Modal & Lightbox Gallery Engine
+// Sanatan Dharma Mahakosh - Temple Darshan Modal
+// Supports trilingual modes: hi (Sanskrit+Hindi), en (English), all (three languages)
 
 (function() {
   'use strict';
 
   const TempleViewer = {
     currentTemple: null,
-    currentGalleryIndex: 0,
-    galleryImages: [],
+    currentGallery: null,
+    currentPhotoIndex: 0,
+    galleryPhotos: [],
+    lang: 'hi',
 
     init: function() {
-      this.checkUrlParams();
+      this.lang = localStorage.getItem('sanatan_lang') || 'hi';
+      document.documentElement.setAttribute('data-lang', this.lang);
       this.bindEvents();
-    },
-
-    checkUrlParams: function() {
-      const urlParams = new URLSearchParams(window.location.search);
-      const templeId = urlParams.get('id');
-
-      if (templeId) {
-        this.loadTemple(templeId);
-      }
     },
 
     bindEvents: function() {
       const that = this;
 
-      // Event delegation for all interactions
       document.addEventListener('click', function(e) {
-        const viewBtn = e.target.closest('.temple-view-btn');
-        if (viewBtn) {
-          e.preventDefault();
-          const templeId = viewBtn.dataset.id || viewBtn.closest('.temple-card')?.dataset.id;
-          if (templeId) {
-            that.loadTemple(templeId);
-          }
+        const darshanBtn = e.target.closest('.darshan-btn');
+        if (darshanBtn) {
+          const templeId = darshanBtn.dataset.temple;
+          that.loadTemple(templeId);
           return;
         }
 
-        const galleryImg = e.target.closest('.gallery-image');
+        const galleryImg = e.target.closest('.gallery-img');
         if (galleryImg) {
-          const idx = parseInt(galleryImg.dataset.index);
+          const idx = parseInt(galleryImg.dataset.idx);
           that.openGallery(idx);
+          return;
+        }
+
+        const galleryPrev = e.target.closest('.gallery-prev');
+        if (galleryPrev) {
+          that.prevGallery();
+          return;
+        }
+
+        const galleryNext = e.target.closest('.gallery-next');
+        if (galleryNext) {
+          that.nextGallery();
           return;
         }
 
@@ -50,337 +53,680 @@
           return;
         }
 
-        const galleryPrev = e.target.closest('.gallery-prev');
-        if (galleryPrev) {
-          that.prevGalleryImage();
+        const galleryThumbnail = e.target.closest('.gallery-thumbnail');
+        if (galleryThumbnail) {
+          const idx = parseInt(galleryThumbnail.dataset.idx);
+          that.showGalleryPhoto(idx);
           return;
-        }
-
-        const galleryNext = e.target.closest('.gallery-next');
-        if (galleryNext) {
-          that.nextGalleryImage();
-          return;
-        }
-
-        const modalClose = e.target.closest('.temple-modal-close');
-        if (modalClose) {
-          that.closeTemple();
-          return;
-        }
-      });
-
-      // Keyboard navigation
-      document.addEventListener('keydown', function(e) {
-        if (!that.isGalleryOpen()) return;
-
-        switch(e.key) {
-          case 'Escape':
-            e.preventDefault();
-            that.closeGallery();
-            break;
-          case 'ArrowLeft':
-            e.preventDefault();
-            that.prevGalleryImage();
-            break;
-          case 'ArrowRight':
-            e.preventDefault();
-            that.nextGalleryImage();
-            break;
         }
       });
     },
 
+    setLanguage: function(lang) {
+      this.lang = lang;
+      localStorage.setItem('sanatan_lang', lang);
+      document.documentElement.setAttribute('data-lang', lang);
+      if (this.isOpen() && this.currentTemple) {
+        this.renderTemple(this.currentTemple);
+      }
+    },
+
+    toggleLanguage: function() {
+      const options = ['hi', 'en', 'all'];
+      const currentIndex = options.indexOf(this.lang);
+      const nextIndex = (currentIndex + 1) % options.length;
+      this.setLanguage(options[nextIndex]);
+    },
+
     loadTemple: function(templeId) {
       const temples = window.TEMPLES_DATA || [];
-      this.currentTemple = temples.find(t => t.id === templeId || t.name === templeId);
+      this.currentTemple = temples.find(t => t.id === templeId) || temples[0];
 
-      if (!this.currentTemple) {
-        console.warn(`Temple not found: ${templeId}`);
-        return;
-      }
+      if (!this.currentTemple) return;
 
-      this.galleryImages = this.currentTemple.gallery || [];
+      this.renderTemple(this.currentTemple);
+      this.playOpeningBell();
+    },
 
+    renderTemple: function(temple) {
       // Create overlay
       let overlay = document.getElementById('temple-viewer-overlay');
       if (!overlay) {
-        overlay = this.createTempleOverlay();
+        overlay = this.createViewerOverlay();
         document.body.appendChild(overlay);
       }
 
       overlay.classList.add('active');
 
-      // Render content
-      this.renderTemple();
+      const modalTitle = overlay.querySelector('.temple-modal-title');
+      const modalDeity = overlay.querySelector('.temple-modal-deity');
+      const modalLocation = overlay.querySelector('.temple-modal-location');
+      const modalDescription = overlay.querySelector('.temple-modal-description');
+      const galleryContainer = overlay.querySelector('.temple-gallery-container');
 
-      // Update URL
-      const url = new URL(window.location);
-      url.searchParams.set('id', templeId);
-      window.history.pushState({}, '', url);
-    },
-
-    createTempleOverlay: function() {
-      const overlay = document.createElement('div');
-      overlay.id = 'temple-viewer-overlay';
-      overlay.className = 'temple-viewer-overlay';
-      overlay.innerHTML = `
-        <div class="temple-modal" role="dialog" aria-modal="true">
-          <button class="temple-modal-close" aria-label="Close">
-            <svg viewBox="0 0 24 24" width="24" height="24" fill="currentColor">
-              <path d="M18.36 6.64l-10.72 10.72M5.64 6.64l10.72 10.72"/>
-            </svg>
-          </button>
-
-          <div class="temple-sidebar">
-            <div class="temple-info">
-              <span class="temple-badge">${this.currentTemple?.category || ''}</span>
-              <h2 class="temple-name">${this.currentTemple?.name || ''}</h2>
-              <p class="temple-deity">${this.currentTemple?.deity || ''}</p>
-              <div class="temple-location">
-                <svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor">
-                  <path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5S10.62 6.5 12 6.5s2.5 1.12 2.5 2.5S13.38 11.5 12 11.5z"/>
-                </svg>
-                ${this.currentTemple?.location?.address || ''}
-              </div>
-            </div>
-          </div>
-
-          <div class="temple-main">
-            <div class="temple-hero">
-              <img src="${this.currentTemple?.images?.[0] || ''}" alt="${this.currentTemple?.name || ''} - Main Temple" class="temple-hero-img" onerror="this.src=''; this.parentNode.innerHTML='<div class=\"no-hero\">No image available</div>'">
-            </div>
-
-            <div class="temple-content">
-              <div class="temple-section">
-                <h3>Destination Guide</h3>
-                <p><strong>Nearest Railway Station:</strong> ${this.currentTemple?.location?.railwayStation || 'N/A'}</p>
-                <p><strong>Nearest Airport:</strong> ${this.currentTemple?.location?.airport || 'N/A'}</p>
-                <p><strong>Best Season:</strong> ${this.currentTemple?.bestSeason || 'Year-round'}</p>
-                <p><strong>Daily Darshan:</strong> ${this.currentTemple?.darshanTimings?.main || 'N/A'}</p>
-                <p><strong>Aarti Timings:</strong> ${this.currentTemple?.darshanTimings?.aarti || 'N/A'}</p>
-                ${this.currentTemple?.location?.mapsUrl ? `<a href="${this.currentTemple.location.mapsUrl}" target="_blank" class="maps-link">View on Google Maps</a>` : ''}
-              </div>
-
-              <div class="temple-section">
-                <h3>Puranic History & Beliefs</h3>
-                <p>${this.currentTemple?.history?.origin || 'Sacred temple with ancient blessings.'}</p>
-                ${this.currentTemple?.beliefs ? `<p><strong>Local Beliefs:</strong> ${this.currentTemple.beliefs}</p>` : ''}
-
-                ${this.currentTemple?.specialWorship ? `
-                <div class="special-worship">
-                  <h4>Special Worship Rules</h4>
-                  <p>${this.currentTemple.specialWorship}</p>
-                </div>
-                ` : ''}
-
-                ${this.currentTemple?.parikrama ? `
-                <div class="parikrama">
-                  <h4>Parikrama & Spiritual Significance</h4>
-                  <p>${this.currentTemple.parikrama}</p>
-                </div>
-                ` : ''}
-              </div>
-            </div>
-          </div>
-
-          <div class="temple-gallery">
-            <h3>Photo Gallery (${this.galleryImages.length} photos)</h3>
-            <div class="gallery-grid" id="gallery-grid">
-              ${this.galleryImages.map((img, idx) => `
-                <img src="${img}" alt="Gallery image ${idx + 1}" class="gallery-image" data-index="${idx}"
-                     onerror="this.style.display='none'; this.parentNode.innerHTML='<div class=\"gallery-placeholder\">Image not available</div>'">
-              `).join('')}
-            </div>
-          </div>
-        </div>
-
-        <!-- Full-screen lightbox -->
-        <div class="gallery-lightbox" id="gallery-lightbox">
-          <button class="gallery-close" aria-label="Close"></button>
-          <button class="gallery-prev" aria-label="Previous"><svg viewBox="0 0 24 24" width="24" height="24"><path d="M15.41 7l-5.95 5.95L3.51 7M5.75 17v-10"/></svg></button>
-          <button class="gallery-next" aria-label="Next"><svg viewBox="0 0 24 24" width="24" height="24"><path d="M8.59 12l5.95 5.95L20.49 12M14.25 17V7"/></svg></button>
-          <div class="lightbox-content">
-            <img src="" alt="Gallery image" class="lightbox-image" onerror="this.parentNode.style.display='none'">
-          </div>
-        </div>
-      `;
-
-      return overlay;
-    },
-
-    renderTemple: function() {
-      if (!this.currentTemple) return;
-
-      // Update header info
-      const badge = document.querySelector('.temple-badge');
-      const name = document.querySelector('.temple-name');
-      const deity = document.querySelector('.temple-deity');
-      const location = document.querySelector('.temple-location');
-      const mapsLink = document.querySelector('.maps-link');
-
-      if (badge) badge.textContent = this.currentTemple.category || '';
-      if (name) name.textContent = this.currentTemple.name || '';
-      if (deity) deity.textContent = this.currentTemple.deity || '';
-      if (location) {
-        const locHtml = `
-          <svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor">
-            <path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5S10.62 6.5 12 6.5s2.5 1.12 2.5 2.5S13.38 11.5 12 11.5z"/>
-          </svg>
-          ${this.currentTemple.location?.address || ''}
-        `;
-        location.innerHTML = locHtml;
-      }
-      if (mapsLink && this.currentTemple.location?.mapsUrl) {
-        mapsLink.href = this.currentTemple.location.mapsUrl;
+      if (modalTitle) {
+        modalTitle.textContent = temple.name || temple.nameEnglish || 'Temple';
       }
 
-      // Update gallery
-      this.renderGallery();
-
-      // Update content sections
-      this.renderContent();
-    },
-
-    renderGallery: function() {
-      if (!this.galleryImages || this.galleryImages.length === 0) {
-        const galleryGrid = document.getElementById('gallery-grid');
-        if (galleryGrid) {
-          galleryGrid.innerHTML = '<div class="gallery-placeholder">No photos available</div>';
+      if (modalDeity) {
+        if (this.lang === 'en' || this.lang === 'all') {
+          modalDeity.textContent = temple.deityEnglish || temple.deity || '';
+        } else {
+          modalDeity.textContent = temple.deity || '';
         }
-        return;
       }
 
-      const galleryGrid = document.getElementById('gallery-grid');
-      if (!galleryGrid) return;
-
-      galleryGrid.innerHTML = this.galleryImages.map((img, idx) => `
-        <img src="${img}" alt="Gallery image ${idx + 1}" class="gallery-image" data-index="${idx}"
-             onerror="this.style.display='none'; this.parentNode.innerHTML='<div class=\"gallery-placeholder\">Image not available</div>'">
-      `).join('');
-
-      // Update gallery title
-      const galleryTitle = document.querySelector('.temple-gallery h3');
-      if (galleryTitle) {
-        galleryTitle.textContent = `Photo Gallery (${this.galleryImages.length} photos)`;
-      }
-    },
-
-    renderContent: function() {
-      if (!this.currentTemple) return;
-
-      // Destination guide section
-      const destGuide = document.querySelector('.temple-section:nth-child(1)');
-      if (destGuide) {
-        destGuide.innerHTML = `
-          <h3>Destination Guide</h3>
-          <p><strong>Nearest Railway Station:</strong> ${this.currentTemple.location?.railwayStation || 'N/A'}</p>
-          <p><strong>Nearest Airport:</strong> ${this.currentTemple.location?.airport || 'N/A'}</p>
-          <p><strong>Best Season:</strong> ${this.currentTemple.bestSeason || 'Year-round'}</p>
-          <p><strong>Daily Darshan:</strong> ${this.currentTemple.darshanTimings?.main || 'N/A'}</p>
-          <p><strong>Aarti Timings:</strong> ${this.currentTemple.darshanTimings?.aarti || 'N/A'}</p>
-          ${this.currentTemple.location?.mapsUrl ? `<a href="${this.currentTemple.location.mapsUrl}" target="_blank" class="maps-link">View on Google Maps</a>` : ''}
-        `;
+      if (modalLocation) {
+        modalLocation.textContent = temple.location || '';
       }
 
-      // History and beliefs section
-      const historySection = document.querySelector('.temple-section:nth-child(2)');
-      if (historySection) {
-        historySection.innerHTML = `
-          <h3>Puranic History & Beliefs</h3>
-          <p>${this.currentTemple.history?.origin || 'Sacred temple with ancient blessings.'}</p>
-          ${this.currentTemple.beliefs ? `<p><strong>Local Beliefs:</strong> ${this.currentTemple.beliefs}</p>` : ''}
+      if (modalDescription) {
+        if (this.lang === 'hi' || this.lang === 'all') {
+          modalDescription.textContent = temple.description || temple.descriptionHindi || '';
+        } else if (this.lang === 'en') {
+          modalDescription.textContent = temple.descriptionEnglish || temple.description || '';
+        }
+      }
 
-          ${this.currentTemple.specialWorship ? `
-          <div class="special-worship">
-            <h4>Special Worship Rules</h4>
-            <p>${this.currentTemple.specialWorship}</p>
-          </div>
-          ` : ''}
-
-          ${this.currentTemple.parikrama ? `
-          <div class="parikrama">
-            <h4>Parikrama & Spiritual Significance</h4>
-            <p>${this.currentTemple.parikrama}</p>
-          </div>
-          ` : ''}
-        `;
+      // Render gallery
+      if (temple.gallery && temple.gallery.length > 0) {
+        this.renderGallery(temple.gallery);
+      } else {
+        if (galleryContainer) {
+          galleryContainer.innerHTML = '<div class="no-gallery">No gallery images available</div>';
+        }
       }
     },
 
-    openGallery: function(index) {
-      this.currentGalleryIndex = index;
-      const lightbox = document.getElementById('gallery-lightbox');
-      const lightboxImg = lightbox?.querySelector('.lightbox-image');
+    renderGallery: function(gallery) {
+      const galleryContainer = document.querySelector('.temple-gallery-container');
+      if (!galleryContainer) return;
 
-      if (lightbox && lightboxImg) {
-        lightbox.classList.add('active');
-        lightboxImg.src = this.galleryImages[index];
-        lightboxImg.onload = function() {
-          lightbox.style.display = 'block';
-        };
-        lightboxImg.onerror = function() {
-          lightbox.style.display = 'none';
-        };
+      // Set up main gallery image
+      if (gallery.length > 0) {
+        const mainImg = galleryContainer.querySelector('.gallery-main-img');
+        if (mainImg) {
+          const photo = gallery[0];
+          mainImg.src = photo.url || photo.thumb || '';
+          mainImg.alt = photo.caption || 'Temple Photo';
+          mainImg.dataset.idx = '0';
+        }
+        this.currentPhotoIndex = 0;
+        this.galleryPhotos = gallery;
       }
+
+      // Render thumbnails
+      const thumbContainer = galleryContainer.querySelector('.gallery-thumbnails');
+      if (thumbContainer) {
+        let html = '';
+        gallery.forEach((photo, idx) => {
+          html += `
+            <div class="gallery-thumbnail" data-idx="${idx}">
+              <img src="${photo.thumb || photo.url || ''}" alt="Photo ${idx + 1}" class="thumb-img">
+            </div>
+          `;
+        });
+        thumbContainer.innerHTML = html;
+      }
+
+      // Highlight active thumbnail
+      const thumbnails = galleryContainer.querySelectorAll('.gallery-thumbnail');
+      thumbnails.forEach((thumb, idx) => {
+        thumb.classList.toggle('active', idx === 0);
+      });
+    },
+
+    openGallery: function(startIndex) {
+      const galleryOverlay = document.getElementById('gallery-overlay');
+      if (!galleryOverlay) {
+        galleryOverlay = this.createGalleryOverlay();
+        document.body.appendChild(galleryOverlay);
+      }
+
+      galleryOverlay.classList.add('active');
+
+      if (this.currentTemple && this.currentTemple.gallery && this.currentTemple.gallery.length > 0) {
+        this.galleryPhotos = this.currentTemple.gallery;
+        this.showGalleryPhoto(startIndex);
+      }
+    },
+
+    showGalleryPhoto: function(idx) {
+      if (!this.galleryPhotos || idx < 0 || idx >= this.galleryPhotos.length) return;
+
+      this.currentPhotoIndex = idx;
+
+      const mainImg = document.querySelector('.gallery-main-img');
+      const photoCaption = document.querySelector('.gallery-caption');
+
+      if (mainImg && this.galleryPhotos[idx]) {
+        const photo = this.galleryPhotos[idx];
+        mainImg.src = photo.url || photo.thumb || '';
+        mainImg.alt = photo.caption || 'Temple Photo';
+        mainImg.dataset.idx = idx;
+
+        if (photoCaption) {
+          photoCaption.textContent = photo.caption || '';
+        }
+      }
+
+      // Update thumbnail active state
+      const thumbnails = document.querySelectorAll('.gallery-thumbnail');
+      thumbnails.forEach((thumb, i) => {
+        thumb.classList.toggle('active', i === idx);
+      });
+    },
+
+    nextGallery: function() {
+      if (!this.galleryPhotos || this.galleryPhotos.length === 0) return;
+
+      const nextIdx = (this.currentPhotoIndex + 1) % this.galleryPhotos.length;
+      this.showGalleryPhoto(nextIdx);
+      this.playGalleryTransition();
+    },
+
+    prevGallery: function() {
+      if (!this.galleryPhotos || this.galleryPhotos.length === 0) return;
+
+      const prevIdx = this.currentPhotoIndex === 0 ? this.galleryPhotos.length - 1 : this.currentPhotoIndex - 1;
+      this.showGalleryPhoto(prevIdx);
+      this.playGalleryTransition();
     },
 
     closeGallery: function() {
-      const lightbox = document.getElementById('gallery-lightbox');
-      if (lightbox) {
-        lightbox.classList.remove('active');
-        lightbox.style.display = 'none';
+      const galleryOverlay = document.getElementById('gallery-overlay');
+      if (galleryOverlay) {
+        galleryOverlay.classList.remove('active');
       }
     },
 
-    nextGalleryImage: function() {
-      if (this.currentGalleryIndex < this.galleryImages.length - 1) {
-        this.currentGalleryIndex++;
-        this.updateLightboxImage();
-      }
+    isOpen: function() {
+      const overlay = document.getElementById('temple-viewer-overlay');
+      return overlay && overlay.classList.contains('active');
     },
 
-    prevGalleryImage: function() {
-      if (this.currentGalleryIndex > 0) {
-        this.currentGalleryIndex--;
-        this.updateLightboxImage();
-      }
-    },
-
-    updateLightboxImage: function() {
-      const lightbox = document.getElementById('gallery-lightbox');
-      const lightboxImg = lightbox?.querySelector('.lightbox-image');
-      if (lightboxImg) {
-        lightboxImg.src = this.galleryImages[this.currentGalleryIndex];
-      }
-    },
-
-    closeTemple: function() {
+    closeViewer: function() {
       const overlay = document.getElementById('temple-viewer-overlay');
       if (overlay) {
         overlay.classList.remove('active');
       }
+      this.currentTemple = null;
+      this.galleryPhotos = [];
+      this.currentPhotoIndex = 0;
 
-      // Update URL
+      // Clean up URL
       const url = new URL(window.location);
-      url.searchParams.delete('id');
+      url.searchParams.delete('temple');
       window.history.pushState({}, '', url);
     },
 
-    isGalleryOpen: function() {
-      const lightbox = document.getElementById('gallery-lightbox');
-      return lightbox && lightbox.classList.contains('active');
+    createViewerOverlay: function() {
+      const overlay = document.createElement('div');
+      overlay.id = 'temple-viewer-overlay';
+      overlay.className = 'temple-viewer-overlay';
+      overlay.innerHTML = `
+        <div class="temple-viewer-modal" role="dialog" aria-modal="true">
+          <div class="temple-viewer-header">
+            <h2 class="temple-modal-title"></h2>
+            <button class="temple-close" aria-label="Close">
+              <svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor">
+                <path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/>
+              </svg>
+            </button>
+          </div>
+
+          <div class="temple-viewer-content">
+            <div class="temple-info-section">
+              <div class="temple-deity">${this.lang === 'en' ? temple?.deityEnglish : temple?.deity}</div>
+              <div class="temple-location"></div>
+              <div class=" temple-language-selector">
+                <div class="book-lang-toggle">
+                  <span class="book-lang-option ${this.lang === 'hi' ? 'active' : ''}" data-lang="hi">HI</span>
+                  <span class="book-lang-option ${this.lang === 'en' ? 'active' : ''}" data-lang="en">EN</span>
+                  <span class="book-lang-option ${this.lang === 'all' ? 'active' : ''}" data-lang="all">ALL</span>
+                </div>
+              </div>
+            </div>
+
+            <div class="temple-gallery-container">
+              <div class="gallery-main-wrapper">
+                <img src="" alt="" class="gallery-main-img">
+                <div class="gallery-prev">
+                  <svg viewBox="0 0 24 24" width="24" height="24" fill="currentColor">
+                    <path d="M15.41 7l-6.58 6.58L15.41 20.41L19.59 16.23 15.41 7z"/>
+                  </svg>
+                </div>
+                <div class="gallery-next">
+                  <svg viewBox="0 0 24 24" width="24" height="24" fill="currentColor">
+                    <path d="M8.59 16.59L14.17 11l-5.58-5.59L12 4l8 8z"/>
+                  </svg>
+                </div>
+              </div>
+              <div class="gallery-caption"></div>
+              <div class="gallery-thumbnails"></div>
+            </div>
+
+            <div class="temple-description-section">
+              <h3 class="description-title">${this.lang === 'en' ? 'About the Temple' : 'कोटिल के बारे में'}</h3>
+              <p class="temple-modal-description"></p>
+            </div>
+          </div>
+
+          <button class="temple-close-section" aria-label="Close">
+            <svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor">
+              <path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/>
+            </svg>
+          </button>
+        </div>
+      `;
+
+      // Add styles
+      const style = document.createElement('style');
+      style.textContent = `
+        .temple-viewer-overlay {
+          position: fixed;
+          top: 0;
+          left: 0;
+          width: 100%;
+          height: 100%;
+          z-index: 50;
+          opacity: 0;
+          visibility: hidden;
+          transition: opacity 0.3s ease, visibility 0.3s;
+        }
+        .temple-viewer-overlay.active {
+          opacity: 1;
+          visibility: visible;
+        }
+        .temple-viewer-modal {
+          position: absolute;
+          inset: 0;
+          background: rgba(0, 0, 0, 0.85);
+          backdrop-filter: blur(10px);
+          display: flex;
+          flex-direction: column;
+          overflow: hidden;
+        }
+        .temple-viewer-header {
+          position: sticky;
+          top: 0;
+          z-index: 10;
+          background: rgba(255, 255, 255, 0.95);
+          backdrop-filter: blur(5px);
+          padding: 1rem;
+          display: flex;
+          justify-content: space-between;
+          align-items: center;
+          border-bottom: 1px solid rgba(0, 0, 0, 0.1);
+        }
+        .temple-modal-title {
+          font-family: 'Cinzel', serif;
+          font-size: 1.5rem;
+          color: var(--maroon, #6B0F1A);
+          margin: 0;
+        }
+        .temple-close {
+          background: none;
+          border: none;
+          color: var(--maroon, #6B0F1A);
+          cursor: pointer;
+          padding: 0;
+          width: 32px;
+          height: 32px;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+        }
+        .temple-close:hover {
+          background: var(--gold, #D4AF37);
+          border-radius: 50%;
+          color: var(--parchment, #FAF3E0);
+        }
+        .temple-viewer-content {
+          flex: 1;
+          display: grid;
+          grid-template-columns: 1fr 1.2fr;
+          gap: 1rem;
+          padding: 1rem;
+          overflow-y: auto;
+        }
+        @media (max-width: 1024px) {
+          .temple-viewer-content {
+            grid-template-columns: 1fr;
+          }
+        }
+        @media (max-width: 768px) {
+          .temple-viewer-content {
+            padding: 0.75rem;
+          }
+          .temple-modal-title {
+            font-size: 1.25rem;
+          }
+        }
+        .temple-info-section {
+          display: flex;
+          flex-direction: column;
+          gap: 0.5rem;
+        }
+        .temple-deity {
+          font-family: 'Cinzel', serif;
+          font-size: 1.25rem;
+          color: var(--maroon, #6B0F1A);
+          margin: 0;
+        }
+        .temple-location {
+          font-family: 'Noto Serif', sans-serif;
+          font-size: 0.95rem;
+          color: var(--sandalwood, #2C1810);
+          margin: 0;
+        }
+        .gallery-main-wrapper {
+          position: relative;
+          background: var(--parchment, #FAF3E0);
+          border-radius: 0.75rem;
+          overflow: hidden;
+          margin-bottom: 1rem;
+        }
+        body.dark .gallery-main-wrapper {
+          background: var(--bhojpatra, #2d1f12);
+        }
+        .gallery-main-img {
+          width: 100%;
+          height: auto;
+          display: block;
+          object-fit: cover;
+        }
+        .gallery-prev, .gallery-next {
+          position: absolute;
+          top: 50%;
+          transform: translateY(-50%);
+          background: rgba(255, 255, 255, 0.9);
+          border: none;
+          border-radius: 50%;
+          width: 40px;
+          height: 40px;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          cursor: pointer;
+          transition: all 0.2s;
+        }
+        .gallery-prev:hover, .gallery-next:hover {
+          background: var(--gold, #D4AF37);
+          color: var(--parchment, #FAF3E0);
+        }
+        body.dark .gallery-prev, body.dark .gallery-next {
+          background: rgba(45, 31, 18, 0.9);
+        }
+        .gallery-prev { left: 10px; }
+        .gallery-next { right: 10px; }
+        .gallery-caption {
+          text-align: center;
+          font-family: 'Noto Serif', sans-serif;
+          font-size: 0.9rem;
+          color: var(--sandalwood, #2C1810);
+          padding: 0.5rem;
+        }
+        .gallery-thumbnails {
+          display: flex;
+          gap: 0.5rem;
+          overflow-x: auto;
+          padding: 0.5rem 0;
+          scrollbar-width: none;
+        }
+        .gallery-thumbnails::-webkit-scrollbar {
+          display: none;
+        }
+        .gallery-thumbnail {
+          flex-shrink: 0;
+          width: 60px;
+          height: 60px;
+          border: 2px solid var(--parchment, #FAF3E0);
+          border-radius: 50%;
+          overflow: hidden;
+          cursor: pointer;
+          transition: all 0.2s;
+        }
+        .gallery-thumbnail:hover {
+          border-color: var(--gold, #D4AF37);
+        }
+        .gallery-thumbnail.active {
+          border-color: var(--gold, #D4AF37);
+        }
+        .thumb-img {
+          width: 100%;
+          height: 100%;
+          object-fit: cover;
+        }
+        .temple-description-section {
+          padding: 1rem;
+          background: var(--parchment, #FAF3E0);
+          border-radius: 0.75rem;
+          margin: 1rem 0;
+        }
+        body.dark .temple-description-section {
+          background: var(--bhojpatra, #2d1f12);
+        }
+        .description-title {
+          font-family: 'Cinzel', serif;
+          font-size: 1rem;
+          color: var(--maroon, #6B0F1A);
+          margin: 0 0 0.5rem 0;
+        }
+        .temple-modal-description {
+          font-family: 'Noto Serif', sans-serif;
+          font-size: 0.95rem;
+          line-height: 1.7;
+          color: var(--sandalwood, #2C1810);
+          margin: 0;
+          text-align: justify;
+        }
+        body.dark .temple-modal-description {
+          color: #f5e6d3;
+        }
+        .temple-close-section {
+          position: absolute;
+          bottom: 1rem;
+          right: 1rem;
+          background: none;
+          border: none;
+          color: var(--maroon, #6B0F1A);
+          cursor: pointer;
+          padding: 0;
+          width: 40px;
+          height: 40px;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+        }
+        .temple-close-section:hover {
+          background: var(--gold, #D4AF37);
+          border-radius: 50%;
+          color: var(--parchment, #FAF3E0);
+        }
+        .no-gallery {
+          text-align: center;
+          padding: 2rem;
+          color: var(--sandalwood, #2C1810);
+          font-style: italic;
+        }
+      `;
+      document.head.appendChild(style);
+
+      return overlay;
+    },
+
+    createGalleryOverlay: function() {
+      const overlay = document.createElement('div');
+      overlay.id = 'gallery-overlay';
+      overlay.className = 'gallery-overlay';
+      overlay.innerHTML = `
+        <div class="gallery-modal" role="dialog" aria-modal="true">
+          <img src="" alt="" class="gallery-main-img">
+          <div class="gallery-caption"></div>
+          <button class="gallery-prev" aria-label="Previous Photo">
+            <svg viewBox="0 0 24 24" width="24" height="24" fill="currentColor">
+              <path d="M15.41 7l-6.58 6.58L15.41 20.41L19.59 16.23 15.41 7z"/>
+            </svg>
+          </button>
+          <button class="gallery-next" aria-label="Next Photo">
+            <svg viewBox="0 0 24 24" width="24" height="24" fill="currentColor">
+              <path d="M8.59 16.59L14.17 11l-5.58-5.59L12 4l8 8z"/>
+            </svg>
+          </button>
+          <button class="gallery-close" aria-label="Close">
+            <svg viewBox="0 0 24 24" width="24" height="24" fill="currentColor">
+              <path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/>
+            </svg>
+          </button>
+        </div>
+      `;
+
+      // Add styles
+      const style = document.createElement('style');
+      style.textContent = `
+        .gallery-overlay {
+          position: fixed;
+          top: 0;
+          left: 0;
+          width: 100%;
+          height: 100%;
+          z-index: 51;
+          opacity: 0;
+          visibility: hidden;
+          transition: opacity 0.3s ease, visibility 0.3s;
+        }
+        .gallery-overlay.active {
+          opacity: 1;
+          visibility: visible;
+        }
+        .gallery-modal {
+          position: absolute;
+          inset: 0;
+          background: rgba(0, 0, 0, 0.9);
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          padding: 1rem;
+          box-sizing: border-box;
+        }
+        .gallery-main-img {
+          max-width: 100%;
+          max-height: 80vh;
+          object-fit: contain;
+          border-radius: 0.75rem;
+        }
+        .gallery-caption {
+          position: absolute;
+          bottom: 20px;
+          left: 50%;
+          transform: translateX(-50%);
+          color: white;
+          font-family: 'Noto Serif', sans-serif;
+          background: rgba(0, 0, 0, 0.5);
+          padding: 0.5rem 1rem;
+          border-radius: 0.5rem;
+          text-align: center;
+          max-width: 90%;
+        }
+        .gallery-prev, .gallery-next {
+          position: absolute;
+          top: 50%;
+          transform: translateY(-50%);
+          background: rgba(255, 255, 255, 0.9);
+          border: none;
+          border-radius: 50%;
+          width: 40px;
+          height: 40px;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          cursor: pointer;
+          transition: all 0.2s;
+        }
+        .gallery-prev:hover, .gallery-next:hover {
+          background: var(--gold, #D4AF37);
+          color: var(--parchment, #FAF3E0);
+        }
+        .gallery-prev { left: 20px; }
+        .gallery-next { right: 20px; }
+        .gallery-close {
+          position: absolute;
+          top: 15px;
+          right: 15px;
+          background: none;
+          border: none;
+          color: white;
+          cursor: pointer;
+          padding: 0;
+          width: 30px;
+          height: 30px;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          font-size: 1.5rem;
+        }
+        .gallery-close:hover {
+          color: var(--gold, #D4AF37);
+        }
+      `;
+      document.head.appendChild(style);
+
+      return overlay;
+    },
+
+    playOpeningBell: function() {
+      // Optional: play temple opening bell sound
+      try {
+        const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+        const oscillator = audioContext.createOscillator();
+        const gainNode = audioContext.createGain();
+
+        oscillator.type = 'sine';
+        oscillator.frequency.setValueAtTime(440, audioContext.currentTime);
+        gainNode.gain.setValueAtTime(0.1, audioContext.currentTime);
+        gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.5);
+
+        oscillator.connect(gainNode);
+        gainNode.connect(audioContext.destination);
+        oscillator.start();
+        oscillator.stop(audioContext.currentTime + 0.5);
+      } catch (e) {
+        // Audio not available
+      }
+    },
+
+    playGalleryTransition: function() {
+      // Optional: play gallery transition sound
+      try {
+        const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+        const oscillator = audioContext.createOscillator();
+        const gainNode = audioContext.createGain();
+
+        oscillator.type = 'sine';
+        oscillator.frequency.setValueAtTime(660, audioContext.currentTime);
+        gainNode.gain.setValueAtTime(0.05, audioContext.currentTime);
+        gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.2);
+
+        oscillator.connect(gainNode);
+        gainNode.connect(audioContext.destination);
+        oscillator.start();
+        oscillator.stop(audioContext.currentTime + 0.2);
+      } catch (e) {
+        // Audio not available
+      }
     }
   };
 
   // Initialize when DOM ready
   if (document.readyState === 'loading') {
     document.addEventListener('DOMContentLoaded', function() {
-      if (document.querySelector('.temple-card, .temple-view-btn')) {
+      if (document.querySelector('.darshan-btn')) {
         TempleViewer.init();
       }
     });
   } else {
-    if (document.querySelector('.temple-card, .temple-view-btn')) {
+    if (document.querySelector('.darshan-btn')) {
       TempleViewer.init();
     }
   }

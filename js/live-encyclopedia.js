@@ -1,6 +1,7 @@
 // Sanatan Dharma Mahakosh - In-App Live Encyclopedia Engine
 // Background Wikipedia/Wikisource API fetcher with Royal Parchment Reader Modal
 // NO EXTERNAL REDIRECTS - All content rendered inside own modal
+// Supports trilingual modes: hi (Hindi/Sanskrit via hi.*), en (English), all (both)
 
 (function() {
   'use strict';
@@ -10,19 +11,33 @@
     currentContent: null,
     isModalOpen: false,
     isLoading: false,
+    lang: 'hi',
 
-    // API endpoints (CORS-enabled)
+    // API endpoints (CORS-enabled) - using language-specific domains
     API_ENDPOINTS: {
-      wikipediaSearch: 'https://en.wikipedia.org/w/api.php?action=query&list=search&srsearch={query}&format=json&origin=*',
-      wikipediaExtract: 'https://en.wikipedia.org/w/api.php?action=query&prop=extracts|pageimages&titles={title}&exintro=false&explaintext=true&exsectionformat=wiki&format=json&origin=*',
-      wikisourceSearch: 'https://en.wikisource.org/w/api.php?action=query&list=search&srsearch={query}&srnamespace=0&format=json&origin=*',
-      wikisourceText: 'https://en.wikisource.org/w/api.php?action=query&prop=extracts&explaintext=true&titles={title}&format=json&origin=*'
+      // English Wikipedia endpoints
+      wikipediaSearchEn: 'https://en.wikipedia.org/w/api.php?action=query&list=search&srsearch={query}&format=json&origin=*',
+      wikipediaExtractEn: 'https://en.wikipedia.org/w/api.php?action=query&prop=extracts|pageimages&titles={title}&exintro=false&explaintext=true&exsectionformat=wiki&format=json&origin=*',
+
+      // Hindi Wikipedia endpoints
+      wikipediaSearchHi: 'https://hi.wikipedia.org/w/api.php?action=query&list=search&srsearch={query}&format=json&origin=*',
+      wikipediaExtractHi: 'https://hi.wikipedia.org/w/api.php?action=query&prop=extracts|pageimages&titles={title}&exintro=false&explaintext=true&exsectionformat=wiki&format=json&origin=*',
+
+      // English Wikisource endpoints
+      wikisourceSearchEn: 'https://en.wikisource.org/w/api.php?action=query&list=search&srsearch={query}&srnamespace=0&format=json&origin=*',
+      wikisourceTextEn: 'https://en.wikisource.org/w/api.php?action=query&prop=extracts&explaintext=true&titles={title}&format=json&origin=*',
+
+      // Hindi Wikisource endpoints
+      wikisourceSearchHi: 'https://hi.wikisource.org/w/api.php?action=query&list=search&srsearch={query}&srnamespace=0&format=json&origin=*',
+      wikisourceTextHi: 'https://hi.wikisource.org/w/api.php?action=query&prop=extracts&explaintext=true&titles={title}&format=json&origin=*'
     },
 
     /**
      * Initialize the live encyclopedia engine
      */
     init: function() {
+      this.lang = localStorage.getItem('sanatan_lang') || 'hi';
+      document.documentElement.setAttribute('data-lang', this.lang);
       this.bindEvents();
       this.checkUrlParams();
     },
@@ -40,6 +55,92 @@
       } else if (fetchId) {
         this.fetchByName(fetchId);
       }
+    },
+
+    /**
+     * Set language mode
+     */
+    setLanguage: function(lang) {
+      this.lang = lang;
+      localStorage.setItem('sanatan_lang', lang);
+      document.documentElement.setAttribute('data-lang', lang);
+
+      if (this.isModalOpen && this.currentResult) {
+        this.refreshContent(lang);
+      }
+    },
+
+    /**
+     * Toggle language mode
+     */
+    toggleLanguage: function() {
+      const options = ['hi', 'en', 'all'];
+      const currentIndex = options.indexOf(this.lang);
+      const nextIndex = (currentIndex + 1) % options.length;
+      this.setLanguage(options[nextIndex]);
+    },
+
+    /**
+     * Refresh content based on language
+     */
+    refreshContent: function(lang) {
+      if (!this.currentResult) return;
+
+      const title = this.currentResult.title;
+      const source = this.currentResult.source;
+
+      if (lang === 'en') {
+        // Fetch English version
+        this.fetchSingleLanguage(title, 'en').then(content => {
+          this.openModal({ title, extract: content, source: 'English ' + source }, title, source);
+        });
+      } else if (lang === 'hi') {
+        // Fetch Hindi version
+        this.fetchSingleLanguage(title, 'hi').then(content => {
+          this.openModal({ title, extract: content, source: 'Hindi ' + source }, title, source);
+        });
+      } else {
+        // Fetch both and show combined
+        Promise.all([
+          this.fetchSingleLanguage(title, 'en'),
+          this.fetchSingleLanguage(title, 'hi')
+        ]).then(([enContent, hiContent]) => {
+          const combined = this.combineContent(title, enContent, hiContent, source);
+          this.openModal(combined, title, source);
+        });
+      }
+    },
+
+    /**
+     * Combine English and Hindi content for 'all' mode
+     */
+    combineContent: function(title, enContent, hiContent, source) {
+      return {
+        title: title,
+        extract: `<div class="content-hindi"><h3>हिंदी / Sanskrit</h3>${hiContent || 'नहीं मिला'}</div><div class="content-english"><h3>English</h3>${enContent || 'Not found'}</div>`,
+        source: source,
+        combined: true
+      };
+    },
+
+    /**
+     * Fetch single language content
+     */
+    fetchSingleLanguage: async function(title, lang) {
+      if (lang === 'en') {
+        const result = await this.fetchFromWikipedia(title, 'en');
+        if (result) return result.extract;
+
+        const wsResult = await this.fetchFromWikisource(title, 'en');
+        if (wsResult) return wsResult.extract;
+      } else if (lang === 'hi') {
+        const result = await this.fetchFromWikipedia(title, 'hi');
+        if (result) return result.extract;
+
+        const wsResult = await this.fetchFromWikisource(title, 'hi');
+        if (wsResult) return wsResult.extract;
+      }
+      return null;
     },
 
     /**
@@ -95,6 +196,19 @@
           const query = searchLink.dataset.query;
           that.searchGlobal(query);
         }
+
+        // Language toggle
+        const langToggle = e.target.closest('.book-lang-toggle');
+        if (langToggle) {
+          that.toggleLanguage();
+          return;
+        }
+
+        const langOption = e.target.closest('.book-lang-option');
+        if (langOption) {
+          that.setLanguage(langOption.dataset.lang);
+          return;
+        }
       });
     },
 
@@ -107,17 +221,31 @@
       this.showLoading(true);
 
       try {
-        // Try Wikipedia first
-        const result = await this.fetchFromWikipedia(title);
+        // First fetch English version for display
+        const result = await this.fetchFromWikipedia(title, 'en');
         if (result) {
-          this.openModal(result, title, 'Wikipedia');
+          this.openModal(result, title, 'Wikipedia/English');
           return;
         }
 
-        // Fallback to Wikisource
-        const wsResult = await this.fetchFromWikisource(title);
+        // Fallback to Hindi Wikipedia
+        const hiResult = await this.fetchFromWikipedia(title, 'hi');
+        if (hiResult) {
+          this.openModal(hiResult, title, 'Wikipedia/Hindi');
+          return;
+        }
+
+        // Try Wikisource (English first)
+        const wsResult = await this.fetchFromWikisource(title, 'en');
         if (wsResult) {
           this.openModal(wsResult, title, 'Wikisource');
+          return;
+        }
+
+        // Try Hindi Wikisource
+        const wsHiResult = await this.fetchFromWikisource(title, 'hi');
+        if (wsHiResult) {
+          this.openModal(wsHiResult, title, 'Wikisource/Hindi');
           return;
         }
 
@@ -140,26 +268,48 @@
       this.showLoading(true);
 
       try {
-        // First, search to find the exact article
-        const searchResults = await this.searchWikipedia(query);
+        // Determine language endpoint
+        const searchUrl = this.lang === 'hi'
+          ? this.API_ENDPOINTS.wikipediaSearchHi.replace('{query}', encodeURIComponent(query))
+          : this.API_ENDPOINTS.wikipediaSearchEn.replace('{query}', encodeURIComponent(query));
+
+        const response = await fetch(searchUrl);
+        const data = await response.json();
+
+        const searchResults = data.query?.search?.slice(0, 5) || [];
 
         if (searchResults && searchResults.length > 0) {
           const article = searchResults[0];
-          const extract = await this.fetchExtract(article.title);
+
+          if (this.lang === 'hi') {
+            // Fetch from Hindi Wikipedia
+            const hiResult = await this.fetchFromWikipedia(article.title, 'hi');
+            if (hiResult) {
+              hiResult.source = 'Wikipedia (Hindi)';
+              this.openModal(hiResult, article.title, 'Wikipedia (Hindi)', article.thumbnail);
+              return;
+            }
+
+            // Fallback to Hindi Wikisource
+            const wsResult = await this.fetchFromWikisource(article.title, 'hi');
+            if (wsResult) {
+              wsResult.source = 'Wikisource (Hindi)';
+              this.openModal(wsResult, article.title, 'Wikisource (Hindi)');
+              return;
+            }
+          }
+
+          // English fallback
+          const articleEn = searchResults[0];
+          const extract = await this.fetchExtract(articleEn.title, 'en');
 
           if (extract) {
-            this.openModal(extract, article.title, 'Wikipedia', article.thumbnail);
+            this.openModal(extract, articleEn.title, 'Wikipedia', article.thumbnail);
             return;
           }
         }
 
-        // Try direct fetch
-        const extract = await this.fetchExtract(query);
-        if (extract) {
-          this.openModal(extract, query, 'Wikipedia');
-        } else {
-          this.showError(`"${query}" not found. Try a different search term.`);
-        }
+        this.showError(`"${query}" not found. Try a different search term.`);
       } catch (error) {
         console.error('Fetch error:', error);
         this.showError('Failed to fetch content. Please check your connection.');
@@ -169,38 +319,11 @@
     },
 
     /**
-     * Fetch from Wikipedia search API
+     * Fetch from Wikipedia with language support
      */
-    fetchFromWikipedia: async function(title) {
-      const url = this.API_ENDPOINTS.wikipediaExtract
-        .replace('{title}', encodeURIComponent(title));
-
-      const response = await fetch(url);
-      const data = await response.json();
-
-      const pages = data.query?.pages;
-      if (!pages) return null;
-
-      for (const pageId in pages) {
-        const page = pages[pageId];
-        if (page.extract) {
-          return {
-            title: page.title,
-            extract: page.extract,
-            thumbnail: page.thumbnail?.source
-          };
-        }
-      }
-
-      return null;
-    },
-
-    /**
-     * Fetch extract from Wikipedia
-     */
-    fetchExtract: async function(title) {
-      const url = this.API_ENDPOINTS.wikipediaExtract
-        .replace('{title}', encodeURIComponent(title));
+    fetchFromWikipedia: async function(title, lang = 'en') {
+      const baseUrl = lang === 'hi' ? this.API_ENDPOINTS.wikipediaExtractHi : this.API_ENDPOINTS.wikipediaExtractEn;
+      const url = baseUrl.replace('{title}', encodeURIComponent(title));
 
       const response = await fetch(url);
       const data = await response.json();
@@ -223,24 +346,11 @@
     },
 
     /**
-     * Search Wikipedia
+     * Fetch extract from Wikipedia with language support
      */
-    searchWikipedia: async function(query) {
-      const url = this.API_ENDPOINTS.wikipediaSearch
-        .replace('{query}', encodeURIComponent(query));
-
-      const response = await fetch(url);
-      const data = await response.json();
-
-      return data.query?.search?.slice(0, 5) || [];
-    },
-
-    /**
-     * Fetch from Wikisource
-     */
-    fetchFromWikisource: async function(title) {
-      const url = this.API_ENDPOINTS.wikisourceSearch
-        .replace('{query}', encodeURIComponent(title));
+    fetchExtract: async function(title, lang = 'en') {
+      const baseUrl = lang === 'hi' ? this.API_ENDPOINTS.wikipediaExtractHi : this.API_ENDPOINTS.wikipediaExtractEn;
+      const url = baseUrl.replace('{title}', encodeURIComponent(title));
 
       const response = await fetch(url);
       const data = await response.json();
@@ -250,12 +360,86 @@
 
       for (const pageId in pages) {
         const page = pages[pageId];
-        if (page.extract) {
+        if (page.extract && !page.missing) {
           return {
             title: page.title,
             extract: page.extract,
-            thumbnail: null
+            thumbnail: page.thumbnail?.source
           };
+        }
+      }
+
+      return null;
+    },
+
+    /**
+     * Search Wikipedia with language support
+     */
+    searchWikipedia: async function(query, lang = 'en') {
+      const baseUrl = lang === 'hi' ? this.API_ENDPOINTS.wikipediaSearchHi : this.API_ENDPOINTS.wikipediaSearchEn;
+      const url = baseUrl.replace('{query}', encodeURIComponent(query));
+
+      const response = await fetch(url);
+      const data = await response.json();
+
+      return data.query?.search?.slice(0, 5) || [];
+    },
+
+    /**
+     * Fetch from Wikisource with language support
+     */
+    fetchFromWikisource: async function(title, lang = 'en') {
+      if (lang === 'hi') {
+        // Hindi Wikisource
+        const searchUrl = this.API_ENDPOINTS.wikisourceSearchHi
+          .replace('{query}', encodeURIComponent(title));
+
+        const response = await fetch(searchUrl);
+        const data = await response.json();
+
+        if (data.query?.search?.length > 0) {
+          const firstResult = data.query.search[0];
+          // Fetch the actual content
+          const textUrl = this.API_ENDPOINTS.wikisourceTextHi
+            .replace('{title}', firstResult.title);
+
+          const textResponse = await fetch(textUrl);
+          const textData = await textResponse.json();
+
+          const pages = textData.query?.pages;
+          if (pages) {
+            for (const pageId in pages) {
+              const page = pages[pageId];
+              if (page.extract) {
+                return {
+                  title: page.title,
+                  extract: page.extract,
+                  thumbnail: null
+                };
+              }
+            }
+          }
+        }
+      } else {
+        // English Wikisource
+        const searchUrl = this.API_ENDPOINTS.wikisourceSearchEn
+          .replace('{query}', encodeURIComponent(title));
+
+        const response = await fetch(searchUrl);
+        const data = await response.json();
+
+        const pages = data.query?.pages;
+        if (!pages) return null;
+
+        for (const pageId in pages) {
+          const page = pages[pageId];
+          if (page.extract) {
+            return {
+              title: page.title,
+              extract: page.extract,
+              thumbnail: null
+            };
+          }
         }
       }
 
@@ -268,6 +452,7 @@
     openModal: function(content, title, source, thumbnail = null) {
       this.currentContent = content;
       this.currentResult = { title, source };
+      this.isModalOpen = true;
 
       let modal = document.getElementById('live-reader-modal');
       if (!modal) {
@@ -278,8 +463,9 @@
       // Update content
       const modalTitle = modal.querySelector('.live-reader-title');
       const modalSource = modal.querySelector('.live-reader-source');
-      const modalContent = modal.querySelector('.live-reader-content');
+      const modalContentEl = modal.querySelector('.live-reader-content');
       const modalThumbnail = modal.querySelector('.live-reader-thumbnail');
+      const langToggle = modal.querySelector('.book-lang-toggle');
 
       if (modalTitle) modalTitle.textContent = title;
       if (modalSource) modalSource.textContent = `Source: ${source}`;
@@ -290,13 +476,20 @@
         modalThumbnail.style.display = 'none';
       }
 
+      // Update language toggle active state
+      if (langToggle) {
+        const options = langToggle.querySelectorAll('.book-lang-option');
+        options.forEach(opt => opt.classList.remove('active'));
+        const activeOpt = langToggle.querySelector(`.book-lang-option[data-lang="${this.lang}"]`);
+        if (activeOpt) activeOpt.classList.add('active');
+      }
+
       // Parse content (handle newlines and basic formatting)
-      if (modalContent && content.extract) {
-        modalContent.innerHTML = this.formatContent(content.extract);
+      if (modalContentEl && content.extract) {
+        modalContentEl.innerHTML = this.formatContent(content.extract);
       }
 
       modal.classList.add('active');
-      this.isModalOpen = true;
 
       // Update URL
       const url = new URL(window.location);
@@ -319,9 +512,16 @@
             <div class="live-reader-header glassmorphic">
               <h2 class="live-reader-title font-cinzel"></h2>
               <span class="live-reader-source text-sm opacity-80"></span>
+              <div class="live-language-lang-bar">
+                <div class="book-lang-toggle">
+                  <span class="book-lang-option ${this.lang === 'hi' ? 'active' : ''}" data-lang="hi">HI</span>
+                  <span class="book-lang-option ${this.lang === 'en' ? 'active' : ''}" data-lang="en">EN</span>
+                  <span class="book-lang-option ${this.lang === 'all' ? 'active' : ''}" data-lang="all">ALL</span>
+                </div>
+              </div>
               <button class="live-reader-close font-size-dec touch-target" aria-label="Close">
                 <svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor">
-                  <path d="M18.36 6.64l-10.72 10.72M5.64 6.64l10.72 10.72"/>
+                  <path d="M18.36 6.64l-10.72 10.72M5.64 6.44l10.72 10.72"/>
                 </svg>
               </button>
             </div>
@@ -426,6 +626,18 @@
           padding: 0.25rem 0.75rem;
           border-radius: 9999px;
         }
+        .live-language-lang-bar button {
+          background: none;
+          border: none;
+          padding: 0;
+          width: auto;
+          height: auto;
+          min-width: auto;
+          font-size: 0.75rem;
+          color: var(--maroon, #6B0F1A);
+          cursor: pointer;
+          margin-left: 0.5rem;
+        }
         .live-reader-close {
           background: none;
           border: none;
@@ -517,6 +729,30 @@
           border-radius: 50%;
           animation: spin 1s linear infinite;
         }
+        .book-lang-option {
+          padding: 0.25rem 0.5rem;
+          border-radius: 9999px;
+          font-size: 0.7rem;
+          font-weight: 500;
+          color: var(--maroon, #6B0F1A);
+          background: transparent;
+          transition: all 0.2s;
+        }
+        .book-lang-option.active {
+          background: var(--gold, #D4AF37);
+          color: var(--parchment, #FAF3E0);
+        }
+        .content-hindi {
+          margin-bottom: 1.5rem;
+          border-bottom: 1px solid rgba(0, 0, 0, 0.1);
+          padding-bottom: 1rem;
+        }
+        .content-hindi h3 {
+          color: var(--maroon, #6B0F1A);
+        }
+        .content-english h3 {
+          color: var(--maroon, #6B0F1A);
+        }
         @keyframes spin {
           to { transform: rotate(360deg); }
         }
@@ -545,8 +781,14 @@
       html = html.replace(/'''([^']+)'''/g, '<strong>$1</strong>');
       html = html.replace(/''([^']+)''/g, '<em>$1</em>');
 
+      // Handle Hindi content styling
+      if (html.includes('content-hindi')) {
+        html = html.replace(/<div class="content-hindi">/g, '<div class="content-hindi"><div class="verse-sanskrit">');
+        html = html.replace(/<div class="content-english">/g, '<div class="content-english"><div class="verse-meaning">');
+      }
+
       // Wrap in paragraphs
-      if (!html.includes('<p>')) {
+      if (!html.includes('<p>') && !html.includes('content-hindi')) {
         html = '<p>' + html + '</p>';
       }
 
@@ -693,12 +935,13 @@
       this.showLoading(true);
 
       try {
-        const results = await this.searchWikipedia(query);
+        const lang = this.lang === 'hi' ? 'hi' : 'en';
+        const results = await this.searchWikipedia(query, lang);
         if (results && results.length > 0) {
           const article = results[0];
-          const extract = await this.fetchExtract(article.title);
+          const extract = await this.fetchExtract(article.title, lang);
           if (extract) {
-            this.openModal(extract, article.title, 'Wikipedia');
+            this.openModal(extract, article.title, lang === 'hi' ? 'Wikipedia (Hindi)' : 'Wikipedia');
           } else {
             this.showError('Could not retrieve article content');
           }

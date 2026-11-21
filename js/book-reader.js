@@ -1,4 +1,5 @@
 // Sanatan Dharma Mahakosh - 3D Page-Flip Book Reader Engine
+// Supports trilingual modes: hi (Sanskrit+Hindi), en (English), all (three languages)
 
 (function() {
   'use strict';
@@ -11,8 +12,11 @@
     chapters: [],
     totalPages: 0,
     isMobile: window.innerWidth < 768,
+    lang: 'hi',
 
     init: function() {
+      this.lang = localStorage.getItem('sanatan_lang') || 'hi';
+      document.documentElement.setAttribute('data-lang', this.lang);
       this.checkUrlParams();
       this.bindEvents();
       this.initAudio();
@@ -94,6 +98,19 @@
           that.shareWhatsApp();
           return;
         }
+
+        // Language toggle
+        const langToggle = e.target.closest('.book-lang-toggle');
+        if (langToggle) {
+          that.toggleLanguage();
+          return;
+        }
+
+        const langOption = e.target.closest('.book-lang-option');
+        if (langOption) {
+          that.setLanguage(langOption.dataset.lang);
+          return;
+        }
       });
 
       // Keyboard navigation
@@ -136,6 +153,22 @@
           }
         }
       }, { passive: true });
+    },
+
+    setLanguage: function(lang) {
+      this.lang = lang;
+      localStorage.setItem('sanatan_lang', lang);
+      document.documentElement.setAttribute('data-lang', lang);
+      if (this.isOpen() && this.currentVerse) {
+        this.renderPage(this.currentChapter, this.currentVerse);
+      }
+    },
+
+    toggleLanguage: function() {
+      const options = ['hi', 'en', 'all'];
+      const currentIndex = options.indexOf(this.lang);
+      const nextIndex = (currentIndex + 1) % options.length;
+      this.setLanguage(options[nextIndex]);
     },
 
     openBook: function(bookId, chapterNum, verseNum) {
@@ -216,6 +249,14 @@
       overlay.innerHTML = `
         <div class="book-reader-modal" role="dialog" aria-modal="true">
           <div class="book-reader-content">
+            <div class="book-language-bar">
+              <span class="book-lang-label">भाषा / Language:</span>
+              <div class="book-lang-toggle">
+                <span class="book-lang-option ${this.lang === 'hi' ? 'active' : ''}" data-lang="hi">HI</span>
+                <span class="book-lang-option ${this.lang === 'en' ? 'active' : ''}" data-lang="en">EN</span>
+                <span class="book-lang-option ${this.lang === 'all' ? 'active' : ''}" data-lang="all">ALL</span>
+              </div>
+            </div>
             <div class="book-pages">
               <div class="book-page left-page" id="left-page">
                 <div class="page-content">
@@ -233,6 +274,7 @@
                   </div>
                   <div class="verse-sanskrit"></div>
                   <div class="verse-transliteration"></div>
+                  <div class="verse-hindi-meaning"></div>
                   <div class="verse-meaning"></div>
                 </div>
                 <div class="page-folio"></div>
@@ -297,6 +339,318 @@
         </div>
       `;
 
+      // Add styles
+      const style = document.createElement('style');
+      style.textContent = `
+        .book-reader-overlay {
+          position: fixed;
+          top: 0;
+          left: 0;
+          width: 100%;
+          height: 100%;
+          z-index: 50;
+          opacity: 0;
+          visibility: hidden;
+          transition: opacity 0.3s ease, visibility 0.3s;
+        }
+        .book-reader-overlay.active {
+          opacity: 1;
+          visibility: visible;
+        }
+        .book-reader-modal {
+          position: absolute;
+          inset: 0;
+          background: rgba(0, 0, 0, 0.85);
+          backdrop-filter: blur(10px);
+          display: flex;
+          flex-direction: column;
+          overflow: hidden;
+        }
+        .book-language-bar {
+          position: sticky;
+          top: 0;
+          z-index: 10;
+          background: rgba(255, 255, 255, 0.95);
+          backdrop-filter: blur(5px);
+          padding: 0.75rem 1rem;
+          display: flex;
+          align-items: center;
+          gap: 0.5rem;
+          border-bottom: 1px solid rgba(107, 15, 26, 0.1);
+          font-size: 0.75rem;
+        }
+        body.dark .book-language-bar {
+          background: rgba(45, 31, 18, 0.95);
+        }
+        .book-lang-label {
+          color: var(--sandalwood, #2C1810);
+          font-weight: 500;
+        }
+        .book-lang-toggle {
+          display: inline-flex;
+          gap: 0.125rem;
+          background: var(--parchment, #FAF3E0);
+          border: 1px solid var(--gold, #D4AF37);
+          border-radius: 9999px;
+          padding: 0.125rem;
+        }
+        .book-lang-option {
+          padding: 0.25rem 0.5rem;
+          border-radius: 9999px;
+          font-size: 0.65rem;
+          font-weight: 500;
+          color: var(--maroon, #6B0F1A);
+          background: transparent;
+          transition: all 0.2s;
+        }
+        .book-lang-option.active,
+        .book-lang-option:hover {
+          background: var(--gold, #D4AF37);
+          color: var(--parchment, #FAF3E0);
+        }
+        body.dark .book-lang-option {
+          color: var(--maroon, #6B0F1A);
+        }
+        .book-reader-content {
+          flex: 1;
+          display: flex;
+          gap: 1rem;
+          padding: 1rem;
+          overflow: hidden;
+        }
+        .book-pages {
+          flex: 1;
+          display: flex;
+          gap: 1rem;
+          overflow: hidden;
+        }
+        .book-page {
+          width: 45%;
+          background: var(--parchment, #FAF3E0);
+          border-radius: 0.75rem;
+          box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+          overflow: hidden;
+          position: relative;
+        }
+        body.dark .book-page {
+          background: var(--bhojpatra, #2d1f12);
+        }
+        .left-page {
+          order: 1;
+        }
+        .right-page {
+          order: 2;
+        }
+        .page-content {
+          padding: 1.5rem;
+          height: 100%;
+          overflow-y: auto;
+          display: flex;
+          flex-direction: column;
+          justify-content: flex-start;
+        }
+        .page-header {
+          position: sticky;
+          top: 0;
+          z-index: 5;
+          background: rgba(255, 255, 255, 0.9);
+          backdrop-filter: blur(5px);
+          padding: 0.5rem 0;
+          border-bottom: 1px solid rgba(0, 0, 0, 0.1);
+          margin-bottom: 1rem;
+        }
+        .page-title {
+          font-family: 'Cinzel', serif;
+          font-size: 1.25rem;
+          color: var(--maroon, #6B0F1A);
+          margin: 0 0 0.5rem 0;
+        }
+        .chapter-name {
+          font-family: 'Cinzel', serif;
+          font-size: 1rem;
+          color: var(--sandalwood, #2C1810);
+          margin: 0;
+          opacity: 0.8;
+        }
+        .page-number {
+          font-size: 0.85rem;
+          color: var(--sandalwood, #6B0F10);
+          opacity: 0.6;
+        }
+        .page-artwork {
+          text-align: center;
+          margin-bottom: 1rem;
+        }
+        .page-image {
+          max-width: 100%;
+          max-height: 200px;
+          object-fit: contain;
+          border-radius: 0.5rem;
+        }
+        .verse-sanskrit {
+          font-family: 'Tiro Devanagari Sanskrit', 'Noto Serif Devanagari', serif;
+          font-size: 1.2rem;
+          line-height: 1.7;
+          color: var(--maroon, #6B0F1A);
+          text-align: center;
+          margin-bottom: 1rem;
+          font-weight: 500;
+        }
+        body.dark .verse-sanskrit {
+          color: #e8d4b0;
+        }
+        .verse-transliteration {
+          font-family: 'Tiro Devanagari Sanskrit', 'Noto Sans', sans-serif;
+          font-size: 0.95rem;
+          line-height: 1.6;
+          color: var(--sandalwood, #2C1810);
+          text-align: center;
+          font-style: italic;
+          margin-bottom: 1rem;
+          opacity: 0.9;
+        }
+        .verse-hindi-meaning {
+          font-family: 'Noto Serif Devanagari', sans-serif;
+          font-size: 1rem;
+          line-height: 1.7;
+          color: #6B0F1A;
+          text-align: center;
+          margin-bottom: 1rem;
+          padding: 0.75rem;
+          background: var(--gold, #D4AF37);
+          background: linear-gradient(135deg, var(--gold, #D4AF37) 0%, #C5AE00 100%);
+          border-radius: 0.75rem;
+        }
+        body.dark .verse-hindi-meaning {
+          color: var(--parchment, #FAF3E0);
+        }
+        .verse-meaning {
+          font-family: 'Noto Sans', Arial, sans-serif;
+          font-size: 0.95rem;
+          line-height: 1.6;
+          color: var(--sandalwood, #2C1810);
+          text-align: justify;
+        }
+        body.dark .verse-meaning {
+          color: #f5e6d3;
+        }
+        .book-controls {
+          position: sticky;
+          bottom: 0;
+          z-index: 10;
+          background: rgba(255, 255, 255, 0.95);
+          backdrop-filter: blur(5px);
+          padding: 1rem 1.5rem;
+          display: flex;
+          justify-content: center;
+          align-items: center;
+          gap: 1rem;
+          border-top: 1px solid rgba(0, 0, 0, 0.1);
+        }
+        body.dark .book-controls {
+          background: rgba(45, 31, 18, 0.95);
+        }
+        .book-controls button {
+          background: var(--parchment, #FAF3E0);
+          border: 1px solid var(--gold, #D4AF37);
+          border-radius: 0.75rem;
+          width: 2.5rem;
+          height: 2.5rem;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          cursor: pointer;
+          transition: all 0.2s;
+        }
+        .book-controls button:hover {
+          background: var(--gold, #D4AF37);
+          color: var(--parchment, #FAF3E0);
+        }
+        body.dark .book-controls button {
+          background: var(--bhojpatra, #2d1f12);
+        }
+        .book-nav {
+          display: flex;
+          align-items: center;
+          gap: 0.25rem;
+        }
+        .font-size-btn {
+          width: 2rem;
+          height: 2rem;
+          font-weight: bold;
+        }
+        .book-sidebar {
+          display: flex;
+          flex-direction: column;
+          gap: 0.5rem;
+          padding: 1rem;
+        }
+        .book-sidebar button {
+          width: auto;
+          height: auto;
+          padding: 0.5rem;
+          background: none;
+          border: none;
+          color: var(--maroon, #6B0F1A);
+          cursor: pointer;
+          font-size: 1.25rem;
+        }
+        .book-sidebar button:hover {
+          background: var(--gold, #D4AF37);
+          color: var(--parchment, #FAF3E0);
+          border-radius: 50%;
+        }
+        .toc-container {
+          position: absolute;
+          top: 0;
+          right: -300px;
+          width: 300px;
+          height: 100%;
+          background: var(--parchment, #FAF3E0);
+          box-shadow: -10px 0 20px rgba(0, 0, 0, 0.2);
+          transition: right 0.3s ease;
+          z-index: 49;
+          overflow-y: auto;
+        }
+        .toc-container.open {
+          right: 0;
+        }
+        body.dark .toc-container {
+          background: var(--bhojpatra, #2d1f12);
+        }
+        .toc-container h3 {
+          font-family: 'Cinzel', serif;
+          padding: 1rem;
+          margin: 0;
+          border-bottom: 1px solid rgba(0, 0, 0, 0.1);
+          color: var(--maroon, #6B0F1A);
+        }
+        .toc-list {
+          padding: 0;
+          margin: 0;
+          list-style: none;
+        }
+        .toc-item {
+          padding: 0.75rem 1rem;
+          border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+          cursor: pointer;
+          font-size: 0.9rem;
+        }
+        .toc-item:hover {
+          background: var(--gold, #D4AF37);
+          color: var(--parchment, #FAF3E0);
+        }
+        @media (max-width: 768px) {
+          .book-page {
+            width: 48%;
+          }
+          .book-language-bar {
+            padding: 0.5rem 0.75rem;
+          }
+        }
+      `;
+      document.head.appendChild(style);
+
       return overlay;
     },
 
@@ -312,14 +666,18 @@
       const pageHeader = rightPage.querySelector('.page-header');
       const pageTitle = rightPage.querySelector('.page-title');
       const pageNumber = rightPage.querySelector('.page-number');
+      const chapterName = rightPage.querySelector('.chapter-name');
 
       if (pageTitle) {
         pageTitle.textContent = this.currentBook?.title || 'Scripture';
       }
+      if (chapterName) {
+        chapterName.textContent = chapter.title || '';
+      }
       if (pageHeader) {
         pageHeader.innerHTML = `
           <span class="book-name">${this.currentBook?.title || 'Scriptures'}</span>
-          <span class="chapter-name">${chapter.title || ''}</span>
+          ${chapter.title ? `<span class="chapter-name">${chapter.title}</span>` : ''}
         `;
       }
       if (pageNumber) {
@@ -338,20 +696,41 @@
         `;
       }
 
-      // Right page - verse content
+      // Right page - verse content with trilingual support
       const verseSanskrit = rightPage.querySelector('.verse-sanskrit');
       const verseTrans = rightPage.querySelector('.verse-transliteration');
+      const verseHindi = rightPage.querySelector('.verse-hindi-meaning');
       const verseMeaning = rightPage.querySelector('.verse-meaning');
 
       if (verse) {
+        // Sanskrit always shown
         if (verseSanskrit) {
-          verseSanskrit.textContent = verse.sanskrit;
+          verseSanskrit.textContent = verse.sanskrit || '';
         }
+
+        // Transliteration always shown
         if (verseTrans) {
-          verseTrans.textContent = verse.transliteration;
+          verseTrans.textContent = verse.transliteration || '';
         }
+
+        // Hindi meaning shown in hi mode, or all mode (with styling)
+        if (verseHindi) {
+          if (this.lang === 'hi' || this.lang === 'all') {
+            verseHindi.textContent = verse.hindiMeaning || verse.meaning || '';
+            verseHindi.style.display = 'block';
+          } else {
+            verseHindi.style.display = 'none';
+          }
+        }
+
+        // English meaning shown in en mode, or all mode (with styling)
         if (verseMeaning) {
-          verseMeaning.textContent = verse.meaning;
+          if (this.lang === 'en' || this.lang === 'all') {
+            verseMeaning.textContent = verse.meaning || '';
+            verseMeaning.style.display = 'block';
+          } else {
+            verseMeaning.style.display = 'none';
+          }
         }
 
         // Show copy/share buttons
@@ -362,7 +741,10 @@
       } else {
         if (verseSanskrit) verseSanskrit.textContent = '';
         if (verseTrans) verseTrans.textContent = '';
-        if (verseMeaning) verseMeaning.textContent = '';
+        if (verseHindi) verseHindi.style.display = 'none';
+        if (verseMeaning) verseMeaning.style.display = 'none';
+        const copyBtn = document.querySelector('.copy-verse');
+        const shareBtn = document.querySelector('.share-whatsapp');
         if (copyBtn) copyBtn.style.display = 'none';
         if (shareBtn) shareBtn.style.display = 'none';
       }
@@ -514,13 +896,17 @@
       const overlay = document.getElementById('book-reader-overlay');
       if (overlay) {
         overlay.classList.remove('active');
-        // Clean up URL
-        const url = new URL(window.location);
-        url.searchParams.delete('book');
-        url.searchParams.delete('ch');
-        url.searchParams.delete('v');
-        window.history.pushState({}, '', url);
       }
+      this.currentItem = null;
+      this.currentChapter = null;
+      this.currentVerse = null;
+
+      // Clean up URL
+      const url = new URL(window.location);
+      url.searchParams.delete('book');
+      url.searchParams.delete('ch');
+      url.searchParams.delete('v');
+      window.history.pushState({}, '', url);
     },
 
     initAudio: function() {
