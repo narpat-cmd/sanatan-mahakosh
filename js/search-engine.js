@@ -175,6 +175,34 @@ class SearchEngine {
                 keywords: [f.name, f.nameEnglish, 'festival', 'vratham', 'fast'].filter(Boolean)
             });
         });
+
+        // Tilak types
+        this.traditions.rituals?.tilak?.types?.forEach(t => {
+            this.indexes.traditions.push({
+                type: 'tilak',
+                category: 'tilak',
+                id: t.type || t.nameEnglish?.toLowerCase().replace(/\s+/g, '-'),
+                title: t.type,
+                titleEnglish: t.type,
+                subtitle: t.significance || '',
+                description: t.significance,
+                keywords: [t.type, 'tilak', 'tilak types', 'vermilion', 'sandalwood', 'ashoka', 'bhaskar', 'tilak application'].filter(Boolean)
+            });
+        });
+
+        // Rudraksha types
+        this.traditions.rituals?.rudraksha?.types?.forEach(r => {
+            this.indexes.traditions.push({
+                type: 'rudraksha',
+                category: 'rudraksha',
+                id: r.id || `rudraksha-${r.fNumbers}`,
+                title: r.name,
+                titleEnglish: r.nameEnglish || r.name,
+                subtitle: r.benefits || '',
+                description: r.benefits,
+                keywords: [r.name, r.nameEnglish, 'rudraksha', 'rudraksha beads', 'mukhi', `${r.fNumbers} mukhi`].filter(Boolean)
+            });
+        });
     }
 
     search(query) {
@@ -258,7 +286,9 @@ class SearchEngine {
             temple: 'temple',
             ritual: 'practice',
             sanskar: 'ritual',
-            festival: 'celebration'
+            festival: 'celebration',
+            tilak: 'tilak',
+            rudraksha: 'rudraksha'
         };
         return icons[type] || 'search';
     }
@@ -390,7 +420,9 @@ function getSuggestionIcon(type) {
         ritual: '<circle cx="12" cy="12" r="10" />',
         sanskar: '<path d="M12 2a10 10 0 1 0 10 10A10.011 10.011 0 0 0 12 2z" />',
         festival: '<path d="M12 2a10 10 0 0 1 10 10v6a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2v-6a10 10 0 0 1 10-10z" />',
-        celebration: '<path d="M12 2a10 10 0 0 1 10 10v6a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2v-6a10 10 0 0 1 10-10z" />'
+        celebration: '<path d="M12 2a10 10 0 0 1 10 10v6a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2v-6a10 10 0 0 1 10-10z" />',
+        tilak: '<path d="M12 2L4 7l8 5 8-5-8-5zM4 10l8 5 8-5M4 17l8 5 8-5" />',
+        rudraksha: '<circle cx="12" cy="12" r="10" /><path d="M12 8v4l2 2" stroke="#fff" stroke-width="1.5" fill="none" />'
     };
     return icons[type] || '<path d="M21 21l-4.35-4.35m1.18-5.65A7.5 7.5 0 1 0 4.5 12a7.5 7.5 0 0 0 13.18-4.65z" />';
 }

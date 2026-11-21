@@ -663,7 +663,7 @@ class SanatanApp {
             window.TRADITIONS.rituals.tilak.types.forEach(t => {
                 const typeEng = t.type?.replace(' संदल वृक्ष तिलक', 'Sandal Tree Tilak').replace(' भास्कर तिलक', 'Saffron Tilak').replace(' अशोक तिलक', 'Ashoka Tilak') || 'Tilak';
                 if (typeEng.toLowerCase().includes(q) || t.type?.toLowerCase().includes(q)) {
-                    results.push({ type: 'tradition', id: `tilak-${t.type}`, title: typeEng, subtitle: t.significance });
+                    results.push({ type: 'tilak', id: `tilak-${t.type}`, title: typeEng, subtitle: t.significance });
                 }
             });
         }
@@ -673,7 +673,7 @@ class SanatanApp {
             window.TRADITIONS.rituals.rudraksha.types.forEach(r => {
                 const nameEng = r.name || `Rudraksha ${r.fNumbers} Mukhi`;
                 if (nameEng.toLowerCase().includes(q)) {
-                    results.push({ type: 'tradition', id: `rudraksha-${r.fNumbers}`, title: nameEng, subtitle: r.benefits });
+                    results.push({ type: 'rudraksha', id: `rudraksha-${r.fNumbers}`, title: nameEng, subtitle: r.benefits });
                 }
             });
         }
@@ -686,9 +686,32 @@ class SanatanApp {
             scripture: '<circle cx="12" cy="12" r="10" fill="currentColor" />',
             temple: '<rect x="4" y="6" width="16" height="12" rx="2" fill="currentColor" />',
             tradition: '<circle cx="12" cy="12" r="8" fill="none" stroke="currentColor" stroke-width="2" />',
-            sanskar: '<path d="M12 2a10 10 0 1 0 10 10A10.011 10.011 0 0 0 12 2z" fill="none" stroke="currentColor" stroke-width="2" />'
+            sanskar: '<path d="M12 2a10 10 0 1 0 10 10A10.011 10.011 0 0 0 12 2z" fill="none" stroke="currentColor" stroke-width="2" />',
+            tilak: '<path d="M12 2L4 7l8 5 8-5-8-5zM4 10l8 5 8-5M4 17l8 5 8-5" />',
+            rudraksha: '<circle cx="12" cy="12" r="10" fill="none" stroke="currentColor" stroke-width="2" /><path d="M12 8v4l2 2" stroke="currentColor" stroke-width="1.5" fill="none" />'
         };
         return icons[type] || '<circle cx="12" cy="12" r="10" fill="currentColor" />';
+    }
+
+    openTradition(id) {
+        // Handle tradition/routine opening - show modal or navigate to traditions section
+        console.log('Opening tradition:', id);
+        document.getElementById('universalSearch').value = '';
+        document.getElementById('searchResults')?.classList.add('hidden');
+    }
+
+    openTilakType(id) {
+        // Handle tilak type opening - show tilak information
+        console.log('Opening tilak type:', id);
+        document.getElementById('universalSearch').value = '';
+        document.getElementById('searchResults')?.classList.add('hidden');
+    }
+
+    openRudrakshaType(id) {
+        // Handle rudraksha type opening - show rudraksha information
+        console.log('Opening rudraksha type:', id);
+        document.getElementById('universalSearch').value = '';
+        document.getElementById('searchResults')?.classList.add('hidden');
     }
 
     openResult(type, id) {
@@ -696,6 +719,14 @@ class SanatanApp {
             this.openBookReader(id);
         } else if (type === 'temple') {
             this.openTempleViewer(id);
+        } else if (type === 'tradition' || type === 'sanskar') {
+            this.openTradition(id);
+        } else if (type === 'tilak') {
+            this.openTilakType(id);
+        } else if (type === 'rudraksha') {
+            this.openRudrakshaType(id);
+        } else if (type === 'sanskar' || type === 'ritual' || type === 'festival') {
+            this.openTradition(id);
         }
         document.getElementById('universalSearch').value = '';
         document.getElementById('searchResults').classList.add('hidden');
