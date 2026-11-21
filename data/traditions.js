@@ -211,7 +211,7 @@ window.TRADITIONS = {
             nameEnglish: "Rudraksh Guide",
             types: [
                 {
-                    f Numbers: 1,
+                    fNumbers: 1,
                     name: "एक मुक्ती",
                     benefits: "भगवान शिव के सर्वशठ बरकता",
                     wearing: "आगे वा बाएँ गुंडा में"
@@ -268,7 +268,7 @@ window.TRADITIONS = {
         },
 
         shankh: {
-            name: "शंकू पूजा",",
+            name: "शंकू पूजा",
             nameEnglish: "Shankh Puja",
             significance: "Conch represents purity, knowledge, and the sound of creation",
             types: [

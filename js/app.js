@@ -222,7 +222,7 @@ class SanatanApp {
                 <div class="bg-maroon/50 border-2 border-gold/30 rounded-3xl p-8 md:p-12 shadow-2xl max-w-3xl mx-auto">
                     <h2 class="text-3xl font-heading text-gold mb-4 flex items-center">
                         <span class="w-12 h-12 rounded-full bg-saffron/20 flex items-center justify-center mr-4">ॐ</span>
-                        শ্লোক অফ দে দে
+                        Shloka of the Day
                     </h2>
                     <div class="space-y-4 text-center">
                         <blockquote class="text-2xl md:text-3xl font-sanskrit text-sacrament italic leading-relaxed">
@@ -335,8 +335,26 @@ class SanatanApp {
     }
 
     openBookReader(bookId) {
-        const bookData = window.SCRIPTURES?.bhagavadGita?.chapters?.find(c => c.id === bookId);
-        if (!bookData) return;
+        // Try Bhagavad Gita chapters
+        let bookData = window.SCRIPTURES?.bhagavadGita?.chapters?.find(c => c.id === bookId);
+
+        // Try Ramayan Kands
+        if (!bookData) {
+            bookData = window.SCRIPTURES?.ramayan?.kands?.find(k => k.id === bookId);
+            if (bookData) {
+                bookData.verses = [];
+            }
+        }
+
+        // Try Vedas
+        if (!bookData && window.SCRIPTURES?.vedas) {
+            bookData = window.SCRIPTURES.vedas.find(v => v.id === bookId);
+        }
+
+        if (!bookData) {
+            console.warn('Book not found:', bookId);
+            return;
+        }
 
         this.state.currentBook = bookId;
         const modal = document.getElementById('bookModal');
@@ -359,8 +377,14 @@ class SanatanApp {
 
     openTempleViewer(templeId) {
         const templeData = window.TEMPLES?.jyotirlingas?.find(t => t.id === templeId) ||
-                          window.TEMPLES?.shaktipeeths?.find(t => t.id === templeId);
-        if (!templeData) return;
+                          window.TEMPLES?.shaktipeeths?.find(t => t.id === templeId) ||
+                          window.TEMPLES?.charDham?.find(t => t.id === templeId) ||
+                          window.TEMPLES?.saptaPuri?.find(t => t.id === templeId) ||
+                          window.TEMPLES?.famousTemples?.find(t => t.id === templeId);
+        if (!templeData) {
+            console.warn('Temple not found:', templeId);
+            return;
+        }
 
         this.state.currentTemple = templeId;
         const modal = document.getElementById('templeModal');
@@ -476,8 +500,7 @@ class SanatanApp {
     }
 
     populateMinuteDetails() {
-        const container = document.querySelector('#traditions-section .grid') ||
-                         document.querySelector('#sanskars-section .grid');
+        const container = document.getElementById('minuteDetailsGrid');
         if (!container) return;
 
         const items = [
@@ -554,7 +577,7 @@ class SanatanApp {
         const results = [];
         const q = query.toLowerCase();
 
-        // Search in Gita
+        // Search in Gita chapters
         if (window.SCRIPTURES?.bhagavadGita?.chapters) {
             window.SCRIPTURES.bhagavadGita.chapters.forEach(ch => {
                 if (ch.title.toLowerCase().includes(q) || ch.titleEnglish.toLowerCase().includes(q)) {
@@ -562,10 +585,10 @@ class SanatanApp {
                 }
             });
 
-            // Search verses
+            // Search key verses
             window.SCRIPTURES.bhagavadGita.chapters.forEach(ch => {
                 ch.keyVerses?.forEach(v => {
-                    if (v.sanskrit.toLowerCase().includes(q) || v.transliteration?.toLowerCase().includes(q)) {
+                    if (v.sanskrit.toLowerCase().includes(q) || v.transliteration?.toLowerCase().includes(q) || (v.translation?.toLowerCase().includes(q))) {
                         results.push({
                             type: 'scripture',
                             id: v.id,
@@ -574,6 +597,24 @@ class SanatanApp {
                         });
                     }
                 });
+            });
+        }
+
+        // Search in Ramayan Kands
+        if (window.SCRIPTURES?.ramayan?.kands) {
+            window.SCRIPTURES.ramayan.kands.forEach(kand => {
+                if (kand.title.toLowerCase().includes(q) || kand.titleEnglish.toLowerCase().includes(q)) {
+                    results.push({ type: 'scripture', id: kand.id, title: kand.titleEnglish, subtitle: kand.titleEnglish || '' });
+                }
+            });
+        }
+
+        // Search in Vedas
+        if (window.SCRIPTURES?.vedas?.vedas) {
+            window.SCRIPTURES.vedas.vedas.forEach(veda => {
+                if (veda.name.toLowerCase().includes(q) || veda.nameEnglish?.toLowerCase().includes(q)) {
+                    results.push({ type: 'scripture', id: veda.id, title: veda.nameEnglish || veda.name, subtitle: veda.description || '' });
+                }
             });
         }
 
@@ -606,16 +647,36 @@ class SanatanApp {
         const q = query.toLowerCase();
 
         window.TRADITIONS?.dailyRituals?.forEach(r => {
-            if (r.name.toLowerCase().includes(q) || r.nameEnglish.toLowerCase().includes(q)) {
-                results.push({ type: 'tradition', id: r.id, title: r.nameEnglish, subtitle: r.description });
+            if (r.name.toLowerCase().includes(q) || r.nameEnglish?.toLowerCase().includes(q)) {
+                results.push({ type: 'tradition', id: r.id, title: r.nameEnglish || r.name, subtitle: r.description });
             }
         });
 
         window.TRADITIONS?.sankars?.forEach(s => {
-            if (s.name.toLowerCase().includes(q) || s.nameEnglish.toLowerCase().includes(q)) {
-                results.push({ type: 'sanskar', id: s.id, title: s.nameEnglish, subtitle: s.when });
+            if (s.name.toLowerCase().includes(q) || s.nameEnglish?.toLowerCase().includes(q)) {
+                results.push({ type: 'sanskar', id: s.id, title: s.nameEnglish || s.name, subtitle: s.when });
             }
         });
+
+        // Search tilak types
+        if (window.TRADITIONS?.rituals?.tilak?.types) {
+            window.TRADITIONS.rituals.tilak.types.forEach(t => {
+                const typeEng = t.type?.replace(' संदल वृक्ष तिलक', 'Sandal Tree Tilak').replace(' भास्कर तिलक', 'Saffron Tilak').replace(' अशोक तिलक', 'Ashoka Tilak') || 'Tilak';
+                if (typeEng.toLowerCase().includes(q) || t.type?.toLowerCase().includes(q)) {
+                    results.push({ type: 'tradition', id: `tilak-${t.type}`, title: typeEng, subtitle: t.significance });
+                }
+            });
+        }
+
+        // Search rudraksha types
+        if (window.TRADITIONS?.rituals?.rudraksha?.types) {
+            window.TRADITIONS.rituals.rudraksha.types.forEach(r => {
+                const nameEng = r.name || `Rudraksha ${r.fNumbers} Mukhi`;
+                if (nameEng.toLowerCase().includes(q)) {
+                    results.push({ type: 'tradition', id: `rudraksha-${r.fNumbers}`, title: nameEng, subtitle: r.benefits });
+                }
+            });
+        }
 
         return results;
     }
