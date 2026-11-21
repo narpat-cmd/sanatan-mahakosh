@@ -108,49 +108,44 @@
       this.searchQuery = query.toLowerCase();
       this.results = [];
 
+      // Helper to get searchable title strings from multilingual title object
+      const getTitleStrings = (titleObj) => {
+        if (!titleObj) return [];
+        if (typeof titleObj === 'string') return [titleObj];
+        return Object.values(titleObj).filter(Boolean);
+      };
+
       // Search in scriptures
       const scriptures = window.SCRIPTURES_DATA || [];
       for (const book of scriptures) {
-        if (book.title && book.title.toLowerCase().includes(this.searchQuery)) {
+        const bookTitleStrings = getTitleStrings(book.title);
+        const primaryTitle = bookTitleStrings[0] || book.id || 'Scripture';
+
+        // Check if any title variant matches
+        const titleMatch = bookTitleStrings.some(t => t && t.toLowerCase().includes(this.searchQuery));
+        if (titleMatch) {
           this.results.push({
-            title: book.title,
+            title: primaryTitle,
             category: 'Scriptures',
             page: 'scriptures',
             url: `./scriptures.html?book=${book.id || 'bhagavad-gita'}`,
             matchType: 'book'
           });
         }
-        if (book.verses) {
-          for (const chapter of book.verses) {
-            if (chapter.transliteration && chapter.transliteration.toLowerCase().includes(this.searchQuery)) {
+
+        // Check for chapter-level matches (from structure.chapters or structure.files)
+        const chapters = book.structure?.chapters || book.structure?.files || [];
+        if (chapters && chapters.length > 0) {
+          for (const chapter of chapters) {
+            const chapterTitle = typeof chapter.title === 'object'
+              ? chapter.title.hi || chapter.title.en || chapter.title.sa
+              : chapter.title;
+            if (chapterTitle && chapterTitle.toLowerCase().includes(this.searchQuery)) {
               this.results.push({
-                title: `${book.title} - ${chapter.transliteration || ''}`,
+                title: `${primaryTitle} - ${chapterTitle}`,
                 category: 'Scriptures',
                 page: 'scriptures',
-                url: `./scriptures.html?book=${book.id}&ch=${chapter.chapterNumber}&v=${chapter.verseNumber}`,
-                matchType: 'verse'
-              });
-            }
-            if (chapter.sanskrit && chapter.sanskrit.toLowerCase().includes(this.searchQuery)) {
-              this.results.push({
-                title: `${book.title} - ${chapter.sanskrit.substring(0, 50)}...`,
-                category: 'Scriptures',
-                page: 'scriptures',
-                url: `./scriptures.html?book=${book.id}&ch=${chapter.chapterNumber}&v=${chapter.verseNumber}`,
-                matchType: 'verse'
-              });
-            }
-          }
-        }
-        // Check for chapter-level matches
-        if (book.chapters) {
-          for (const chapter of book.chapters) {
-            if (chapter.title && chapter.title.toLowerCase().includes(this.searchQuery)) {
-              this.results.push({
-                title: `${book.title} - ${chapter.title}`,
-                category: 'Scriptures',
-                page: 'scriptures',
-                url: `./scriptures.html?book=${book.id}&ch=${chapter.chapterNumber}`,
+                url: `./scriptures.html?book=${book.id}&ch=${chapter.key}`,
                 matchType: 'chapter'
               });
             }
@@ -190,32 +185,44 @@
         }
       }
 
-      // Search in traditions
+      // Search in traditions - recursively search nested objects/arrays
       const traditions = window.TRADITIONS_DATA || [];
-      for (const section in traditions) {
-        if (Array.isArray(traditions[section])) {
-          for (const item of traditions[section]) {
-            if (item.name && item.name.toLowerCase().includes(this.searchQuery)) {
-              this.results.push({
-                title: item.name,
-                category: 'Traditions',
-                page: 'traditions',
-                url: `./traditions.html?id=${item.id}`,
-                matchType: 'tradition'
-              });
-            }
-            if (item.nameEnglish && item.nameEnglish.toLowerCase().includes(this.searchQuery)) {
-              this.results.push({
-                title: item.nameEnglish,
-                category: 'Traditions',
-                page: 'traditions',
-                url: `./traditions.html?id=${item.id}`,
-                matchType: 'tradition'
-              });
-            }
+      const searchTraditionsItem = (item, basePath = '') => {
+        if (!item || typeof item !== 'object') return;
+
+        // Check if this item has name fields (leaf node)
+        if (item.name && item.name.toLowerCase().includes(this.searchQuery)) {
+          this.results.push({
+            title: item.name,
+            category: 'Traditions',
+            page: 'traditions',
+            url: `./traditions.html?id=${item.id || basePath}`,
+            matchType: 'tradition'
+          });
+        }
+        if (item.nameEnglish && item.nameEnglish.toLowerCase().includes(this.searchQuery)) {
+          this.results.push({
+            title: item.nameEnglish,
+            category: 'Traditions',
+            page: 'traditions',
+            url: `./traditions.html?id=${item.id || basePath}`,
+            matchType: 'tradition'
+          });
+        }
+
+        // Recursively check nested properties
+        for (const key in item) {
+          const value = item[key];
+          if (Array.isArray(value)) {
+            value.forEach((subItem, idx) => searchTraditionsItem(subItem, `${basePath}/${key}/${idx}`));
+          } else if (typeof value === 'object' && value !== null) {
+            searchTraditionsItem(value, `${basePath}/${key}`);
           }
         }
-      }
+      };
+
+      // Iterate through all top-level items in traditions array
+      traditions.forEach((item, idx) => searchTraditionsItem(item, String(idx)));
 
       // Search in sanskars
       const sanskars = window.SANSKARS_DATA || [];

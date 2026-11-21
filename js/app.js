@@ -79,6 +79,17 @@
 
       // Event delegation for all dynamic content
       document.addEventListener('click', function(e) {
+        // Bookshelf book preview
+        const bookshelfBook = e.target.closest('.bookshelf-book');
+        if (bookshelfBook) {
+          e.preventDefault();
+          const bookId = bookshelfBook.dataset.book;
+          if (bookId && window.BookReader) {
+            window.BookReader.openBook(bookId);
+          }
+          return;
+        }
+
         // Scripture card / READ button
         const readBtn = e.target.closest('.read-btn, .scripture-card');
         if (readBtn) {
@@ -187,40 +198,40 @@
     }
 
     populateIndexPage() {
-      // Shloka of the Day
+      // Shloka of the Day - uses fallback content since verses are in chunk files
       const dailyShlokaEl = document.getElementById('daily-shloka');
-      if (dailyShlokaEl && window.SCRIPTURES_DATA) {
-        // Find Bhagavad Gita and get a verse
-        const gita = window.SCRIPTURES_DATA.find(b => b.id === 'bhagavad-gita' || b.title.includes('Gita'));
-        const verseText = gita?.chapters?.[1]?.verses?.[0];
-
+      if (dailyShlokaEl) {
         dailyShlokaEl.innerHTML = `
           <div class="shloka-card">
             <div class="shloka-badge">ॐ Shloka of the Day</div>
-            <blockquote class="shloka-sanskrit">${verseText?.sanskrit || 'कर्मण्येवाधिकारस्ते मा फलेषु कदाचन ।<br>मा कर्मफलहेतुर्भूः मा ते सङ्गोऽस्त्वकर्मणि ॥'}</blockquote>
-            <p class="shloka-transliteration">${verseText?.transliteration || 'Karmaṇyevādhikāraste mā phaleṣu kadācana | mā karmaphalebhūḥ mā te saṅgoऽstvakarmaṇi ||'}</p>
-            <p class="shloka-meaning">${verseText?.meaning || 'You have a right only to work, never to its fruits. Let not the fruits of action be your motive...'}</p>
+            <blockquote class="shloka-sanskrit">कर्मण्येवाधिकारस्ते मा फलेषु कदाचन ।<br>मा कर्मफलहेतुर्भूः मा ते सङ्गोऽस्त्वकर्मणि ॥</blockquote>
+            <p class="shloka-transliteration">Karmaṇyevādhikāraste mā phaleṣu kadācana | mā karmaphalebhūḥ mā te saṅgoऽstvakarmaṇi ||</p>
+            <p class="shloka-meaning">You have a right only to work, never to its fruits. Let not the fruits of action be your motive...</p>
             <div class="shloka-actions">
-              <button class="action-btn copy-verse" data-text="${verseText?.sanskrit || ''}">Copy Verse</button>
-              <button class="action-btn share-whatsapp" data-text="${verseText?.sanskrit || ''}">WhatsApp Share</button>
+              <button class="action-btn copy-verse" data-text="कर्मण्येवाधिकारस्ते मा फलेषु कदाचन ॥">Copy Verse</button>
+              <button class="action-btn share-whatsapp" data-text="कर्मण्येवाधिकारस्ते मा फलेषु कदाचन ॥">WhatsApp Share</button>
             </div>
           </div>
         `;
       }
 
       // Bookshelf preview on index
-      const bookshelfEl = document.getElementById('bookshelf-preview');
+      const lang = this.currentLang || 'hi';
+      const bookshelfEl = document.getElementById('bookshelfGrid');
       if (bookshelfEl && window.SCRIPTURES_DATA) {
-        bookshelfEl.innerHTML = window.SCRIPTURES_DATA.slice(0, 6).map(book => `
-          <div class="bookshelf-book" data-book="${book.id}" style="background: ${book.coverColor || '#6B0F1A'}">
-            <span class="book-spine-title">${book.title}</span>
+        bookshelfEl.innerHTML = window.SCRIPTURES_DATA.slice(0, 6).map(book => {
+          const bookTitle = typeof book.title === 'object' ? book.title[lang] || book.title.hi || book.title : book.title;
+          return `
+          <div class="bookshelf-book" data-book="${book.id}" style="background: ${book.cover?.color || '#6B0F1A'}">
+            <span class="book-spine-title" title="${book.id}">${bookTitle}</span>
             <span class="book-view" data-book="${book.id}">View</span>
           </div>
-        `).join('');
+        `;
+        }).join('');
       }
 
       // Temples preview on index
-      const templesPreviewEl = document.getElementById('temples-preview');
+      const templesPreviewEl = document.getElementById('templesGrid');
       if (templesPreviewEl && window.TEMPLES_DATA) {
         templesPreviewEl.innerHTML = window.TEMPLES_DATA.slice(0, 6).map(temple => `
           <div class="temple-preview-card" data-id="${temple.id}">
@@ -242,17 +253,20 @@
 
       gridEl.innerHTML = window.SCRIPTURES_DATA.map(book => {
         const lang = this.currentLang || 'hi';
-        const firstVerse = book.chapters?.[0]?.verses?.[0];
+        const titleObj = typeof book.title === 'object' ? book.title : { hi: book.title, en: book.title, sa: book.title };
+        const subtitleObj = typeof book.subtitle === 'object' ? book.subtitle : { hi: book.subtitle || '', en: book.subtitle || '' };
 
-        let titleDisplay = book.title;
-        if (lang !== 'hi' && book.titleEnglish) {
-          titleDisplay = `${book.titleEnglish} / ${book.title}`;
+        const titleDisplay = titleObj[lang] || titleObj.hi || book.id;
+        let subtitleDisplay = subtitleObj[lang] || subtitleObj.hi || '';
+        if (lang === 'en' && subtitleObj.en) {
+          subtitleDisplay = subtitleObj.en;
         }
 
-        let subtitleDisplay = book.subtitle || '';
-        if (lang === 'en' && book.subtitleEnglish) {
-          subtitleDisplay = book.subtitleEnglish;
-        }
+        // Verses are in chunk files, not manifest - show placeholder for now
+        const firstVerse = null;
+
+        // Get chapter count from structure
+        const chapterCount = (book.structure?.chapters?.length || book.structure?.files?.length || 0);
 
         return `
           <div class="scripture-card bg-parchment-bg dark:bg-sandalwood rounded-xl shadow-lg overflow-hidden hover:shadow-2xl transition-shadow" data-category="${book.category}" data-book="${book.id}">
@@ -262,11 +276,11 @@
                 <span class="category-badge bg-gold/20 text-gold px-2 py-1 rounded text-xs">${book.category}</span>
               </div>
               <p class="text-sandalwood/70 dark:text-parchment/80 mb-3">${subtitleDisplay}</p>
-              ${firstVerse ? `<div class="verse-sanskrit mb-3 text-center text-maroon font-medium">${firstVerse.sanskrit}</div><div class="verse-transliteration text-sm text-sandalwood/60 italic mb-3">${firstVerse.transliteration}</div>` : ''}
+              <div class="text-sm text-sandalwood/60 dark:text-parchment/70 mb-3">${chapterCount} अध्याय</div>
               <div class="flex items-center justify-between">
-                <span class="text-sm text-sandalwood/60 dark:text-parchment/70">${book.chapters?.length || 0} अध्याय ${lang === 'en' ? 'chapters' : ''}</span>
+                <span class="text-sm text-sandalwood/60 dark:text-parchment/70">${chapterCount} अध्याय ${lang === 'en' ? 'chapters' : ''}</span>
                 <button class="read-btn w-8 h-8 bg-gold text-parchment rounded-full flex items-center justify-center hover:bg-saffron transition-colors"
-                        data-book="${book.id}" aria-label="Read ${book.title}">
+                        data-book="${book.id}" aria-label="Read ${titleDisplay}">
                   <svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor">
                     <path d="M8 5v14l11-7z"/>
                   </svg>

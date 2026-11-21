@@ -1,0 +1,115 @@
+{
+  "id": "puranas",
+  "title": "18 Mahapuranas",
+  "category": "scripture",
+  "puranas": [
+    {
+      "id": "brahma",
+      "title": "ब्रह्म पुराण",
+      "name": "Brahma Purana",
+      "stories": 100
+    },
+    {
+      "id": "padma",
+      "title": "पद्म पुराण",
+      "name": "Padma Purana",
+      "stories": 200
+    },
+    {
+      "id": "vishnu",
+      "title": "विष्णु पुराण",
+      "name": "Vishnu Purana",
+      "stories": 150
+    },
+    {
+      "id": "shiva",
+      "title": "शिव पुराण",
+      "name": "Shiva Purana",
+      "stories": 180
+    },
+    {
+      "id": "bhagavata",
+      "title": "भागवत पुराण",
+      "name": "Bhagavata Purana",
+      "stories": 180
+    },
+    {
+      "id": "narada",
+      "title": "नारद पुराण",
+      "name": "Narada Purana",
+      "stories": 130
+    },
+    {
+      "id": "markandeya",
+      "title": "मार्कंडेय पुराण",
+      "name": "Markandeya Purana",
+      "stories": 120
+    },
+    {
+      "id": "agni",
+      "title": "अग्नि पुराण",
+      "name": "Agni Purana",
+      "stories": 250
+    },
+    {
+      "id": "bhavishya",
+      "title": "भविष्य पुराण",
+      "name": "Bhavishya Purana",
+      "stories": 140
+    },
+    {
+      "id": "brahmavaivarta",
+      "title": "ब्रह्मवैवर्त पुराण",
+      "name": "Brahmavaivarta Purana",
+      "stories": 160
+    },
+    {
+      "id": "linga",
+      "title": "लिंग पुराण",
+      "name": "Linga Purana",
+      "stories": 170
+    },
+    {
+      "id": "varaha",
+      "title": "वराह पुराण",
+      "name": "Varaha Purana",
+      "stories": 110
+    },
+    {
+      "id": "skanda",
+      "title": "स्कंद पुराण",
+      "name": "Skanda Purana",
+      "stories": 200
+    },
+    {
+      "id": "vamana",
+      "title": "वामन पुराण",
+      "name": "Vamana Purana",
+      "stories": 90
+    },
+    {
+      "id": "kurma",
+      "title": "कुर्मा पुराण",
+      "name": "Kurma Purana",
+      "stories": 80
+    },
+    {
+      "id": "matsya",
+      "title": "मत्स्य पुराण",
+      "name": "Matsya Purana",
+      "stories": 100
+    },
+    {
+      "id": "garuda",
+      "title": "गरुड़ पुराण",
+      "name": "Garuda Purana",
+      "stories": 95
+    },
+    {
+      "id": "brahmanda",
+      "title": "ब्रह्माण्ड पुराण",
+      "name": "Brahmanda Purana",
+      "stories": 175
+    }
+  ]
+}

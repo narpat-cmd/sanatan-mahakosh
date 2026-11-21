@@ -1,0 +1,39 @@
+# COMBINED FIX: HTML-TO-JS WIRING + TRILINGUAL MODE (SANSKRIT / HINDI / ENGLISH)
+Execute all steps below inside the current directory (`./`) using strictly relative paths only.
+
+---
+
+## PART 1: FIX EMPTY PAGES, CLICKS, SEARCH & GARBLED ICONS
+All 6 HTML pages are live, but `aarti.html`, `sanskars.html`, and `traditions.html` render EMPTY grids, and on `scriptures.html` & `temples.html` clicking READ, DARSHAN, filter tabs, or the header Search icon does NOTHING.
+
+1. Inspect the exact container IDs, button classes, and `<script>` tags across all 6 HTML files (`index.html`, `scriptures.html`, `temples.html`, `traditions.html`, `sanskars.html`, `aarti.html`).
+2. Rebuild `./js/app.js` so it detects the current page and renders ALL cards from `window.SCRIPTURES_DATA`, `window.TEMPLES_DATA`, `window.TRADITIONS_DATA`, `window.SANSKARS_DATA`, and `window.AARTI_DATA` into the matching containers on each page.
+3. Use `document.addEventListener('click', ...)` event delegation so that:
+   - Clicking any Scripture card / READ button opens the 3D Book Reader modal (`./js/book-reader.js`).
+   - Clicking any Temple card / DARSHAN button opens the Temple Darshan & Gallery modal (`./js/temple-viewer.js`).
+   - Clicking any Tradition, Sanskar, or Aarti card opens a clean Royal Parchment Reader modal showing the full text and meaning.
+   - Clicking any category Filter button filters the cards immediately.
+   - Clicking the header Search icon opens a working Search modal connected to `./js/search-engine.js` and `./js/live-encyclopedia.js` (typing anything shows clickable results).
+4. Replace the garbled `□` boxes on `scriptures.html` cards with clean inline `<svg>` icons.
+
+---
+
+## PART 2: TRILINGUAL READING MODES (SANSKRIT + HINDI ANUVAD + SEPARATE ENGLISH)
+1. **Language Switcher (`./js/layout.js` + Modals):**
+   Add a clean language toggle in the shared header AND inside the 3D Book Reader & Aarti/Tradition/Temple modals, persisted in `localStorage` (`sanatan_lang`):
+   - **`hi` (संस्कृत + हिंदी — Default):** Shows original Sanskrit text + simple Hindi Anuvad (`hindiMeaning` / `hindi`) for all shlokas, Vedas, Puranas, Ramayan, Gita, and Aartis. Also displays Hindi titles/summaries for Temples, Traditions, and 16 Sanskars.
+   - **`en` (English Mode — Separate):** Clean separate reading view for English readers showing Sanskrit + English Transliteration + English Meaning.
+   - **`all` (संस्कृत + हिंदी + English):** Displays all three together neatly separated by gold dividers.
+2. **Data & Reader Updates:**
+   - Ensure entries in `./data/scriptures.js` and `./data/aarti.js` include `sanskrit`, `hindiMeaning` (हिंदी अनुवाद), `transliteration`, and `meaning` (English).
+   - Update `./js/book-reader.js`, `./js/temple-viewer.js`, and `./js/app.js` so switching the language updates the displayed text immediately without page reload.
+   - Update `./js/live-encyclopedia.js` so `hi` mode queries `https://hi.wikipedia.org/w/api.php` & `https://hi.wikisource.org/w/api.php` in the background, and `en` mode queries `en.wikipedia.org` — displaying everything 100% inside our own Royal Parchment Reader (ZERO external redirects).
+
+---
+
+## PART 3: VERIFY & DEPLOY
+1. Run `node --check` on ALL `.js` files in `./data/` and `./js/`. Fix any syntax error immediately.
+2. Commit and push to GitHub:
+   - `git add .`
+   - `git commit -m "Fix all 6 pages wiring, clicks, search, SVG icons, and add Sanskrit/Hindi/English modes"`
+   - `git push origin main`

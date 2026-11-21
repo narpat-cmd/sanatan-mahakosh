@@ -1,0 +1,98 @@
+{
+  "id": "vedas",
+  "title": "Four Vedas",
+  "vedas": [
+    {
+      "id": "rigveda",
+      "title": "ऋग्वेद",
+      "name": "Rigveda",
+      "suktas": [
+        "Indrasukta",
+        "Agnishukta",
+        "Rudram",
+        "Chandogya"
+      ],
+      "sections": [
+        {
+          "mandala": 1,
+          "suktas": 10
+        },
+        {
+          "mandala": 2,
+          "suktas": 11
+        },
+        {
+          "mandala": 3,
+          "suktas": 9
+        }
+      ]
+    },
+    {
+      "id": "yajurveda",
+      "title": "यजुर्वेद",
+      "name": "Yajurveda",
+      "types": [
+        "Krishna Yajurveda",
+        "Shukla Yajurveda"
+      ],
+      "mantras": [
+        "Jayamantra",
+        "Brahma Mantra"
+      ]
+    },
+    {
+      "id": "samaveda",
+      "title": "सामवेद",
+      "name": "Samaveda",
+      "singers": [
+        "Udgata",
+        "Suddha"
+      ],
+      "collections": [
+        "Kanda 1",
+        "Kanda 2",
+        "Kanda 3"
+      ]
+    },
+    {
+      "id": "atharvaveda",
+      "title": "अथर्ववेद",
+      "name": "Atharvaveda",
+      "spells": [
+        "Garuda Path",
+        "Vishnu Path"
+      ],
+      "charms": [
+        "Health Charms",
+        "Protection Charms"
+      ]
+    }
+  ],
+  "upanishads": [
+    {
+      "id": "brihadaranyaka",
+      "title": "भ्रदारण्यक उपनिषद्",
+      "name": "Brihadaranyaka Upanishad"
+    },
+    {
+      "id": "chandogya",
+      "title": "चन्दोग्य उपनिषद्",
+      "name": "Chandogya Upanishad"
+    },
+    {
+      "id": "corpus",
+      "title": "कषायत्रिपरा उपनिषद्",
+      "name": "Kashyapa Tripara Upanishad"
+    },
+    {
+      "id": "bodha",
+      "title": "बोधह उपनिषद्",
+      "name": "Bodha Upanishad"
+    },
+    {
+      "id": "prashna",
+      "title": "प्रश्न उपनिषद्",
+      "name": "Prashna Upanishad"
+    }
+  ]
+}

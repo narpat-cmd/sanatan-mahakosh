@@ -1,0 +1,343 @@
+=====================================================================
+ SANATAN — CLAUDE CODE MASTER INSTRUCTIONS
+ Project root: E:\Sanatan\
+=====================================================================
+
+READ THIS FIRST
+---------------------------------------------------------------------
+You are working on an EXISTING project called SANATAN: a static,
+offline-capable Hindu scriptures / temples / traditions website.
+Do NOT restart or rewrite from scratch. First inspect the existing
+files, then extend and fix them according to this document.
+Keep the existing Royal Heritage theme (Maroon, Saffron, Gold,
+Parchment) and the existing file/folder structure.
+
+Language note: site content is Sanskrit / Hindi / English.
+All text must be UTF-8 and render correct Devanagari.
+
+---------------------------------------------------------------------
+1. CURRENT PROJECT STRUCTURE (already exists)
+---------------------------------------------------------------------
+E:\Sanatan\
+  index.html          Main page (3D bookshelf interface)
+  scriptures.html     Bhagavad Gita, Ramayan, Vedas, Puranas
+  temples.html        Hindu temples + Darshan modal galleries
+  traditions.html     Daily rituals, sanskars, vrat kathas,
+                      philosophy, navagraha
+  sanskars.html       The 16 Sanskars page
+  aarti.html          Aarti & Stotras page
+  styles\main.css     Royal Heritage theme
+  data\
+    scriptures.js     window.SCRIPTURES_DATA (5 books)
+    temples.js        window.TEMPLES_DATA
+    traditions.js     window.TRADITIONS_DATA (flat array)
+    sanskars.js       window.SANSKARS_DATA (16 entries)
+    aarti.js          window.AARTI_DATA (12 entries)
+  js\
+    app.js            main page controller / initializer
+    layout.js         shared header, nav, theme / dark mode
+    search-engine.js  universal search
+    book-reader.js    3D book reader engine
+    temple-viewer.js  temple darshan & gallery modal
+    live-encyclopedia.js  in-app live reader
+  scripts\ (or root)
+    download-scriptures.js  scripture download script
+  Spec/Plan files: master.md, all-scriptures.md, etc.
+
+Step 0: Read master.md, all-scriptures.md and every file above.
+Summarize current state and list gaps BEFORE changing anything.
+
+---------------------------------------------------------------------
+2. STRICT RULES (NON-NEGOTIABLE)
+---------------------------------------------------------------------
+R1. ALL scripture data must live INSIDE the website (local files).
+    No redirects, no external links as the way to read a book, no
+    "download PDF" as a substitute for reading.
+R2. Every book must open on click like a real book (3D book reader)
+    and be fully readable from cover to last verse.
+    Example: click "Ramayan" -> book opens -> Kand -> Sarg -> every
+    shloka readable. No missing shlokas.
+R3. Must work OFFLINE and when opened directly via file:// (double
+    click index.html). Therefore:
+      - Do NOT depend on fetch() / XHR for local data.
+      - Use plain <script src> loading (window.* globals).
+      - No build step required to run the site.
+R4. No frameworks required. Plain HTML/CSS/JS (ES6). No CDN
+    dependency for core features (fonts and libs must be local;
+    provide fallback fonts for Devanagari).
+R5. Never fabricate scripture text. Data must come from real
+    sources (see section 6). If a chapter cannot be obtained,
+    mark it clearly as MISSING in the verification report, do not
+    invent verses.
+R6. Do not delete user data or existing working features. Make
+    backups (e.g. data\_backup\) before restructuring data.
+R7. Respect copyright: every book/translation entry must carry
+    source + license fields (see section 4).
+
+---------------------------------------------------------------------
+3. PROBLEM TO SOLVE: DATA SIZE & LOADING
+---------------------------------------------------------------------
+Currently scriptures.js holds everything in one global. Full
+Ramayan (~24,000 shlokas) and Mahabharat (~75,000+ shlokas) will
+make one file huge and slow, especially on mobile.
+
+Required architecture: LAZY, PER-CHAPTER LOADING that still works
+over file://.
+
+New data layout:
+
+  data\
+    scriptures.js              <- small INDEX/MANIFEST only
+    scriptures\
+      gita\
+        meta.js
+        ch01.js ... ch18.js
+      valmiki-ramayan\
+        meta.js
+        bal-kand\sarg-001.js ... 
+        ayodhya-kand\...
+        aranya-kand\...
+        kishkindha-kand\...
+        sundar-kand\...
+        yuddha-kand\...
+        uttar-kand\...
+      ramcharitmanas\
+        meta.js
+        bal-kand.js ... uttar-kand.js
+      mahabharat\ (18 parvas, chunked per adhyay)
+      vedas\ , upanishads\ , puranas\ (same pattern)
+
+Rules for loader:
+  - scriptures.js exposes window.SCRIPTURES_DATA as a MANIFEST:
+    list of books, each with id, title (sa/hi/en), cover info,
+    structure (kands/parvas -> chapters), counts, and file paths.
+  - Each chapter file registers itself, for example:
+      window.SCRIPTURE_CHUNKS = window.SCRIPTURE_CHUNKS || {};
+      window.SCRIPTURE_CHUNKS["gita/ch01"] = { ...chapter data... };
+  - Implement a loader in book-reader.js:
+      loadChapter(bookId, chapterKey) -> Promise
+    It injects a <script> tag (works on file://), waits for onload,
+    caches the result, and resolves with the chapter data.
+  - Prefetch next chapter while user reads the current one.
+  - Show a nice loading state (diya / spinner) while loading.
+  - Keep backward compatibility with existing 5 books: migrate
+    them into the new layout without losing content.
+
+---------------------------------------------------------------------
+4. DATA SCHEMA
+---------------------------------------------------------------------
+Manifest entry (data\scriptures.js):
+  {
+    id: "valmiki-ramayan",
+    title: { sa: "...", hi: "वाल्मीकि रामायण", en: "Valmiki Ramayana" },
+    category: "itihasa",            // veda | upanishad | itihasa | purana | gita | other
+    cover: { color, emblem, subtitle },
+    languages: ["sa","hi","en"],
+    structure: [
+      { key: "bal-kand", title: {...}, chapters: 77, files: [...] },
+      ...
+    ],
+    totals: { chapters: 0, verses: 0 },   // filled by verify script
+    source: "...", license: "public-domain | cc | permission | original",
+  }
+
+Chapter file content:
+  {
+    book: "valmiki-ramayan",
+    section: "bal-kand",
+    chapter: 1,
+    title: { sa, hi, en },
+    verses: [
+      {
+        n: 1,
+        sa: "Sanskrit in Devanagari",
+        tr: "IAST/roman transliteration (optional)",
+        hi: "Hindi translation (optional)",
+        en: "English translation (optional)",
+        exp: "explanation (optional)",
+        audio: "path or empty",
+        source: "...", license: "..."
+      }
+    ]
+  }
+
+For Ramcharitmanas: verse types = doha, chaupai, sortha, chhand,
+shloka. Add field type: "doha" | "chaupai" | ... and keep order.
+
+Every translation field must be traceable via source + license.
+
+---------------------------------------------------------------------
+5. FEATURES TO IMPLEMENT / FIX
+---------------------------------------------------------------------
+A) 3D BOOK READER (js\book-reader.js)
+   - Click a book on the 3D bookshelf (index.html) -> book opens
+     with cover animation -> Table of Contents (Kand/Parva ->
+     Adhyay) -> page spreads.
+   - Page-turn animation; swipe + arrow keys + prev/next buttons.
+   - Desktop: two-page spread (Sanskrit left, Hindi/English right).
+     Mobile: single page with tabs/toggle.
+   - Language toggle: Sanskrit | Hindi | English | Explanation.
+   - Jump to chapter / verse number.
+   - Auto-bookmark last position per book (localStorage, wrapped
+     in try/catch) and "Continue Reading" button on home.
+   - Font size controls, line spacing, night mode / sepia mode.
+   - Manual bookmarks, highlights, notes (localStorage).
+   - Share a verse (copy text; optional "save as image" via canvas).
+   - Chapter progress indicator (e.g. 12/700 shlokas).
+   - Keyboard accessible, readable contrast, correct Devanagari
+     font stack (Noto Serif Devanagari / Tiro Devanagari / Mukta
+     with system fallbacks).
+   - Handle very long chapters smoothly (paginate verses into
+     pages by height; do not render thousands of nodes at once).
+
+B) SEARCH (js\search-engine.js)
+   - Universal search across scriptures, temples, traditions,
+     sanskars, aarti.
+   - Because scripture data is lazy-loaded, build a SMALL search
+     index per book (data\scriptures\<book>\search-index.js) and
+     load it on demand; searching a book loads only its index.
+   - Support Devanagari, transliteration and English queries;
+     normalize Unicode (NFC), ignore matras/spacing variants where
+     sensible.
+   - Results open the exact book/chapter/verse in the reader.
+
+C) APP / LAYOUT (js\app.js, js\layout.js)
+   - Home shows 3D bookshelf from the manifest (generate books
+     dynamically; adding a book = adding a manifest entry).
+   - Shared header/nav, dark mode persisted (try/catch storage).
+   - "Continue Reading" + "Verse of the Day" on home.
+
+D) TEMPLES (js\temple-viewer.js, data\temples.js)
+   - Keep existing darshan modal galleries working.
+   - Add fields: location, history, pilgrimage info, best time,
+     image credits/license. No broken image links: use local
+     images or graceful placeholders.
+
+E) TRADITIONS / SANSKARS / AARTI
+   - Keep existing pages working. Aarti page: lyrics text plus
+     optional audio player with synced lyric highlight if audio
+     file exists (support local audio only).
+   - Ensure all 16 sanskars and all 12 aarti entries are complete
+     and consistent.
+
+F) LIVE ENCYCLOPEDIA (js\live-encyclopedia.js)
+   - In-app live reader for any entry type; reuse the same
+     chapter loader.
+
+G) PERFORMANCE & QUALITY
+   - Initial page load under ~1 MB of JS/data (manifest only).
+   - No console errors. No blocking scripts without defer.
+   - Responsive: works on phone, tablet, desktop.
+   - Accessible: alt text, aria-labels, focus states.
+
+---------------------------------------------------------------------
+6. DATA ACQUISITION (scripts\download-scriptures.js)
+---------------------------------------------------------------------
+Goal: complete the script so it downloads / imports REAL scripture
+text and writes it into the chunked layout above.
+
+Preferred sources (public domain / open):
+  - Wikisource (Sanskrit / Hindi) for Valmiki Ramayan,
+    Mahabharat, Gita, Ramcharitmanas
+  - GRETIL (Gottingen Register of Electronic Texts in Indian
+    Languages) for Sanskrit mool texts
+  - Project Gutenberg / sacred-texts.com for old public-domain
+    English translations
+  - Open Bhagavad Gita datasets / open scripture APIs (check
+    their license before use)
+  - Government / university archives (e.g. IIT Kanpur Gita
+    Supersite) ONLY if license allows reuse
+
+Script requirements:
+  - Node.js script, runnable as:  node scripts\download-scriptures.js
+  - CLI options: --book <id> | --all, --resume, --dry-run
+  - Polite: rate limiting, retries, caching raw downloads in
+    scripts\_cache\ so re-runs don't re-download.
+  - Normalize to UTF-8 NFC; strip HTML; keep verse numbering.
+  - Write files in the chunk format (section 4) and update the
+    manifest counts.
+  - Log source URL and license per book into data\SOURCES.md.
+  - If a source is unavailable, continue with others and report.
+  - Never invent text; unknown fields stay empty.
+
+Copyright guidance (important):
+  - Sanskrit mool of Valmiki Ramayan, Mahabharat, Gita, Vedas,
+    Upanishads, and Tulsidas Ramcharitmanas = public domain.
+  - Modern translations / commentaries (e.g. Gita Press, modern
+    English translators) may be copyrighted. Do NOT bundle them
+    without permission. Use public-domain older translations or
+    leave the field empty and flag as "NEEDS PERMISSION/TRANSLATION".
+
+---------------------------------------------------------------------
+7. VERIFICATION SCRIPT (scripts\verify-data.js)
+---------------------------------------------------------------------
+Create a script that checks every book and prints a report:
+  - chapters found vs expected, verses found vs expected
+    (examples: Gita = 18 chapters / 700 shlokas; Valmiki Ramayan
+    = 7 Kands, approx 500 Sargas, approx 24,000 shlokas;
+    Mahabharat = 18 Parvas)
+  - missing chapters/verses, duplicate numbers, empty Sanskrit
+    fields, broken Unicode, files that fail to parse
+  - per-language coverage (% verses with hi / en / exp)
+  - license/source missing
+Exit with non-zero code if a book marked "complete" fails checks.
+Write report to data\VERIFY_REPORT.md.
+
+---------------------------------------------------------------------
+8. TASK ORDER (do in this order)
+---------------------------------------------------------------------
+ 1. Inspect project; write current-state summary + gap list.
+ 2. Back up existing data\ to data\_backup\.
+ 3. Design and implement the chunked data layout + manifest
+    (migrate the existing 5 books without loss).
+ 4. Implement chunk loader + update book-reader.js to use it
+    (lazy load, prefetch, caching, loading state).
+ 5. Upgrade the reader UI (page spreads, toggle languages,
+    bookmarks, last-position, night/sepia, font size, jump).
+ 6. Update index.html bookshelf to render from manifest and add
+    "Continue Reading".
+ 7. Rebuild search with per-book lazy indexes.
+ 8. Complete scripts\download-scriptures.js; fetch Bhagavad Gita
+    first (smallest, verify 700 shlokas), then Valmiki Ramayan,
+    Ramcharitmanas, then others.
+ 9. Write scripts\verify-data.js and run it; fix gaps.
+10. Polish temples, traditions, sanskars, aarti pages; fix any
+    console errors or broken links/images.
+11. Test on file:// in Chrome and Edge, plus a phone-width view.
+12. Update master.md / all-scriptures.md with final status, and
+    write README.md (how to run, add a book, run scripts).
+
+After each step: run it, check for errors, and report briefly what
+changed. Do not move on if a step is broken.
+
+---------------------------------------------------------------------
+9. ACCEPTANCE CRITERIA (definition of done)
+---------------------------------------------------------------------
+ [ ] Double-clicking index.html works with no server and no
+     internet (after data is downloaded).
+ [ ] Clicking Ramayan opens a book; user can read every Kand,
+     Sarg and shloka in order from cover to last page.
+ [ ] Same for Gita (18 ch / 700 shlokas), Ramcharitmanas, and the
+     other books listed in the manifest.
+ [ ] Language toggle works (Sanskrit / Hindi / English / Explain)
+     and empty fields are handled gracefully.
+ [ ] Bookmarks, last-read position, night mode, font size work.
+ [ ] Search finds verses and opens exact location.
+ [ ] No single data file is huge; chapters load lazily.
+ [ ] verify-data.js report shows complete counts for books marked
+     complete; gaps are listed honestly.
+ [ ] Every content entry has source + license recorded.
+ [ ] No console errors; responsive on mobile; Devanagari renders
+     correctly.
+
+---------------------------------------------------------------------
+10. HOW TO REPORT BACK
+---------------------------------------------------------------------
+At the end, give:
+  - what was changed (files added/modified)
+  - verification report summary (per-book counts)
+  - list of anything missing or needing permission
+  - exact commands to run the scripts and open the site
+
+                              ॐ
+=====================================================================

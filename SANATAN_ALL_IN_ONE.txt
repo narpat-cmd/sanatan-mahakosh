@@ -1,0 +1,1356 @@
+#####################################################################
+#   SANATAN — ALL-IN-ONE MASTER INSTRUCTIONS FOR CLAUDE CODE        #
+#   Project root: E:\Sanatan\                                       #
+#####################################################################
+
+HOW TO USE THIS FILE
+---------------------------------------------------------------------
+This single file contains 5 parts. Follow them IN THIS ORDER:
+
+  PART 1  Audit & Bug-Fix           (fix the existing site first)
+  PART 2  Architecture & Book Reader (chunked data, lazy loading, 3D reader,
+                                      download + verify scripts)
+  PART 3  Complete Content Scope    (everything Sanatan, phase-wise P1/P2/P3)
+  PART 4  Addendum: Every Mantra/Aarti (completeness rule, "chhota se chhota")
+  PART 5  Master Seed Lists         (granth, mandir, tirth, devta, tyohar...)
+
+GLOBAL RULES (apply to all parts)
+  1. Do not restart from scratch. Inspect existing files first.
+  2. Everything must work offline and via file:// (no fetch for local data,
+     no ES modules, no CDN dependency).
+  3. All data lives INSIDE the website. Books open like a real book and are
+     fully readable.
+  4. NEVER invent scripture/mantra/aarti text. Use real sources only. If
+     something is not found, mark it MISSING in the report.
+  5. Every entry carries source + license. Copyrighted modern translations/
+     recordings/images need permission; otherwise mark NEEDS PERMISSION.
+  6. Where Part 3 says "etc." or "...", Part 4 and Part 5 override it: the
+     list must be COMPLETE (inventory first, then content, then verify).
+  7. After each part: run checks, write a short report, then continue.
+     Do not move on if the current part is broken.
+  8. Final deliverables: AUDIT_REPORT.md, FIXES.md, DATA_REPORT.md,
+     COMPLETENESS_REPORT.md, README.md.
+
+
+
+#####################################################################
+# PART 1 OF 5 — AUDIT & BUG-FIX
+#####################################################################
+
+=====================================================================
+ SANATAN — PHASE 0: FULL AUDIT & BUG-FIX INSTRUCTIONS (for Claude Code)
+ Project root: E:\Sanatan\
+=====================================================================
+
+GOAL
+---------------------------------------------------------------------
+The project already exists but some things may be broken: buttons or
+cards that do not respond to clicks, pages that fail to open, scripts
+that crash, missing data, broken links/images. Before adding any new
+feature, AUDIT THE WHOLE PROJECT FROM THE START, find every problem,
+FIX the code properly, and prove it works.
+
+Do NOT rewrite from scratch. Do NOT add new features in this phase.
+Keep the Royal Heritage theme and the existing folder structure.
+Back up the project first (copy E:\Sanatan to E:\Sanatan_backup_before_fix).
+
+---------------------------------------------------------------------
+STEP 1 — INVENTORY (read everything)
+---------------------------------------------------------------------
+Read every file in the project:
+  index.html, scriptures.html, temples.html, traditions.html,
+  sanskars.html, aarti.html, styles\main.css,
+  data\*.js, js\*.js, scripts\*.js, and the *.md spec files.
+Produce a short table: file | purpose | size | depends on.
+List which <script>/<link> each HTML page loads and in what order.
+
+---------------------------------------------------------------------
+STEP 2 — STATIC CHECKS (find problems without running)
+---------------------------------------------------------------------
+For EVERY html/js/css file check:
+  a) Every <script src>, <link href>, <img src>, <a href> points to a
+     file that really exists (exact path and exact case; Windows is
+     case-insensitive but keep paths consistent).
+  b) Script load ORDER: data\*.js and js\layout.js must load before
+     scripts that use window.*_DATA. Anything using DOM must run after
+     DOMContentLoaded or use defer.
+  c) Global names match: window.SCRIPTURES_DATA, TEMPLES_DATA,
+     TRADITIONS_DATA, SANSKARS_DATA, AARTI_DATA are spelled the same in
+     data files and in the code that reads them.
+  d) Syntax errors (run: node --check on every .js file).
+  e) Duplicate element IDs, IDs used in JS that do not exist in HTML,
+     querySelector selectors that return null.
+  f) Event listeners attached to elements that don't exist yet, or
+     attached twice, or removed by innerHTML re-render.
+  g) Inline onclick="fn()" calls where fn is not defined or not global.
+  h) fetch()/XHR for local files (will FAIL on file://). Replace with
+     plain <script> loading of window.* data.
+  i) ES modules (import/export, type="module") — these are blocked on
+     file://. Convert to plain scripts.
+  j) Unclosed tags, wrong nesting, missing </div>, bad quotes.
+  k) CSS problems that BLOCK CLICKS: overlay/pseudo-element covering
+     content (position:absolute/fixed with full size and no
+     pointer-events:none), z-index conflicts, 3D transform layers
+     (transform-style: preserve-3d / perspective / backface-visibility)
+     that put an invisible face on top of the clickable element,
+     elements with pointer-events:none by mistake, display:none or
+     opacity:0 stuck on after animation.
+  l) Data file problems: invalid JS (trailing commas fine in JS but
+     check unbalanced brackets/quotes), wrong encoding (must be UTF-8,
+     check Devanagari shows correctly), undefined fields the UI reads.
+
+---------------------------------------------------------------------
+STEP 3 — RUNTIME TESTING (really open and click)
+---------------------------------------------------------------------
+Use a headless browser (Puppeteer or Playwright; install via npm if
+needed) to open each page via file:// URL AND via a local server
+(npx serve or python -m http.server). For each page:
+  1. Collect console errors, warnings, failed requests, 404s.
+  2. Take a screenshot (desktop 1366x768 and mobile 390x844).
+  3. Find every clickable element (a, button, [onclick], cards, book
+     covers, nav items, modal triggers, tabs, theme toggle, search box)
+     and CLICK each one. Record: did something happen (navigation,
+     modal, state change) or nothing?
+  4. For book shelf on index.html: click every book -> must open the
+     3D reader. In the reader: test next/prev page, chapter jump,
+     close, language toggle, font size, night mode.
+  5. For temples: click each temple -> darshan modal opens, gallery
+     next/prev works, modal closes (X, ESC, outside click).
+  6. For aarti/sanskars/traditions: open every entry, check content
+     renders, nothing is empty/"undefined".
+  7. Test search: type Devanagari + English words, click a result.
+  8. Test header nav on every page: every link goes to an existing
+     page and the active state is correct.
+Write all failures into AUDIT_REPORT.md with: page, element, expected,
+actual, root cause (file + line).
+
+---------------------------------------------------------------------
+STEP 4 — FIX (root cause, not patches)
+---------------------------------------------------------------------
+Fix every issue found. Rules:
+  - Fix the ROOT CAUSE (e.g. an overlay blocking clicks, wrong script
+    order, missing global, wrong path), not a workaround.
+  - Keep changes minimal and consistent with existing style.
+  - Everything must work on file:// with no server and no internet:
+    no fetch() for local data, no ES modules, no CDN-only dependencies
+    (self-host fonts/libs or provide system fallbacks).
+  - Wrap localStorage reads/writes in try/catch.
+  - Make the shared header/nav (layout.js) work identically on every
+    page; fix broken relative paths (pages are in root, assets are in
+    styles\, js\, data\).
+  - Guard against missing data: if a window.*_DATA array is empty or
+    undefined, show a friendly message instead of crashing.
+  - Do not delete working features or content.
+  - Add tiny defensive code where needed (null checks before
+    addEventListener / innerHTML).
+After each fix, re-run the related test to confirm it is fixed.
+
+---------------------------------------------------------------------
+STEP 5 — DATA SANITY (existing content only)
+---------------------------------------------------------------------
+Write scripts\check-data.js (Node) that loads each data\*.js file and
+reports:
+  - entries count per file (scriptures: 5 books; sanskars: 16;
+    aarti: 12; temples; traditions)
+  - for scriptures: per book chapters count, verses count, empty
+    Sanskrit/Hindi/English fields, duplicate verse numbers
+  - entries missing required fields (title, text, id, etc.)
+  - images/audio paths referenced in data that do not exist on disk
+Output to DATA_REPORT.md. List gaps honestly. NEVER invent scripture
+text to fill gaps — just report them.
+
+---------------------------------------------------------------------
+STEP 6 — AUTOMATED SMOKE TEST (keep it in the repo)
+---------------------------------------------------------------------
+Create scripts\smoke-test.js (Puppeteer/Playwright) that:
+  - opens all 6 pages, fails if any console error or 404
+  - clicks all nav links and all book/temple/entry cards
+  - verifies the book reader opens and page turn changes content
+  - prints PASS/FAIL per check and exits non-zero on failure
+Add "npm run smoke" in package.json (create one if missing).
+
+---------------------------------------------------------------------
+STEP 7 — FINAL REPORT
+---------------------------------------------------------------------
+Deliver:
+  - AUDIT_REPORT.md  (all issues found + root cause)
+  - FIXES.md         (what was changed, file by file)
+  - DATA_REPORT.md   (content counts and gaps)
+  - smoke test result (all PASS)
+  - Exact steps to open the site (double-click index.html).
+Then STOP and wait. Do not start new features until I approve.
+
+---------------------------------------------------------------------
+DEFINITION OF DONE
+---------------------------------------------------------------------
+ [ ] node --check passes for all .js files
+ [ ] All 6 pages open with ZERO console errors on file://
+ [ ] Every nav link, card, book, temple, tab, button responds to click
+ [ ] 3D book reader opens from the shelf and pages turn
+ [ ] Temple darshan modal opens/closes and gallery works
+ [ ] Search works and opens the right item
+ [ ] No broken links, images or script paths
+ [ ] No "undefined" or empty content shown in the UI
+ [ ] Works on mobile width (390px) and desktop
+ [ ] Reports (AUDIT/FIXES/DATA) written; smoke test passes
+
+                              ॐ
+=====================================================================
+
+
+#####################################################################
+# PART 2 OF 5 — ARCHITECTURE, BOOK READER, SCRIPTS
+#####################################################################
+
+=====================================================================
+ SANATAN — CLAUDE CODE MASTER INSTRUCTIONS
+ Project root: E:\Sanatan\
+=====================================================================
+
+READ THIS FIRST
+---------------------------------------------------------------------
+You are working on an EXISTING project called SANATAN: a static,
+offline-capable Hindu scriptures / temples / traditions website.
+Do NOT restart or rewrite from scratch. First inspect the existing
+files, then extend and fix them according to this document.
+Keep the existing Royal Heritage theme (Maroon, Saffron, Gold,
+Parchment) and the existing file/folder structure.
+
+Language note: site content is Sanskrit / Hindi / English.
+All text must be UTF-8 and render correct Devanagari.
+
+---------------------------------------------------------------------
+1. CURRENT PROJECT STRUCTURE (already exists)
+---------------------------------------------------------------------
+E:\Sanatan\
+  index.html          Main page (3D bookshelf interface)
+  scriptures.html     Bhagavad Gita, Ramayan, Vedas, Puranas
+  temples.html        Hindu temples + Darshan modal galleries
+  traditions.html     Daily rituals, sanskars, vrat kathas,
+                      philosophy, navagraha
+  sanskars.html       The 16 Sanskars page
+  aarti.html          Aarti & Stotras page
+  styles\main.css     Royal Heritage theme
+  data\
+    scriptures.js     window.SCRIPTURES_DATA (5 books)
+    temples.js        window.TEMPLES_DATA
+    traditions.js     window.TRADITIONS_DATA (flat array)
+    sanskars.js       window.SANSKARS_DATA (16 entries)
+    aarti.js          window.AARTI_DATA (12 entries)
+  js\
+    app.js            main page controller / initializer
+    layout.js         shared header, nav, theme / dark mode
+    search-engine.js  universal search
+    book-reader.js    3D book reader engine
+    temple-viewer.js  temple darshan & gallery modal
+    live-encyclopedia.js  in-app live reader
+  scripts\ (or root)
+    download-scriptures.js  scripture download script
+  Spec/Plan files: master.md, all-scriptures.md, etc.
+
+Step 0: Read master.md, all-scriptures.md and every file above.
+Summarize current state and list gaps BEFORE changing anything.
+
+---------------------------------------------------------------------
+2. STRICT RULES (NON-NEGOTIABLE)
+---------------------------------------------------------------------
+R1. ALL scripture data must live INSIDE the website (local files).
+    No redirects, no external links as the way to read a book, no
+    "download PDF" as a substitute for reading.
+R2. Every book must open on click like a real book (3D book reader)
+    and be fully readable from cover to last verse.
+    Example: click "Ramayan" -> book opens -> Kand -> Sarg -> every
+    shloka readable. No missing shlokas.
+R3. Must work OFFLINE and when opened directly via file:// (double
+    click index.html). Therefore:
+      - Do NOT depend on fetch() / XHR for local data.
+      - Use plain <script src> loading (window.* globals).
+      - No build step required to run the site.
+R4. No frameworks required. Plain HTML/CSS/JS (ES6). No CDN
+    dependency for core features (fonts and libs must be local;
+    provide fallback fonts for Devanagari).
+R5. Never fabricate scripture text. Data must come from real
+    sources (see section 6). If a chapter cannot be obtained,
+    mark it clearly as MISSING in the verification report, do not
+    invent verses.
+R6. Do not delete user data or existing working features. Make
+    backups (e.g. data\_backup\) before restructuring data.
+R7. Respect copyright: every book/translation entry must carry
+    source + license fields (see section 4).
+
+---------------------------------------------------------------------
+3. PROBLEM TO SOLVE: DATA SIZE & LOADING
+---------------------------------------------------------------------
+Currently scriptures.js holds everything in one global. Full
+Ramayan (~24,000 shlokas) and Mahabharat (~75,000+ shlokas) will
+make one file huge and slow, especially on mobile.
+
+Required architecture: LAZY, PER-CHAPTER LOADING that still works
+over file://.
+
+New data layout:
+
+  data\
+    scriptures.js              <- small INDEX/MANIFEST only
+    scriptures\
+      gita\
+        meta.js
+        ch01.js ... ch18.js
+      valmiki-ramayan\
+        meta.js
+        bal-kand\sarg-001.js ... 
+        ayodhya-kand\...
+        aranya-kand\...
+        kishkindha-kand\...
+        sundar-kand\...
+        yuddha-kand\...
+        uttar-kand\...
+      ramcharitmanas\
+        meta.js
+        bal-kand.js ... uttar-kand.js
+      mahabharat\ (18 parvas, chunked per adhyay)
+      vedas\ , upanishads\ , puranas\ (same pattern)
+
+Rules for loader:
+  - scriptures.js exposes window.SCRIPTURES_DATA as a MANIFEST:
+    list of books, each with id, title (sa/hi/en), cover info,
+    structure (kands/parvas -> chapters), counts, and file paths.
+  - Each chapter file registers itself, for example:
+      window.SCRIPTURE_CHUNKS = window.SCRIPTURE_CHUNKS || {};
+      window.SCRIPTURE_CHUNKS["gita/ch01"] = { ...chapter data... };
+  - Implement a loader in book-reader.js:
+      loadChapter(bookId, chapterKey) -> Promise
+    It injects a <script> tag (works on file://), waits for onload,
+    caches the result, and resolves with the chapter data.
+  - Prefetch next chapter while user reads the current one.
+  - Show a nice loading state (diya / spinner) while loading.
+  - Keep backward compatibility with existing 5 books: migrate
+    them into the new layout without losing content.
+
+---------------------------------------------------------------------
+4. DATA SCHEMA
+---------------------------------------------------------------------
+Manifest entry (data\scriptures.js):
+  {
+    id: "valmiki-ramayan",
+    title: { sa: "...", hi: "वाल्मीकि रामायण", en: "Valmiki Ramayana" },
+    category: "itihasa",            // veda | upanishad | itihasa | purana | gita | other
+    cover: { color, emblem, subtitle },
+    languages: ["sa","hi","en"],
+    structure: [
+      { key: "bal-kand", title: {...}, chapters: 77, files: [...] },
+      ...
+    ],
+    totals: { chapters: 0, verses: 0 },   // filled by verify script
+    source: "...", license: "public-domain | cc | permission | original",
+  }
+
+Chapter file content:
+  {
+    book: "valmiki-ramayan",
+    section: "bal-kand",
+    chapter: 1,
+    title: { sa, hi, en },
+    verses: [
+      {
+        n: 1,
+        sa: "Sanskrit in Devanagari",
+        tr: "IAST/roman transliteration (optional)",
+        hi: "Hindi translation (optional)",
+        en: "English translation (optional)",
+        exp: "explanation (optional)",
+        audio: "path or empty",
+        source: "...", license: "..."
+      }
+    ]
+  }
+
+For Ramcharitmanas: verse types = doha, chaupai, sortha, chhand,
+shloka. Add field type: "doha" | "chaupai" | ... and keep order.
+
+Every translation field must be traceable via source + license.
+
+---------------------------------------------------------------------
+5. FEATURES TO IMPLEMENT / FIX
+---------------------------------------------------------------------
+A) 3D BOOK READER (js\book-reader.js)
+   - Click a book on the 3D bookshelf (index.html) -> book opens
+     with cover animation -> Table of Contents (Kand/Parva ->
+     Adhyay) -> page spreads.
+   - Page-turn animation; swipe + arrow keys + prev/next buttons.
+   - Desktop: two-page spread (Sanskrit left, Hindi/English right).
+     Mobile: single page with tabs/toggle.
+   - Language toggle: Sanskrit | Hindi | English | Explanation.
+   - Jump to chapter / verse number.
+   - Auto-bookmark last position per book (localStorage, wrapped
+     in try/catch) and "Continue Reading" button on home.
+   - Font size controls, line spacing, night mode / sepia mode.
+   - Manual bookmarks, highlights, notes (localStorage).
+   - Share a verse (copy text; optional "save as image" via canvas).
+   - Chapter progress indicator (e.g. 12/700 shlokas).
+   - Keyboard accessible, readable contrast, correct Devanagari
+     font stack (Noto Serif Devanagari / Tiro Devanagari / Mukta
+     with system fallbacks).
+   - Handle very long chapters smoothly (paginate verses into
+     pages by height; do not render thousands of nodes at once).
+
+B) SEARCH (js\search-engine.js)
+   - Universal search across scriptures, temples, traditions,
+     sanskars, aarti.
+   - Because scripture data is lazy-loaded, build a SMALL search
+     index per book (data\scriptures\<book>\search-index.js) and
+     load it on demand; searching a book loads only its index.
+   - Support Devanagari, transliteration and English queries;
+     normalize Unicode (NFC), ignore matras/spacing variants where
+     sensible.
+   - Results open the exact book/chapter/verse in the reader.
+
+C) APP / LAYOUT (js\app.js, js\layout.js)
+   - Home shows 3D bookshelf from the manifest (generate books
+     dynamically; adding a book = adding a manifest entry).
+   - Shared header/nav, dark mode persisted (try/catch storage).
+   - "Continue Reading" + "Verse of the Day" on home.
+
+D) TEMPLES (js\temple-viewer.js, data\temples.js)
+   - Keep existing darshan modal galleries working.
+   - Add fields: location, history, pilgrimage info, best time,
+     image credits/license. No broken image links: use local
+     images or graceful placeholders.
+
+E) TRADITIONS / SANSKARS / AARTI
+   - Keep existing pages working. Aarti page: lyrics text plus
+     optional audio player with synced lyric highlight if audio
+     file exists (support local audio only).
+   - Ensure all 16 sanskars and all 12 aarti entries are complete
+     and consistent.
+
+F) LIVE ENCYCLOPEDIA (js\live-encyclopedia.js)
+   - In-app live reader for any entry type; reuse the same
+     chapter loader.
+
+G) PERFORMANCE & QUALITY
+   - Initial page load under ~1 MB of JS/data (manifest only).
+   - No console errors. No blocking scripts without defer.
+   - Responsive: works on phone, tablet, desktop.
+   - Accessible: alt text, aria-labels, focus states.
+
+---------------------------------------------------------------------
+6. DATA ACQUISITION (scripts\download-scriptures.js)
+---------------------------------------------------------------------
+Goal: complete the script so it downloads / imports REAL scripture
+text and writes it into the chunked layout above.
+
+Preferred sources (public domain / open):
+  - Wikisource (Sanskrit / Hindi) for Valmiki Ramayan,
+    Mahabharat, Gita, Ramcharitmanas
+  - GRETIL (Gottingen Register of Electronic Texts in Indian
+    Languages) for Sanskrit mool texts
+  - Project Gutenberg / sacred-texts.com for old public-domain
+    English translations
+  - Open Bhagavad Gita datasets / open scripture APIs (check
+    their license before use)
+  - Government / university archives (e.g. IIT Kanpur Gita
+    Supersite) ONLY if license allows reuse
+
+Script requirements:
+  - Node.js script, runnable as:  node scripts\download-scriptures.js
+  - CLI options: --book <id> | --all, --resume, --dry-run
+  - Polite: rate limiting, retries, caching raw downloads in
+    scripts\_cache\ so re-runs don't re-download.
+  - Normalize to UTF-8 NFC; strip HTML; keep verse numbering.
+  - Write files in the chunk format (section 4) and update the
+    manifest counts.
+  - Log source URL and license per book into data\SOURCES.md.
+  - If a source is unavailable, continue with others and report.
+  - Never invent text; unknown fields stay empty.
+
+Copyright guidance (important):
+  - Sanskrit mool of Valmiki Ramayan, Mahabharat, Gita, Vedas,
+    Upanishads, and Tulsidas Ramcharitmanas = public domain.
+  - Modern translations / commentaries (e.g. Gita Press, modern
+    English translators) may be copyrighted. Do NOT bundle them
+    without permission. Use public-domain older translations or
+    leave the field empty and flag as "NEEDS PERMISSION/TRANSLATION".
+
+---------------------------------------------------------------------
+7. VERIFICATION SCRIPT (scripts\verify-data.js)
+---------------------------------------------------------------------
+Create a script that checks every book and prints a report:
+  - chapters found vs expected, verses found vs expected
+    (examples: Gita = 18 chapters / 700 shlokas; Valmiki Ramayan
+    = 7 Kands, approx 500 Sargas, approx 24,000 shlokas;
+    Mahabharat = 18 Parvas)
+  - missing chapters/verses, duplicate numbers, empty Sanskrit
+    fields, broken Unicode, files that fail to parse
+  - per-language coverage (% verses with hi / en / exp)
+  - license/source missing
+Exit with non-zero code if a book marked "complete" fails checks.
+Write report to data\VERIFY_REPORT.md.
+
+---------------------------------------------------------------------
+8. TASK ORDER (do in this order)
+---------------------------------------------------------------------
+ 1. Inspect project; write current-state summary + gap list.
+ 2. Back up existing data\ to data\_backup\.
+ 3. Design and implement the chunked data layout + manifest
+    (migrate the existing 5 books without loss).
+ 4. Implement chunk loader + update book-reader.js to use it
+    (lazy load, prefetch, caching, loading state).
+ 5. Upgrade the reader UI (page spreads, toggle languages,
+    bookmarks, last-position, night/sepia, font size, jump).
+ 6. Update index.html bookshelf to render from manifest and add
+    "Continue Reading".
+ 7. Rebuild search with per-book lazy indexes.
+ 8. Complete scripts\download-scriptures.js; fetch Bhagavad Gita
+    first (smallest, verify 700 shlokas), then Valmiki Ramayan,
+    Ramcharitmanas, then others.
+ 9. Write scripts\verify-data.js and run it; fix gaps.
+10. Polish temples, traditions, sanskars, aarti pages; fix any
+    console errors or broken links/images.
+11. Test on file:// in Chrome and Edge, plus a phone-width view.
+12. Update master.md / all-scriptures.md with final status, and
+    write README.md (how to run, add a book, run scripts).
+
+After each step: run it, check for errors, and report briefly what
+changed. Do not move on if a step is broken.
+
+---------------------------------------------------------------------
+9. ACCEPTANCE CRITERIA (definition of done)
+---------------------------------------------------------------------
+ [ ] Double-clicking index.html works with no server and no
+     internet (after data is downloaded).
+ [ ] Clicking Ramayan opens a book; user can read every Kand,
+     Sarg and shloka in order from cover to last page.
+ [ ] Same for Gita (18 ch / 700 shlokas), Ramcharitmanas, and the
+     other books listed in the manifest.
+ [ ] Language toggle works (Sanskrit / Hindi / English / Explain)
+     and empty fields are handled gracefully.
+ [ ] Bookmarks, last-read position, night mode, font size work.
+ [ ] Search finds verses and opens exact location.
+ [ ] No single data file is huge; chapters load lazily.
+ [ ] verify-data.js report shows complete counts for books marked
+     complete; gaps are listed honestly.
+ [ ] Every content entry has source + license recorded.
+ [ ] No console errors; responsive on mobile; Devanagari renders
+     correctly.
+
+---------------------------------------------------------------------
+10. HOW TO REPORT BACK
+---------------------------------------------------------------------
+At the end, give:
+  - what was changed (files added/modified)
+  - verification report summary (per-book counts)
+  - list of anything missing or needing permission
+  - exact commands to run the scripts and open the site
+
+                              ॐ
+=====================================================================
+
+
+#####################################################################
+# PART 3 OF 5 — COMPLETE CONTENT SCOPE
+#####################################################################
+
+=====================================================================
+ SANATAN — COMPLETE CONTENT SCOPE (PURA SANATAN EK HI WEBSITE MEIN)
+ Project root: E:\Sanatan\
+=====================================================================
+
+PURPOSE
+---------------------------------------------------------------------
+Yeh file batati hai ki website mein Sanatan Dharma se jude KYA-KYA
+hona chahiye. Isse Claude Code ko content ki poori list milti hai.
+Har cheez website ke ANDAR hi padhne/sunne/dekhne layak ho (koi
+external link par nirbhar nahi), aur har entry mein source + license
+likha ho. Kabhi bhi text khud se na banaya jaye; asli sources se hi
+liya jaye, aur jo na mile use "MISSING" mark kiya jaye.
+
+Priority tags:  [P1] pehle  |  [P2] doosre  |  [P3] baad mein
+Priority sirf kaam ka order hai; final target = sab kuch.
+
+Naye sections ke liye data\ mein alag file aur (zaroorat par) naya
+page banayein, existing structure aur Royal Heritage theme ke saath.
+Bade content ko chunked/lazy-loaded rakhein (har adhyay/entry alag).
+
+---------------------------------------------------------------------
+A. GRANTH / SCRIPTURES (poore padhne layak, book-reader mein)
+---------------------------------------------------------------------
+A1. Veda  [P1 mool text]
+    - Rigveda (10 mandal), Yajurveda (Shukla + Krishna),
+      Samaveda, Atharvaveda
+    - Har Veda ke Samhita, Brahmana, Aranyaka, Upanishad hisse
+A2. Upanishad  [P1]
+    - 108 mein se mukhya 13: Isha, Kena, Katha, Prashna, Mundaka,
+      Mandukya, Taittiriya, Aitareya, Chandogya, Brihadaranyaka,
+      Shvetashvatara, Kaushitaki, Maitri
+    - Baaki Upanishad (Muktika list ke anusaar) phase-wise
+A3. Itihasa  [P1]
+    - Valmiki Ramayan (7 Kand, ~24,000 shlok)
+    - Ramcharitmanas (Tulsidas, 7 Kand) + Hanuman Chalisa
+    - Mahabharat (18 Parva) + Harivansh
+    - Adhyatma Ramayan, Yoga Vasistha
+A4. Bhagavad Gita  [P1]
+    - 18 adhyay, 700 shlok; shlok-wise: Sanskrit, transliteration,
+      Hindi, English, bhavarth, audio
+    - Anugita, Uddhava Gita, Ashtavakra Gita, Avadhuta Gita
+A5. 18 Mahapuran  [P2]
+    - Brahma, Padma, Vishnu, Shiva, Bhagavata, Narada, Markandeya,
+      Agni, Bhavishya, Brahmavaivarta, Linga, Varaha, Skanda,
+      Vamana, Kurma, Matsya, Garuda, Brahmanda
+    - Devi Bhagavatam, Durga Saptashati (Chandi Path)
+    - Upapuran (chuninda)
+A6. Dharmashastra & Smriti  [P2]
+    - Manusmriti, Yajnavalkya Smriti, Narada Smriti, Parashara Smriti
+    - Arthashastra (Kautilya), Chanakya Niti, Vidur Niti, Shukra Niti
+A7. Shad-Darshan (6 Darshan) sutra  [P2]
+    - Nyaya, Vaisheshika, Sankhya, Yoga (Patanjali Yoga Sutra),
+      Purva Mimamsa, Vedanta (Brahma Sutra)
+A8. Vedanga  [P3]
+    - Shiksha, Kalpa, Vyakarana (Panini Ashtadhyayi), Nirukta,
+      Chhanda, Jyotisha
+A9. Agama & Tantra  [P3]
+    - Shaiva, Vaishnava, Shakta Agama; Tantra granth (authentic,
+      sambhrant sources se)
+A10. Bhakti & Sant sahitya  [P2]
+    - Kabir (Bijak, dohe), Tulsidas, Surdas, Meerabai, Raskhan,
+      Rahim, Narsi Mehta, Tukaram, Dnyaneshwar (Dnyaneshwari),
+      Eknath, Namdev, Ravidas, Chaitanya Charitamrita,
+      Tiruvaymoli, Tirukkural, Periya Puranam, Andal (Tiruppavai),
+      Basavanna vachana, Surdas Sur Sagar, Gitagovinda (Jayadeva)
+A11. Stotra & Sahasranama  [P1]
+    - Vishnu Sahasranama, Lalita Sahasranama, Shiva Sahasranama,
+      Ganesh Atharvashirsha, Shri Suktam, Purusha Suktam,
+      Rudram-Chamakam, Aditya Hridayam, Shiv Tandav Stotram,
+      Kanakadhara Stotram, Soundarya Lahari, Bhaja Govindam,
+      Hanuman Bahuk, Ram Raksha Stotra, Devi Kavacham, etc.
+A12. Kavya & Natak (Sanskrit sahitya)  [P3]
+    - Kalidasa (Meghaduta, Shakuntalam, Raghuvamsham),
+      Panchatantra, Hitopadesha, Jataka-adjacent Indian kathayein,
+      Bhartrihari (Shatakatraya), Subhashita collections
+
+Har granth ke liye reader features: original text, transliteration,
+Hindi, English, explanation, audio, search, bookmark, notes, progress.
+
+---------------------------------------------------------------------
+B. AARTI, BHAJAN, STOTRA, MANTRA  [P1]
+---------------------------------------------------------------------
+B1. Aarti (lyrics + audio, subah/shaam): Ganesh, Shiv, Vishnu
+    (Om Jai Jagdish), Laxmi, Durga, Kali, Saraswati, Hanuman, Ram,
+    Krishna (Aarti Kunj Bihari), Sai, Surya, Shani, Santoshi Mata,
+    Ganga, Tulsi, Jagannath, Venkateshwara, Ayyappa, etc.
+B2. Chalisa: Hanuman, Shiv, Durga, Ganesh, Vishnu, Shani, Saraswati,
+    Laxmi, Surya, Ganga, Sai, Bhairav, Ram, Krishna...
+B3. Bhajan: Ram, Krishna, Shiv, Hanuman, Devi, Ganesh, Sai;
+    Meera/Sur/Tulsi/Kabir ke pad; Kirtan, Naam-sankirtan
+B4. Mantra with meaning + jaap counter (11/21/51/108/custom):
+    Gayatri, Mahamrityunjaya, Om Namah Shivaya, Hare Krishna
+    Mahamantra, Ram Naam, Hanuman, Durga (Navarna), Ganesh,
+    Laxmi, Saraswati, Surya, Shanti Mantra, Navagraha mantra,
+    Beej mantra, Vedic mantra, Sandhya vandanam
+B5. Aarti/Bhajan player: playlist, repeat, sleep timer, lyrics sync
+    (sirf local audio; copyrighted recordings bina permission nahi)
+
+---------------------------------------------------------------------
+C. DEVI-DEVTA & AVATAR (Encyclopedia)  [P1]
+---------------------------------------------------------------------
+- Trimurti: Brahma, Vishnu, Shiva
+- Vishnu ke 10 avatar (Matsya, Kurma, Varaha, Narasimha, Vamana,
+  Parashurama, Ram, Krishna, Buddha*, Kalki) + chaubis avatar
+  (*Buddha ka sthan paramparik Vaishnav sanskriti ke anusaar likhein)
+- Devi: Durga, Parvati, Kali, Laxmi, Saraswati, Gayatri, Radha,
+  Sita, Mahavidya (10), Navadurga, Saptamatrika, Chausath Yogini
+- Ganesh, Kartikeya (Murugan), Hanuman, Surya, Chandra, Agni,
+  Indra, Varuna, Vayu, Yama, Kubera, Ashvini Kumar
+- Navagraha, Dikpala, Ashta Vasu, Ekadash Rudra, Dwadash Aditya
+- Gram/kul devta, Lokdevta, Ayyappa, Venkateshwara, Jagannath,
+  Khatu Shyam, Sai Baba, Dattatreya, Vithoba, Pashupatinath
+- Har entry: swaroop, katha, vahan/ayudh, mantra, aarti, mandir,
+  tyohar, sambandhit granth ka link (internal)
+
+---------------------------------------------------------------------
+D. RISHI, MUNI, ACHARYA, SANT, MAHAPURUSH  [P2]
+---------------------------------------------------------------------
+- Saptarishi (Kashyap, Atri, Vashistha, Vishwamitra, Gautama,
+  Jamadagni, Bharadwaj), Valmiki, Vyasa, Narada, Agastya,
+  Patanjali, Kapila, Kanada, Charaka, Sushruta, Aryabhata,
+  Varahamihira, Bhaskaracharya, Panini, Chanakya
+- Acharya: Adi Shankaracharya (4 math), Ramanujacharya,
+  Madhvacharya, Nimbarkacharya, Vallabhacharya, Chaitanya
+  Mahaprabhu, Ramananda
+- Sant: Kabir, Tulsidas, Surdas, Meera, Tukaram, Dnyaneshwar,
+  Ravidas, Nanak (Sikh-Hindu sanskritik sambandh respectfully),
+  Ramakrishna Paramhansa, Vivekananda, Sri Aurobindo, Ramana
+  Maharshi, Swami Dayanand, Paramhansa Yogananda, Sant Tukaram
+- Pauranik paatra: Dhruv, Prahlad, Savitri, Harishchandra,
+  Bhishma, Karna, Arjun, Hanuman, Sita, Draupadi, etc.
+- Har entry: jeevan, shiksha, kriti, samay, sthan
+
+---------------------------------------------------------------------
+E. TYOHAR, VRAT, PANCHANG, CALENDAR  [P1]
+---------------------------------------------------------------------
+E1. Tyohar (katha + puja vidhi + mahatva + regional traditions):
+    Diwali, Holi, Navratri (Chaitra/Sharad), Dussehra, Ram Navami,
+    Janmashtami, Mahashivratri, Ganesh Chaturthi, Raksha Bandhan,
+    Makar Sankranti/Pongal/Lohri/Bihu/Onam, Basant Panchami,
+    Hanuman Jayanti, Guru Purnima, Akshaya Tritiya, Dhanteras,
+    Bhai Dooj, Chhath, Karwa Chauth, Teej, Ugadi/Gudi Padwa,
+    Vishu, Durga Puja, Kumbh/Ardh Kumbh, Rath Yatra, Vat Savitri,
+    Nag Panchami, Kartik Purnima, Dev Deepawali, Vivah Panchami...
+E2. Vrat katha: Ekadashi (24), Pradosh, Sankashti Chaturthi, Somvar,
+    Mangalvar, Brihaspativar, Shukravar, Shanivar, Satyanarayan,
+    Santoshi Mata, Purnima/Amavasya, Navratri vrat, Karwa Chauth,
+    Hartalika Teej, Vat Savitri, Ahoi Ashtami, etc.
+E3. Panchang: tithi, vaar, nakshatra, yoga, karan, rahu kaal,
+    abhijit muhurat, choghadiya, sunrise/sunset, hindi mahine
+    (Chaitra...Phalguna), paksha, samvat (Vikram/Shaka), ritu,
+    ayan; shubh muhurat (vivah, griha pravesh, vahan); eclipse list
+    Offline calculation (local ephemeris algorithm) taaki internet
+    ke bina chale; city selector.
+E4. Aaj ka mantra, aaj ka shlok + arth, aaj ki tithi, festival
+    reminder (browser notification, local).
+
+---------------------------------------------------------------------
+F. SANSKAR, DAILY LIFE, PUJA, YAJNA  [P1]
+---------------------------------------------------------------------
+F1. 16 Sanskar poore (garbhadhan se antyeshti): mantra, vidhi,
+    samagri, mahatva.
+F2. Dincharya/Ritucharya, Sandhya-vandan, Panch Mahayajna,
+    Brahma muhurat, tulsi puja, surya arghya, graha shanti.
+F3. Puja vidhi (step-by-step, samagri checklist, mantra,
+    audio-guided): Ganesh, Laxmi, Satyanarayan, Griha Pravesh,
+    Rudrabhishek, Havan/Yajna, Navgraha, Vastu puja, Shraddha,
+    Pitru paksha, Tarpan, Pind daan, Vivah vidhi (sapta-padi),
+    Namkaran, Mundan, Upanayan (Janeu).
+F4. Regional paramparayein: Uttar, Dakshin, Purab, Paschim Bharat,
+    Nepal, Bali (Hindu), Mauritius, Diaspora.
+F5. Digital Puja Ghar: virtual diya, aarti, phool/arpan animation.
+
+---------------------------------------------------------------------
+G. DARSHAN (PHILOSOPHY) & ADHYATM  [P2]
+---------------------------------------------------------------------
+- Core concepts: Dharma, Artha, Kama, Moksha; Karma, Punarjanm,
+  Maya, Atma, Brahman, Ishvara, Guna, Ashram, Varna (shastriya
+  arth), Purushartha, Yuga, Kalpa, Loka, Rta, Satya, Ahimsa.
+- Schools: Advaita, Vishishtadvaita, Dvaita, Dvaitadvaita,
+  Shuddhadvaita, Achintya Bhedabheda, Sankhya, Yoga, Nyaya,
+  Vaisheshika, Mimamsa, Tantra, Shaiva Siddhanta, Kashmir Shaivism.
+- Sampraday: Shaiva, Vaishnava, Shakta, Smarta, Saura, Ganapatya.
+- Yoga: Ashtanga Yoga, Hatha, Raja, Karma, Bhakti, Jnana, Kriya;
+  asan, pranayam, dhyan guide (images/diagrams).
+- Shabdkosh (glossary): hazaaron Sanskrit/Hindi paribhashik shabd.
+
+---------------------------------------------------------------------
+H. TEMPLES, TIRTH, YATRA  [P1]
+---------------------------------------------------------------------
+- 12 Jyotirlinga, 51/108 Shaktipeeth, Char Dham, Chhota Char Dham,
+  Sapta Puri, 108 Divya Desam, Panch Kedar, Panch Sarovar,
+  Panch Bhoota Sthalam, Ashtavinayak, Arupadai Veedu,
+  Kumbh sthal (Prayagraj, Haridwar, Ujjain, Nashik)
+- Famous: Kashi Vishwanath, Ram Mandir Ayodhya, Tirupati,
+  Vaishno Devi, Jagannath Puri, Somnath, Badrinath, Kedarnath,
+  Meenakshi, Brihadeeswara, Konark, Khajuraho, Angkor Wat
+  (Hindu heritage), Pashupatinath, Prambanan, Akshardham, etc.
+- Har mandir: itihas, vastukala, katha, aarti time, darshan gallery
+  (local images/360 jahan permitted), location + map, best season,
+  yatra route, nearby tirth, festivals, dos/don'ts.
+- Nadiyan/Tirth: Ganga, Yamuna, Saraswati, Narmada, Godavari,
+  Kaveri, Kshipra; Ghat, Kund, Parvat (Kailash, Govardhan...).
+- Yatra planner (offline checklist + info).
+
+---------------------------------------------------------------------
+I. VIGYAN, KALA, SAMAJ — BHARATIYA GYAN PARAMPARA  [P3]
+---------------------------------------------------------------------
+- Ayurveda: tridosha, dincharya, aushadhi (jadi-booti), Charaka &
+  Sushruta Samhita, gharelu nuskhe (disclaimer ke saath)
+- Jyotish: graha, rashi, nakshatra, kundali basics (educational)
+- Vastu Shastra, Sthapatya, Shilpa Shastra
+- Ganit & Khagol: Aryabhata, Brahmagupta, Bhaskara, Surya Siddhanta,
+  Vedic ganit, Panchang ganana
+- Sangeet: raga-tala, Natya Shastra, Sama gaan, shastriya sangeet
+- Kala: Natya, Nritya (Bharatanatyam, Kathak, Odissi...), Chitra,
+  Murti, Rangoli, Mehndi (parampara)
+- Yuddha kala/Dhanurveda (itihasik, educational)
+- Bhasha: Sanskrit seekhna (varnamala, vyakaran, shabd roop,
+  dhatu roop, shlok uchcharan), Devanagari lipi guide
+- Rajneeti/Niti: Chanakya, Vidur, Shukra niti
+- Itihas: Sindhu-Saraswati, Vedic kaal, Maurya, Gupta, Chola,
+  Vijayanagara, Maratha, mandir-itihas, Bharat ke prachin
+  vishwavidyalaya (Nalanda, Takshashila)
+- Pashu-prakriti: Gau-seva, Tulsi, Peepal, Vat, Nadi puja,
+  Prakriti ke sath sambandh (sanskritik drishti)
+
+---------------------------------------------------------------------
+J. KATHA, BAL-SAHITYA, KAHANIYAN  [P2]
+---------------------------------------------------------------------
+- Pauranik kathayein (shreni-wise), Panchatantra, Hitopadesh,
+  Jataka-style niti kathayein, Ramayan/Mahabharat ki upkathayein,
+  Krishna leela, Hanuman katha, Ganesh katha
+- Bacchon ke liye saral Hindi/English, rangeen chitr ke saath,
+  quiz, "aaj ki kahani"
+- Audio kahani (local audio, jahan available)
+
+---------------------------------------------------------------------
+K. LEARNING TOOLS  [P2]
+---------------------------------------------------------------------
+- Shlok yaad karna (flashcards, repeat-after-me audio)
+- Quiz (Ramayan, Mahabharat, Gita, tyohar, devi-devta)
+- Sanskrit shabdkosh + shabd-roop
+- Reading plans: "Gita 18 din mein", "Ramcharitmanas 30 din",
+  "Hanuman Chalisa roz"
+- Daily streak (jaap, path), progress tracker (offline localStorage)
+- Search: har granth, devta, tyohar, mandir, mantra mein ek jagah
+
+---------------------------------------------------------------------
+L. MEDIA GALLERY  [P2]
+---------------------------------------------------------------------
+- Devi-devta chitra, mandir photo, rangoli/art, manuscript,
+  nakshe (map), infographic (timeline, family tree: Surya/Chandra
+  vansh, Pandav-Kaurav, Ram vansh, Krishna vansh)
+- Sirf apni/open-license/permission wali images; credit likhein.
+
+---------------------------------------------------------------------
+M. SITE STRUCTURE (existing pages + naye)
+---------------------------------------------------------------------
+Existing: index, scriptures, temples, traditions, sanskars, aarti.
+Naye pages jo chahiye (data file + page + nav entry):
+  devi-devta.html     (C)        rishis.html        (D)
+  tyohar.html         (E1/E2)    panchang.html      (E3/E4)
+  puja.html           (F)        darshan.html       (G, philosophy)
+  tirth-yatra.html    (H, extend temples)
+  gyan.html           (I vigyan/kala/bhasha)
+  katha.html          (J)        learn.html         (K)
+  gallery.html        (L)        about.html + sources.html
+  (existing 'live-encyclopedia' reader sabko jodta hai)
+Data files: data\devta.js, rishis.js, tyohar.js, panchang.js,
+puja.js, darshan.js, gyan.js, katha.js, quiz.js, gallery.js
+(+ lazy chunks for bade content). Universal search sabko index kare.
+
+---------------------------------------------------------------------
+N. RULES FOR ALL CONTENT
+---------------------------------------------------------------------
+1. Sab kuch website ke andar; offline + file:// par chale.
+2. Asli sources se hi content (Wikisource, GRETIL, sacred-texts,
+   Project Gutenberg, open datasets, sarkari/university archives
+   jahan license allow kare). Kuch na mile to "MISSING" report.
+3. Mool Sanskrit aur purane granth public domain; modern anuvad/
+   tika/recordings/photos copyrighted ho sakte hain -> permission ya
+   naye original anuvad; har entry mein source + license field.
+4. Dharmik sensitivity: tathya sahi, ek sampraday ko doosre se neecha
+   dikhane wali language nahi; matbhed hone par "paramparaon ke
+   anusaar" likhein; Vedic/Pauranik/lokparampara ka fark batayein.
+5. Ayurveda/Jyotish content mein disclaimer: jaankari ke liye, medical
+   ya financial salah nahi.
+6. Scholar/pandit review board se proofreading (Sanskrit, vidhi,
+   tithi) launch se pehle.
+7. Verification: har section ke liye count-report (kitne entry, kitna
+   missing) data\SCOPE_STATUS.md mein.
+8. Bada content chunked/lazy; initial load halka.
+9. Devanagari + Hindi + English; Sanskrit mool hamesha sahi Unicode.
+10. Pehle Audit & Fix file (SANATAN_Audit_and_Fix_Instructions.txt)
+    se maujooda site theek karein, tab naya content jodein.
+
+---------------------------------------------------------------------
+O. EXECUTION ORDER (Claude Code ke liye)
+---------------------------------------------------------------------
+ 1. Maujooda site audit + fix (Audit file follow karein)
+ 2. Chunked data architecture + book reader (Instructions file)
+ 3. [P1] Gita, Valmiki Ramayan, Ramcharitmanas, Hanuman Chalisa,
+    Aarti/Chalisa/Mantra, Devi-Devta, Tyohar+Vrat, Panchang,
+    Sanskar, Puja, Temples/Tirth
+ 4. [P2] Upanishad, Mahabharat, Puran, Veda, Sant sahitya, Rishi/
+    Acharya, Darshan, Katha, Learning tools, Gallery
+ 5. [P3] Vedanga, Agama/Tantra, Vigyan/Kala/Bhasha, Kavya, extras
+ 6. Har phase ke baad: verify scripts + smoke test + SCOPE_STATUS.md
+ 7. Phase poora hone par mujhe report dein aur agle ka approval lein.
+
+                              ॐ
+=====================================================================
+
+
+#####################################################################
+# PART 4 OF 5 — ADDENDUM: EVERY MANTRA / AARTI / STOTRA
+#####################################################################
+
+=====================================================================
+ SANATAN — ADDENDUM: HAR EK MANTRA, AARTI, STOTRA (CHHOTE SE CHHOTA BHI)
+ Yeh file SANATAN_Complete_Content_Scope.txt ke saath padhein.
+ Is addendum ka rule us file ke "etc." / "..." se upar hai.
+=====================================================================
+
+STRICT COMPLETENESS RULE
+---------------------------------------------------------------------
+1. Scope file mein jahan bhi "etc.", "...", "jaise", "chuninda" likha
+   hai, usse matlab "sirf udaharan" hai, poori list nahi. Kisi bhi
+   category mein sirf udaharan bana kar RUKNA NAHI hai.
+2. Har category ke liye pehle ek EXHAUSTIVE MASTER LIST (inventory)
+   banayein: data\inventory\<category>.md, jisme har entry ka naam,
+   source jahan se milega, aur status (DONE / MISSING / NEEDS
+   PERMISSION) ho. Pehle list poori, phir content bharna.
+3. Chhota se chhota bhi shamil: ek-line ka mantra, ek-shlok ki
+   prarthana, dainik shlok, bhojan/snan/dhyan mantra, sab.
+4. Inventory ka koi entry bina status ke nahi chhoda ja sakta.
+   Jo asli source mein na mile use MISSING likhein, khud na banayein.
+5. Sirf asli sources se text; kabhi yaad se ya andaze se mantra/aarti
+   na likhein. Har entry mein source URL/book + license field.
+6. Har entry ka format: naam, devta/vishay, Sanskrit/Hindi text,
+   transliteration, arth, kab/kaise padhein, labh (agar granth mein
+   ho), source, license, audio (agar ho).
+7. Progress report: data\COMPLETENESS_REPORT.md mein har category ke
+   saamne: total entries, done, missing, needs permission.
+
+---------------------------------------------------------------------
+A. MANTRA — POORI SHRENI (har ek)
+---------------------------------------------------------------------
+A1. Beej mantra: Om, Hreem, Shreem, Kleem, Aim, Kreem, Hum, Gam,
+    Dum, Glaum, Hraum, Shraum, Kshraum, Phat, Svaha, Vashat, Hum
+A2. Vedic mantra: Gayatri (sabhi roop), Mahamrityunjaya, Purusha
+    Suktam, Shri Suktam, Rudram, Chamakam, Narayana Suktam,
+    Durga Suktam, Bhu Suktam, Nasadiya Suktam, Agni Suktam,
+    Medha Suktam, Shanti Mantra (sabhi: Om Sahana Vavatu, Purnamadah,
+    Asato Ma, Om Dyauh Shantih, Sarve Bhavantu Sukhinah...)
+A3. Devta mantra (har devta ke): Ganesh, Shiv, Vishnu, Ram, Krishna,
+    Hanuman, Durga, Kali, Laxmi, Saraswati, Surya, Chandra, Shani,
+    Brihaspati, Shukra, Mangal, Budh, Rahu, Ketu, Kartikeya,
+    Bhairav, Dattatreya, Ayyappa, Venkateshwara, Narasimha,
+    Gayatri, Ganga, Tulsi, Kuber, Vastu, Kul/Gram devta
+A4. Dainik mantra: jaagne ka (Kara Darshan, Bhumi Vandana), snan
+    (Ganga snan mantra), tilak, sandhya, suryarghya, tulsi puja,
+    bhojan/anna mantra (Brahmarpanam), deep jalane ka, ghanta,
+    shankh, aachman, sankalp, pavitrikaran, shayan, yatra, vidyarambh
+A5. Navagraha mantra (har graha: beej, vedic, pauranik, stotra)
+A6. Sanskar mantra (16 sanskar ke har mantra)
+A7. Shanti/Swasti/Mangal/Kshama/Visarjan mantra
+A8. Naam jaap: Ram, Krishna, Shiv, Hari, Radhe, Sita-Ram,
+    Hare Krishna Mahamantra, Om Namo Bhagavate Vasudevaya,
+    Om Namah Shivaya, Sri Ram Jai Ram Jai Jai Ram
+A9. Mantra ke saath: jaap counter 11/21/51/108/1008, mala, audio
+    uchcharan, meaning, vidhi, sankhya, dishaa, samay
+
+---------------------------------------------------------------------
+B. AARTI — POORI SHRENI (har ek)
+---------------------------------------------------------------------
+Sabhi prasiddh aur kam prasiddh paramparagat aartiyan (poore bol):
+ Ganesh (Jai Ganesh Deva, Sukhkarta Dukhharta, Deva Hey Ganaraya...)
+ Shiv (Om Jai Shiv Omkara...), Vishnu (Om Jai Jagdish Hare...),
+ Laxmi (Om Jai Laxmi Mata...), Durga (Jai Ambe Gauri...),
+ Kali, Saraswati, Gayatri, Santoshi, Vaishno Devi, Sheetla,
+ Hanuman (Aarti Kije Hanuman Lala Ki...), Ram (Aarti Shri
+ Ramchandra Ki...), Krishna (Aarti Kunj Bihari Ki...), Radha,
+ Satyanarayan, Narasimha, Venkateshwara, Jagannath, Balaji,
+ Sai Baba, Datta, Vithoba, Shani, Surya, Gau Mata, Tulsi, Ganga,
+ Yamuna, Narmada, Ayyappa, Khatu Shyam, Pashupatinath, Kedarnath,
+ Badrinath, Mahakal, Bhairav, Ambaji, Mahalaxmi, Annapurna,
+ Chhath Maiya, Pitra aarti, Aarti sangrah (Dharmik utsav ki)
+Har aarti ke liye: Hindi + regional bhasha (jahan ho) ke bol,
+transliteration, kab gayi jaati hai, audio, vidhi (thali/deep).
+Aarti ke baad: Pushpanjali, Pradakshina, Kshama prarthana mantra.
+
+---------------------------------------------------------------------
+C. CHALISA, STOTRA, KAVACH, ASHTAK, SAHASRANAMA
+---------------------------------------------------------------------
+C1. Chalisa (poori 40 chaupai + doha): Hanuman, Shiv, Durga, Ganesh,
+    Vishnu, Shani, Surya, Saraswati, Laxmi, Ram, Krishna, Sai,
+    Bhairav, Ganga, Santoshi, Kali, Shri Ramayan Chalisa, Gayatri,
+    Mahamrityunjaya, Shitla, Baba Ramdev, Khatu Shyam, Jagannath...
+C2. Stotra: Aditya Hridayam, Shiv Tandav, Shivashtakam,
+    Rudrashtakam, Lingashtakam, Mahishasura Mardini, Argala Stotra,
+    Kilak Stotra, Devi Kavacham, Durga Saptashati (13 adhyay),
+    Kanakadhara, Mahalaxmi Ashtakam, Bhaja Govindam, Madhurashtakam,
+    Achyutashtakam, Ram Raksha, Hanuman Bahuk, Sankat Mochan
+    Ashtak, Bajrang Baan, Hanuman Sathika, Gajendra Moksha,
+    Vishnu Sahasranama, Lalita Sahasranama, Shiva Sahasranama,
+    Ganesh Atharvashirsha, Sankata Nashana, Navagraha Stotra,
+    Shani Stotra, Surya Namaskar mantra (12), Annapurna Stotra,
+    Jagannath Ashtakam, Venkatesha Suprabhatam, Vishnu Shatnam,
+    Gayatri Kavach, Soundarya Lahari, Narayana Kavach, Pitru Stotra
+C3. Stuti/Prarthana: Tvameva Mata, Karpura Gauram, Vakratunda
+    Mahakaya, Yaa Devi Sarvabhuteshu, Saraswati Vandana, Guru
+    Brahma Guru Vishnu, Shri Ram Stuti, Om Purnamadah...
+C4. Namavali: 108/1008 naam har mukhya devta ke
+C5. Bhajan: sant-kavi (Kabir, Tulsi, Sur, Meera, Raskhan, Rahim,
+    Narsi Mehta, Tukaram...) ke pad. Aadhunik gayakon ke bhajan
+    copyright ki wajah se sirf permission/original recording ke saath.
+
+---------------------------------------------------------------------
+D. BAAKI SAB BHI — "CHHOTE SE CHHOTA" RULE LAGU HOGA
+---------------------------------------------------------------------
+Yahi poora-pan rule in sab par bhi lagu:
+ - Dainik shlok/subhashit, Gita ke har shlok, Ramcharitmanas ke
+   har doha/chaupai
+ - Har tyohar, har vrat katha (24 Ekadashi, saare var/pradosh/
+   sankashti/purnima/amavasya vrat, mahine-wise vrat)
+ - Har devta, rishi, sant, tirth, mandir (jyotirlinga, shaktipeeth,
+   108 divya desam, aadi: poori list, na ki sirf udaharan)
+ - Har sanskar vidhi, har puja vidhi (chhoti pooja jaise dainik puja,
+   tulsi puja, griha pravesh, vahan puja bhi)
+ - Har rashi/nakshatra/graha, har paribhashik shabd ka arth
+ - Har kahani (Panchatantra, Hitopadesh, pauranik) poori
+Inventory pehle -> phir content -> phir verify (inventory ke
+muqabil kitna DONE, kitna MISSING).
+
+---------------------------------------------------------------------
+E. COPYRIGHT KE SAATH PURA-PAN
+---------------------------------------------------------------------
+- Paramparagat aartiyan, chalisa, stotra, mantra (purane/loksahitya)
+  = aam taur par public domain: poore daalein.
+- Kisi lekhak ki nayi rachna (aadhunik aarti/bhajan), prakashak ka
+  tika/anuvad, singer ki recording = copyright; permission na ho to
+  entry banayein aur status "NEEDS PERMISSION" rakhein, text na
+  copy karein.
+- Har entry mein source + license; jahan sandeh ho wahan flag.
+
+---------------------------------------------------------------------
+F. VERIFICATION & DONE CHECKLIST
+---------------------------------------------------------------------
+ [ ] Har category ka inventory file bana (data\inventory\*.md)
+ [ ] Inventory ke har entry ka status likha hai (DONE/MISSING/PERM.)
+ [ ] COMPLETENESS_REPORT.md mein totals sahi hain
+ [ ] Koi entry bina source/license ke nahi
+ [ ] Koi mantra/aarti andaze se likha nahi gaya
+ [ ] Smoke test + verify scripts pass
+ [ ] Mujhe report dein: total, done, missing, needs permission
+
+                              ॐ
+=====================================================================
+
+
+#####################################################################
+# PART 5 OF 5 — MASTER SEED LISTS
+#####################################################################
+
+=====================================================================
+ SANATAN — MASTER SEED LISTS (GRANTH, MANDIR, TIRTH AADI)
+ Isse pehle wali files ke saath padhein. Yeh unke "etc." ko poora
+ karti hai. Rule: YAHAN DI GAYI HAR ENTRY website mein honi chahiye.
+=====================================================================
+
+IMPORTANT NOTES FOR CLAUDE CODE
+---------------------------------------------------------------------
+1. Yeh lists SEED (shuruaati) hain, poori nahi. Har list ko asli
+   source se verify karein aur jo entries yahan se chhooti hain unhe
+   JODEIN. Kuch bhi yaad se na banayein.
+2. Kuch lists mein parampara ke hisaab se sankhya alag hoti hai
+   (jaise shaktipeeth 51 / 52 / 108). Jahan matbhed ho wahan likhein
+   "paramparaon ke anusaar" aur source dein.
+3. Har entry ke liye inventory file mein status rakhein:
+   DONE / MISSING / NEEDS PERMISSION.
+4. Spelling aur sankhya official/prachin source se verify karein.
+5. Har granth/mandir ka alag page/entry, internal links ke saath.
+
+=====================================================================
+PART 1 — GRANTH (BOOKS)
+=====================================================================
+
+1.1 VEDA (4) aur unki shakhaen/hisse
+  - Rigveda: 10 Mandal, ~1028 sukta (Shakala shakha)
+  - Yajurveda: Shukla (Vajasaneyi: Madhyandina, Kanva) aur
+    Krishna (Taittiriya, Maitrayani, Kathaka, Kapishthala)
+  - Samaveda: Kauthuma, Jaiminiya, Ranayaniya (Purvarchik/Uttararchik)
+  - Atharvaveda: Shaunaka, Paippalada (20 kanda)
+  - Har Veda ke 4 hisse: Samhita, Brahmana, Aranyaka, Upanishad
+  - Brahmana: Aitareya, Kaushitaki, Shatapatha, Taittiriya, Panchavimsha,
+    Jaiminiya, Gopatha
+  - Aranyaka: Aitareya, Shankhayana, Taittiriya, Brihad, Jaiminiya
+  - Upaveda: Ayurveda, Dhanurveda, Gandharvaveda, Sthapatyaveda
+
+1.2 MUKHYA UPANISHAD (Dashopanishad + Shankar-bhashya wale 13)
+  Isha, Kena, Katha, Prashna, Mundaka, Mandukya, Taittiriya,
+  Aitareya, Chandogya, Brihadaranyaka, Shvetashvatara, Kaushitaki,
+  Maitri
+  + Muktika kanon ke 108 Upanishad: poori list Muktika Upanishad se
+  nikalein (Rigveda ke 10, Shukla Yajur ke 19, Krishna Yajur ke 32,
+  Sama ke 16, Atharva ke 31 = 108) aur sabka inventory banayein.
+  Vishesh shreni: Yoga Upanishad, Sannyasa Upanishad, Vaishnava,
+  Shaiva, Shakta, Samanya Vedanta Upanishad.
+
+1.3 ITIHASA
+  Valmiki Ramayan: 7 Kand
+    Bal (77 sarg), Ayodhya (119), Aranya (75), Kishkindha (67),
+    Sundar (68), Yuddha/Lanka (128), Uttar (111)
+    (sargon ki sankhya sanskaran ke anusaar badal sakti hai: verify)
+  Ramcharitmanas: 7 Kand (Bal, Ayodhya, Aranya, Kishkindha, Sundar,
+    Lanka, Uttar)
+  Mahabharat: 18 Parva
+    1 Adi, 2 Sabha, 3 Vana (Aranyaka), 4 Virata, 5 Udyoga,
+    6 Bhishma (Gita yahin), 7 Drona, 8 Karna, 9 Shalya, 10 Sauptika,
+    11 Stri, 12 Shanti, 13 Anushasana, 14 Ashvamedhika, 15 Ashramavasika,
+    16 Mausala, 17 Mahaprasthanika, 18 Svargarohana
+    + Harivansha (parishisht)
+  Bhagavad Gita: 18 adhyay (Arjuna Vishada Yoga ... Moksha Sannyasa Yoga)
+    Adhyay: 1 Arjuna Vishada, 2 Sankhya, 3 Karma, 4 Jnana-Karma-Sannyasa,
+    5 Karma Sannyasa, 6 Dhyana, 7 Jnana-Vijnana, 8 Akshara Brahma,
+    9 Raja Vidya Raja Guhya, 10 Vibhuti, 11 Vishwarupa Darshan,
+    12 Bhakti, 13 Kshetra-Kshetrajna, 14 Gunatraya Vibhaga,
+    15 Purushottama, 16 Daivasura Sampad, 17 Shraddhatraya Vibhaga,
+    18 Moksha Sannyasa
+  Anya: Adhyatma Ramayan, Yoga Vasistha, Anand Ramayan, Ramayan
+    ke prantiya roop (Kamban Ramayan, Krittivasi, Ranganatha Ramayana)
+
+1.4 18 MAHAPURAN (shlok-sankhya parampara ke anusaar)
+  Vaishnava (6): Vishnu, Naradiya, Bhagavata, Garuda, Padma, Varaha
+  Shaiva (4): Shiva, Linga, Skanda, Agni (Agni ko kabhi Shaiva maante hain)
+  Brahma-sambandhi (4): Brahma, Brahmanda, Brahmavaivarta, Markandeya,
+    Bhavishya (parampara ke anusaar shreni badalti hai)
+  Anya: Vamana, Kurma, Matsya
+  Poori 18: Brahma, Padma, Vishnu, Shiva, Bhagavata, Narada,
+  Markandeya, Agni, Bhavishya, Brahmavaivarta, Linga, Varaha,
+  Skanda, Vamana, Kurma, Matsya, Garuda, Brahmanda
+  Upapuran (chuninda; poori list verify karke): Sanat Kumara, Narasimha,
+  Nandi, Shivadharma, Durvasa, Narada, Kapila, Manava, Ushanas,
+  Varuna, Kalika, Samba, Nandikeshvara, Saura, Parashara, Aditya,
+  Maheshvara, Bhargava, Vasistha, Devi Bhagavata
+  Durga Saptashati (Markandeya Puran ke andar), Devi Mahatmya
+
+1.5 SMRITI, NITI, DHARMASHASTRA
+  Manusmriti, Yajnavalkya, Narada, Parashara, Vishnu, Brihaspati,
+  Katyayana, Gautama Dharmasutra, Apastamba, Baudhayana, Vasistha
+  Arthashastra, Chanakya Niti, Vidur Niti, Shukra Niti, Kamandaki Niti,
+  Subhashitavali, Hitopadesha, Panchatantra
+
+1.6 SHAD DARSHAN
+  Nyaya Sutra (Gautama), Vaisheshika Sutra (Kanada), Sankhya Karika
+  (Ishvara Krishna), Yoga Sutra (Patanjali), Mimamsa Sutra (Jaimini),
+  Brahma Sutra (Badarayana)
+  Prasthanatrayi: Upanishad + Gita + Brahma Sutra
+  Bhashya: Shankara, Ramanuja, Madhva, Nimbarka, Vallabha ke bhashya
+
+1.7 VEDANGA (6)
+  Shiksha, Kalpa (Shrauta, Grihya, Dharma, Shulba sutra), Vyakarana
+  (Panini Ashtadhyayi), Nirukta (Yaska), Chhanda (Pingala), Jyotisha
+
+1.8 SANT / BHAKTI SAHITYA
+  Kabir (Bijak, Sakhi, Ramaini), Tulsidas (Ramcharitmanas,
+  Vinay Patrika, Kavitavali, Dohavali, Gitavali, Hanuman Chalisa,
+  Hanuman Bahuk, Janaki Mangal, Parvati Mangal), Surdas (Sur Sagar),
+  Meerabai (padavali), Raskhan, Rahim (dohe), Narsi Mehta, Tukaram
+  (Gatha), Dnyaneshwar (Dnyaneshwari, Amritanubhav), Eknath, Namdev,
+  Ravidas, Guru Nanak (sanskritik sambandh), Chaitanya Charitamrita,
+  Gitagovinda (Jayadeva), Tirukkural, Tiruvasagam, Tevaram, Tiruppavai,
+  Nalayira Divya Prabandham, Basavanna Vachana, Akka Mahadevi,
+  Annamacharya, Purandara Dasa, Thyagaraja, Lalleshwari
+
+1.9 KAVYA / NATAK / VYAKARAN
+  Kalidasa (Raghuvamsham, Kumarasambhavam, Meghadutam,
+  Ritusamharam, Abhijnana Shakuntalam, Vikramorvashiyam,
+  Malavikagnimitram), Bhasa, Shudraka, Bhavabhuti, Bharavi, Magha,
+  Bana, Bhartrihari (Shatakatraya), Jayadeva, Natya Shastra,
+  Brihat Samhita, Kamasutra (shastriya, educational)
+
+1.10 AGAMA / TANTRA (authentic sources se)
+  Shaiva Agama (28), Vaishnava (Pancharatra, Vaikhanasa),
+  Shakta Tantra, Kashmir Shaiva (Shiva Sutra, Spanda Karika,
+  Vijnana Bhairava, Pratyabhijna)
+
+1.11 STOTRA / SAHASRANAMA / PAATH (poori list ke liye
+     Addendum file dekhein; yahan mukhya)
+  Vishnu Sahasranama, Lalita Sahasranama, Shiva Sahasranama,
+  Ganesh Sahasranama, Hanuman Chalisa, Durga Saptashati, Shri Suktam,
+  Purusha Suktam, Rudri, Aditya Hridayam, Bhaja Govindam,
+  Soundarya Lahari, Shiv Mahimna Stotra, Ram Raksha Stotra
+
+1.12 AADHUNIK / PRACHIN BHARATIYA VIGYAN GRANTH
+  Charaka Samhita, Sushruta Samhita, Ashtanga Hridaya, Aryabhatiya,
+  Brahmasphuta Siddhanta, Surya Siddhanta, Lilavati, Brihat Parashara
+  Hora Shastra, Brihat Samhita, Vastu Shastra (Mayamata, Manasara),
+  Rasa Ratna Samuchchaya, Natya Shastra, Sangita Ratnakara
+
+=====================================================================
+PART 2 — MANDIR AUR TIRTH
+=====================================================================
+
+2.1 12 JYOTIRLINGA
+  1 Somnath (Gujarat), 2 Mallikarjuna (Srisailam, Andhra Pradesh),
+  3 Mahakaleshwar (Ujjain, MP), 4 Omkareshwar (MP),
+  5 Kedarnath (Uttarakhand), 6 Bhimashankar (Maharashtra),
+  7 Kashi Vishwanath (Varanasi, UP), 8 Trimbakeshwar (Nashik, MH),
+  9 Vaidyanath (Deoghar, Jharkhand; parampara mein matbhed),
+  10 Nageshwar (Dwarka, Gujarat; matbhed), 11 Rameshwaram (Tamil Nadu),
+  12 Grishneshwar (Ellora, MH)
+
+2.2 SHAKTIPEETH (parampara ke anusaar 51 mukhya; Devi Bhagavata
+    mein 108; Kalika Puran mein 4 aadi) — 51 shaktipeeth poori list
+    verify karke jodein. Mukhya: Kamakhya (Assam), Kalighat (WB),
+    Vaishno Devi/Trikuta, Jwalamukhi (HP), Naina Devi (HP),
+    Vindhyavasini (UP), Hinglaj (Pakistan), Shri Parvat, Mahalaxmi
+    Kolhapur, Tuljapur Bhavani, Ambaji, Chamunda, Tara Tarini,
+    Vimala (Puri), Bhramari, Shaktipeeth in Nepal/Bangladesh/
+    Sri Lanka/Pakistan (jahan parampara mein hain)
+
+2.3 CHAR DHAM (bade): Badrinath (UK), Dwarka (GJ), Jagannath Puri (OD),
+    Rameshwaram (TN)
+    CHHOTA CHAR DHAM: Yamunotri, Gangotri, Kedarnath, Badrinath
+    SAPTA PURI (mokshdayini): Ayodhya, Mathura, Haridwar (Maya),
+    Kashi, Kanchipuram, Ujjain (Avantika), Dwarka
+    PANCH KEDAR: Kedarnath, Tungnath, Rudranath, Madhyamaheshwar,
+    Kalpeshwar
+    PANCH BADRI / SAPT BADRI aadi
+
+2.4 ASHTAVINAYAK (Maharashtra): Morgaon (Mayureshwar), Siddhatek,
+    Pali (Ballaleshwar), Mahad (Varadvinayak), Theur (Chintamani),
+    Lenyadri (Girijatmaj), Ozar (Vighneshwar), Ranjangaon
+    (Mahaganapati)
+
+2.5 DAKSHIN BHARAT
+  108 Divya Desam (Vaishnava): poori list Nalayira Divya Prabandham
+    se verify karke (Srirangam, Tirupati/Tirumala, Kanchipuram
+    Varadaraja, Melkote, Badrinath, Dwarka, Ayodhya aadi shamil)
+  Panch Bhoota Sthalam: Kanchipuram (Prithvi), Thiruvanaikaval (Jal),
+    Tiruvannamalai (Agni), Srikalahasti (Vayu), Chidambaram (Akash)
+  Arupadai Veedu (6 Murugan): Thiruparankundram, Thiruchendur,
+    Palani, Swamimalai, Thiruthani, Pazhamudircholai
+  Others: Meenakshi Madurai, Brihadeeswara Thanjavur,
+    Gangaikonda Cholapuram, Airavatesvara, Padmanabhaswamy,
+    Guruvayur, Sabarimala (Ayyappa), Udupi Krishna, Murudeshwar,
+    Hampi Virupaksha, Belur-Halebidu, Sringeri, Dharmasthala,
+    Kukke Subramanya, Lepakshi, Ahobilam, Simhachalam, Yadadri
+
+2.6 UTTAR / PASCHIM / PURAB
+  Ram Janmabhoomi Ayodhya, Krishna Janmabhoomi Mathura, Vrindavan
+  (Banke Bihari, Prem Mandir), Govardhan, Barsana, Nathdwara,
+  Kashi (Annapurna, Sankat Mochan, Durga), Prayagraj Sangam,
+  Haridwar (Har ki Pauri, Mansa Devi), Rishikesh, Ujjain
+  (Mahakal, Harsiddhi), Omkareshwar, Pushkar Brahma, Khatu Shyam,
+  Salasar Balaji, Mehandipur, Dwarkadhish, Shirdi, Shani Shingnapur,
+  Siddhivinayak Mumbai, Pandharpur Vithoba, Tirupati,
+  Jagannath Puri, Konark Surya, Lingaraj Bhubaneswar, Kamakhya,
+  Dakshineshwar, Tarapith, Kalighat, Belur Math,
+  Amarnath, Vaishno Devi, Kailash-Mansarovar,
+  Pashupatinath (Nepal), Muktinath, Janakpur,
+  Khajuraho, Ellora Kailasa, Mount Abu Dilwara (Jain-Hindu
+  shilp), Akshardham (Delhi, Gandhinagar), ISKCON mandir, Birla
+  mandir, Prambanan (Indonesia), Angkor Wat (Cambodia),
+  Batu Caves (Malaysia), BAPS Mandir (videsh), Pashupatinath,
+  Koneswaram, Katas Raj (Pakistan)
+
+2.7 NADI, KUND, PARVAT, KUMBH
+  Saptanadi: Ganga, Yamuna, Godavari, Saraswati, Narmada, Sindhu,
+  Kaveri; Brahmaputra, Krishna, Tapti, Mahanadi aadi
+  Kumbh sthal: Prayagraj, Haridwar, Ujjain, Nashik
+  Parvat: Kailash, Govardhan, Chitrakoot, Girnar, Arunachala,
+  Tirumala, Vaishno Devi, Amarkantak, Dwarka aadi
+  Sarovar: Mansarovar, Pushkar, Bindu, Narayan, Pampa, Pampa Sarovar
+
+2.8 HAR MANDIR KE LIYE ZAROORI FIELDS
+  naam, devta, sthan (map), itihas, katha, vastukala, aarti/darshan
+  samay, tyohar, kaise pahunchein, best season, yatra route, nearby
+  tirth, photos (license), dos/don'ts, source
+
+=====================================================================
+PART 3 — DEVI-DEVTA, AVATAR, GRAH, RISHI (poori list ke liye seed)
+=====================================================================
+
+3.1 Trimurti aur mukhya: Brahma, Vishnu, Shiva, Adi Shakti
+3.2 Vishnu ke 10 avatar (Matsya, Kurma, Varaha, Narasimha, Vamana,
+    Parashurama, Ram, Krishna, Balarama/Buddha, Kalki: paramparaon
+    ke anusaar) + 24 avatar (Bhagavata)
+3.3 Shiv ke roop: Rudra, Nataraja, Ardhanarishvara, Bhairav,
+    12 Jyotirlinga, Dakshinamurti, Pashupati, Nilkantha, Vishwanath
+3.4 Devi: Durga, Kali, Parvati, Gauri, Uma, Laxmi, Saraswati,
+    Gayatri, Savitri, Radha, Sita, Rukmini, Annapurna, Santoshi,
+    Chamunda, Bhavani, Ambika
+    Navadurga (9): Shailaputri, Brahmacharini, Chandraghanta,
+      Kushmanda, Skandamata, Katyayani, Kalaratri, Mahagauri,
+      Siddhidatri
+    Das Mahavidya (10): Kali, Tara, Tripura Sundari (Shodashi),
+      Bhuvaneshwari, Bhairavi, Chhinnamasta, Dhumavati, Bagalamukhi,
+      Matangi, Kamala
+    Saptamatrika (7), Chausath Yogini
+3.5 Ganesh (8 avatar, 32 roop), Kartikeya/Murugan, Hanuman,
+    Ayyappa, Venkateshwara, Jagannath, Dattatreya, Vithoba, Khandoba
+3.6 Vaidik devta: Indra, Agni, Varuna, Vayu, Surya, Soma, Yama,
+    Kubera, Ashvini Kumar, Rudra, Marut, Ushas, Prithvi, Aditi
+3.7 Navagraha: Surya, Chandra, Mangal, Budh, Brihaspati, Shukra,
+    Shani, Rahu, Ketu (har ek: katha, mantra, stotra, ratna, dan)
+3.8 12 Rashi, 27 Nakshatra, 12 Aditya, 11 Rudra, 8 Vasu,
+    Dik-pala (8/10), Ashta Lakshmi, Panch Deva, Dasha Dikpala
+3.9 Saptarshi: Kashyap, Atri, Vasistha, Vishwamitra, Gautama,
+    Jamadagni, Bharadwaj (parampara ke anusaar list badal sakti)
+3.10 Rishi/Acharya/Sant: Valmiki, Vyasa, Narada, Agastya, Patanjali,
+    Kapila, Kanada, Charaka, Sushruta, Aryabhata, Varahamihira,
+    Bhaskaracharya, Panini, Chanakya, Shankaracharya, Ramanujacharya,
+    Madhvacharya, Nimbarkacharya, Vallabhacharya, Chaitanya, Ramananda,
+    Kabir, Tulsidas, Surdas, Meerabai, Tukaram, Dnyaneshwar, Ravidas,
+    Ramakrishna Paramhansa, Vivekananda, Sri Aurobindo, Ramana
+    Maharshi, Dayanand Saraswati, Yogananda, Neem Karoli Baba,
+    Sant Tukaram, Gorakhnath, Matsyendranath, Lahiri Mahasaya
+
+=====================================================================
+PART 4 — TYOHAR, VRAT, SANSKAR, PANCHANG TATTVA
+=====================================================================
+4.1 Hindi mahine (12): Chaitra, Vaishakha, Jyeshtha, Ashadha,
+    Shravana, Bhadrapada, Ashvin, Kartika, Margashirsha, Pausha,
+    Magha, Phalguna; 2 paksha; 15 tithi; 7 var; 27 nakshatra;
+    27 yoga; 11 karan; 6 ritu; 2 ayan
+4.2 Tyohar: Diwali (5 din: Dhanteras, Roop Chaturdashi, Diwali,
+    Govardhan, Bhai Dooj), Holi (Holika Dahan), Navratri (Chaitra/
+    Sharad/Gupt), Dussehra, Ram Navami, Hanuman Jayanti, Janmashtami,
+    Mahashivratri, Ganesh Chaturthi, Raksha Bandhan, Makar Sankranti,
+    Pongal, Lohri, Bihu, Onam, Vishu, Ugadi, Gudi Padwa, Basant
+    Panchami, Guru Purnima, Akshaya Tritiya, Chhath, Karwa Chauth,
+    Teej (Hariyali/Kajari/Hartalika), Vat Savitri, Nag Panchami,
+    Kartik Purnima, Dev Deepawali, Dev Uthani Ekadashi, Vivah
+    Panchami, Rath Yatra, Pitru Paksha, Durga Puja, Kali Puja,
+    Skanda Shashthi, Thaipusam, Maha Kumbh, Ardh Kumbh
+4.3 24 Ekadashi (naam-sahit), Pradosh, Sankashti Chaturthi,
+    Vinayaka Chaturthi, Masik Shivratri, Purnima, Amavasya
+    (Somvati, Shani), Saptahik vrat (7 var)
+4.4 16 Sanskar: Garbhadhan, Pumsavana, Simantonnayana, Jatakarma,
+    Namakarana, Nishkramana, Annaprashana, Chudakarana
+    (Mundan), Karnavedha, Vidyarambha, Upanayana, Vedarambha,
+    Keshanta, Samavartana, Vivaha, Antyeshti
+4.5 Shodashopachara puja ke 16 upchar, Panch Mahayajna, Sandhya,
+    Havan/Agnihotra vidhi
+
+=====================================================================
+PART 5 — DARSHAN, SIDDHANT, SAMPRADAY
+=====================================================================
+5.1 Shad Darshan (6) + Nastika (Charvaka, Jain, Bauddh: sirf
+    tulnatmak jaankari)
+5.2 Vedanta ke sampraday: Advaita, Vishishtadvaita, Dvaita,
+    Dvaitadvaita, Shuddhadvaita, Achintya-Bhedabheda
+5.3 Sampraday: Shaiva, Vaishnava, Shakta, Smarta, Saura, Ganapatya
+5.4 Mukhya avadharanayen: Dharma, Artha, Kama, Moksha, Karma,
+    Punarjanma, Maya, Atma, Brahman, Ishvara, Prakriti, Purusha,
+    Gunatraya, Ashrama (4), Purushartha (4), Yuga (4), Kalpa,
+    Manvantara, Loka (14), Panchakosha, Chakra (7), Nadi, Kundalini,
+    Ahimsa, Satya, Asteya, Brahmacharya, Aparigraha
+5.5 Yoga: Ashtanga (Yama, Niyama, Asana, Pranayama, Pratyahara,
+    Dharana, Dhyana, Samadhi), Hatha, Raja, Jnana, Bhakti, Karma,
+    Kriya; mukhya asana (images/diagram), pranayama prakar
+
+=====================================================================
+PART 6 — VIGYAN, KALA, BHASHA, ITIHAS (seed)
+=====================================================================
+6.1 Ayurveda: tridosha, saptadhatu, dincharya, ritucharya, jadi-
+    booti (har jadi-booti ki alag entry), panchakarma
+6.2 Jyotish: 9 graha, 12 rashi, 27 nakshatra, 12 bhava, dasha
+6.3 Ganit/Khagol: Vedic ganit sutra, Aryabhata, Brahmagupta,
+    Bhaskara, Madhava (Kerala school), Surya Siddhanta
+6.4 Sangeet: 7 swar, raga (har mukhya raga), tala, Sama gaan,
+    gharane; Nritya: Bharatanatyam, Kathak, Kuchipudi, Odissi,
+    Mohiniyattam, Manipuri, Kathakali, Sattriya
+6.5 Bhasha: Devanagari varnamala, Sanskrit vyakaran, shabd-roop,
+    dhatu-roop, sandhi, samas, shlok uchcharan, ginti, panchang shabd
+6.6 Itihas: Sindhu-Saraswati, Vedic, Maurya, Gupta, Chola, Pallava,
+    Chalukya, Rashtrakuta, Vijayanagara, Maratha, Rajput, mandir
+    itihas, Nalanda, Takshashila, Vikramshila
+6.7 Kala: Chitrakala (Madhubani, Pattachitra, Warli, Tanjore),
+    Murtikala, Vastukala (Nagara, Dravida, Vesara), Rangoli, Mehndi
+
+=====================================================================
+VERIFICATION
+=====================================================================
+ [ ] Har Part ke liye inventory file banayein (data\inventory\)
+ [ ] Har entry par status + source + license
+ [ ] Jo yahan nahi hai par prasiddh/parampara mein hai, use jodein
+ [ ] Matbhed wali sankhya ke saath "paramparaon ke anusaar" likhein
+ [ ] COMPLETENESS_REPORT.md mein totals, done, missing
+ [ ] Mujhe final report dein
+
+                              ॐ
+=====================================================================
+
+
+#####################################################################
+# END OF FILE
+#####################################################################

@@ -1,0 +1,41 @@
+{
+  "id": "ramayan",
+  "title": "Valmiki Ramayan & Ramcharitmanas",
+  "kands": [
+    {
+      "id": "balakand",
+      "title": "Balakand",
+      "chapters": 299
+    },
+    {
+      "id": "ayodhya-kand",
+      "title": "Ayodhya Kand",
+      "chapters": 399
+    },
+    {
+      "id": "aranya-kand",
+      "title": "Aranya Kand",
+      "chapters": 230
+    },
+    {
+      "id": "konisha-kand",
+      "title": "Konisha Kand",
+      "chapters": 203
+    },
+    {
+      "id": "sundarakand",
+      "title": "Sundarakand",
+      "chapters": 119
+    },
+    {
+      "id": "yuddhakand",
+      "title": "Yuddhakand",
+      "chapters": 193
+    },
+    {
+      "id": "uttarakand",
+      "title": "Uttarakand",
+      "chapters": 366
+    }
+  ]
+}

@@ -17,9 +17,69 @@
     init: function() {
       this.lang = localStorage.getItem('sanatan_lang') || 'hi';
       document.documentElement.setAttribute('data-lang', this.lang);
+      this.chapterCache = {};
       this.checkUrlParams();
       this.bindEvents();
       this.initAudio();
+    },
+
+    loadChapter: function(bookId, chapterKey) {
+      // Check cache first
+      const cacheKey = `${bookId}:${chapterKey}`;
+      if (this.chapterCache[cacheKey]) {
+        return Promise.resolve(this.chapterCache[cacheKey]);
+      }
+
+      // Find chunk file path from manifest
+      const books = window.SCRIPTURES_DATA || [];
+      const book = books.find(b => b.id === bookId);
+      if (!book) {
+        return Promise.reject(new Error(`Book not found: ${bookId}`));
+      }
+
+      const structure = book.structure || {};
+      let filePath = null;
+
+      // Gita style: chapters
+      if (structure.type === 'chapters' && structure.chapters) {
+        const chapterInfo = structure.chapters.find(c => c.key === chapterKey);
+        if (!chapterInfo || !chapterInfo.file) {
+          return Promise.reject(new Error(`Chapter not found: ${chapterKey}`));
+        }
+        filePath = chapterInfo.file;
+      }
+      // Ramayan, Vedas, Puranas, Aarti style: files array with file property
+      else if (structure.type === 'files' && structure.files && structure.files[0]?.file) {
+        const fileInfo = structure.files.find(f => f.key === chapterKey);
+        if (!fileInfo || !fileInfo.file) {
+          return Promise.reject(new Error(`File not found: ${chapterKey}`));
+        }
+        filePath = fileInfo.file;
+      } else {
+        return Promise.reject(new Error(`Unknown structure type for book: ${bookId}`));
+      }
+
+      // Lazy load via script tag injection (compatible with file:// protocol)
+      return new Promise((resolve, reject) => {
+        const script = document.createElement('script');
+        script.src = filePath;
+        script.async = true;
+        script.onload = () => {
+          // Chunk files register as window.SCRIPTURE_CHUNKS["bookId/chapterKey"]
+          const chunkKey = `${bookId}/${chapterKey}`;
+          const chunkData = window.SCRIPTURE_CHUNKS?.[chunkKey];
+
+          if (chunkData) {
+            this.chapterCache[cacheKey] = chunkData;
+            resolve(chunkData);
+          } else {
+            console.warn(`Chunk data not found for: ${chunkKey}, available keys:`, Object.keys(window.SCRIPTURE_CHUNKS || {}));
+            reject(new Error(`Chunk data not found for: ${chunkKey}`));
+          }
+        };
+        script.onerror = () => reject(new Error(`Failed to load script: ${filePath}`));
+        document.head.appendChild(script);
+      });
     },
 
     checkUrlParams: function() {
@@ -29,7 +89,13 @@
       const verse = urlParams.get('v');
 
       if (bookId || chapter || verse) {
-        this.openBook(bookId || 'bhagavad-gita', parseInt(chapter) || null, parseInt(verse) || null);
+        // Parse chapter - can be a number or a key string like 'ch01' or 'chapter-01'
+        let chapterParsed = null;
+        if (chapter) {
+          const num = parseInt(chapter);
+          chapterParsed = isNaN(num) ? chapter : num;
+        }
+        this.openBook(bookId || 'bhagavad-gita', chapterParsed, parseInt(verse) || null);
       }
     },
 
@@ -172,52 +238,140 @@
     },
 
     openBook: function(bookId, chapterNum, verseNum) {
+      const that = this;
+
       // Find the book
       const books = window.SCRIPTURES_DATA || [];
-      this.currentBook = books.find(b => (b.id || b.title) === bookId) || books[0];
+      this.currentBook = books.find(b => b.id === bookId) || books[0];
 
       if (!this.currentBook) return;
 
-      // Build chapters array
-      this.chapters = [];
+      const structure = this.currentBook.structure || {};
+      const isChapters = structure.type === 'chapters' && structure.chapters;
+      const isFiles = structure.type === 'files' && structure.files && Array.isArray(structure.files) && structure.files[0]?.file;
 
-      // Add main chapters if they exist as separate objects
-      if (this.currentBook.chapters) {
-        this.chapters = this.currentBook.chapters.map(ch => ({ type: 'chapter', data: ch }));
-      }
+      if (isChapters) {
+        // Gita style: chapters - key is like 'ch01', 'ch10', etc.
+        const chapters = structure.chapters;
+        this.totalPages = chapters.length;
+        this.currentBook.chapters = chapters;
 
-      // Add verses if they exist
-      if (this.currentBook.verses) {
-        this.chapters.push({ type: 'verse', data: this.currentBook.verses });
-      }
+        if (chapterNum) {
+          // chapterNum can be a number (1) or a key string ('ch01')
+          let chapterIdx = -1;
+          if (typeof chapterNum === 'string') {
+            // Direct key lookup
+            chapterIdx = chapters.findIndex(c => c.key === chapterNum);
+          } else if (typeof chapterNum === 'number') {
+            // Number lookup - pad to 2 digits for key
+            chapterIdx = chapters.findIndex(c =>
+              c.key === `ch${String(chapterNum).padStart(2, '0')}` ||
+              c.chapter === chapterNum ||
+              c.number === chapterNum
+            );
+          }
 
-      // If we have chapter structure
-      if (this.currentBook.chapters || this.currentBook.verses) {
-        // Handle chapter number from URL
-        if (chapterNum && this.currentBook.chapters) {
-          const chapterData = this.currentBook.chapters.find(c => c.chapterNumber === chapterNum);
-          if (chapterData) {
-            this.currentChapter = chapterData;
-            this.currentIndex = chapterNum - 1;
-            this.totalPages = this.currentBook.chapters.length;
+          if (chapterIdx >= 0 && chapterIdx < chapters.length) {
+            this.currentIndex = chapterIdx;
+            const chapterKey = chapters[chapterIdx].key;
 
-            // Handle verse number
-            if (verseNum && chapterData.verses) {
-              const verse = chapterData.verses.find(v => v.verseNumber === verseNum);
-              if (verse) {
-                this.currentVerse = verse;
-                this.openReader(chapterData, verse);
-                return;
-              }
-            }
+            this.loadChapter(this.currentBook.id, chapterKey)
+              .then(chunkData => {
+                this.currentChapter = {
+                  title: chunkData.title,
+                  illustration: chunkData.illustration,
+                  verses: chunkData.verses
+                };
 
-            this.openReader(chapterData);
+                if (verseNum && chunkData.verses) {
+                  const verse = chunkData.verses.find(v => v.n === verseNum || v.verseNumber === verseNum);
+                  if (verse) {
+                    this.currentVerse = verse;
+                    this.openReader(this.currentChapter, verse);
+                    return;
+                  }
+                }
+                this.openReader(this.currentChapter);
+              })
+              .catch(err => {
+                console.error('Failed to load chapter:', err);
+              });
             return;
           }
         }
+
+        if (chapters.length > 0) {
+          this.currentIndex = 0;
+          this.loadChapter(this.currentBook.id, chapters[0].key)
+            .then(chunkData => {
+              this.currentChapter = {
+                title: chunkData.title,
+                illustration: chunkData.illustration,
+                verses: chunkData.verses
+              };
+              this.openReader(this.currentChapter);
+            })
+            .catch(err => console.error('Failed to load chapter:', err));
+        }
+        return;
       }
 
-      // Fallback for simple structure
+      if (isFiles) {
+        // Ramayan, Vedas, Puranas, Aarti style - key is like 'chapter-01', 'entry-01', etc.
+        const chapters = structure.files;
+        this.totalPages = chapters.length;
+        this.currentBook.chapters = chapters;
+
+        if (chapterNum) {
+          // chapterNum can be a number (1) or a key string ('chapter-01', 'entry-01')
+          let chapterIdx = -1;
+          if (typeof chapterNum === 'string') {
+            // Direct key lookup
+            chapterIdx = chapters.findIndex(c => c.key === chapterNum);
+          } else if (typeof chapterNum === 'number') {
+            // Number lookup (1-based, convert to 0-based index)
+            const idx = chapterNum - 1;
+            if (idx >= 0 && idx < chapters.length) {
+              chapterIdx = idx;
+            }
+          }
+
+          if (chapterIdx >= 0 && chapterIdx < chapters.length) {
+            this.currentIndex = chapterIdx;
+            const chapterKey = chapters[chapterIdx].key;
+
+            this.loadChapter(this.currentBook.id, chapterKey)
+              .then(chunkData => {
+                this.currentChapter = {
+                  title: chunkData.title,
+                  illustration: chunkData.illustration,
+                  verses: chunkData.verses
+                };
+                this.openReader(this.currentChapter);
+              })
+              .catch(err => {
+                console.error('Failed to load chapter:', err);
+              });
+            return;
+          }
+        }
+
+        if (chapters.length > 0) {
+          this.currentIndex = 0;
+          this.loadChapter(this.currentBook.id, chapters[0].key)
+            .then(chunkData => {
+              this.currentChapter = {
+                title: chunkData.title,
+                illustration: chunkData.illustration,
+                verses: chunkData.verses
+              };
+              this.openReader(this.currentChapter);
+            })
+            .catch(err => console.error('Failed to load chapter:', err));
+        }
+        return;
+      }
+
       this.totalPages = 1;
       this.openReader(this.currentBook);
     },
@@ -668,15 +822,20 @@
       const pageNumber = rightPage.querySelector('.page-number');
       const chapterName = rightPage.querySelector('.chapter-name');
 
+      // Get book title properly (handle both string and object formats)
+      const bookTitle = typeof this.currentBook?.title === 'object'
+        ? this.currentBook.title.hi || this.currentBook.title.en || 'Scripture'
+        : this.currentBook?.title || 'Scripture';
+
       if (pageTitle) {
-        pageTitle.textContent = this.currentBook?.title || 'Scripture';
+        pageTitle.textContent = bookTitle;
       }
       if (chapterName) {
         chapterName.textContent = chapter.title || '';
       }
       if (pageHeader) {
         pageHeader.innerHTML = `
-          <span class="book-name">${this.currentBook?.title || 'Scriptures'}</span>
+          <span class="book-name">${bookTitle}</span>
           ${chapter.title ? `<span class="chapter-name">${chapter.title}</span>` : ''}
         `;
       }
@@ -703,30 +862,30 @@
       const verseMeaning = rightPage.querySelector('.verse-meaning');
 
       if (verse) {
-        // Sanskrit always shown
+        // Sanskrit always shown (handles both 'sa' and 'sanskrit' fields)
         if (verseSanskrit) {
-          verseSanskrit.textContent = verse.sanskrit || '';
+          verseSanskrit.textContent = verse.sa || verse.sanskrit || '';
         }
 
-        // Transliteration always shown
+        // Transliteration always shown (handles both 'tr' and 'transliteration' fields)
         if (verseTrans) {
-          verseTrans.textContent = verse.transliteration || '';
+          verseTrans.textContent = verse.tr || verse.transliteration || '';
         }
 
-        // Hindi meaning shown in hi mode, or all mode (with styling)
+        // Hindi meaning shown in hi mode, or all mode (handles both 'hi' and 'hindiMeaning' fields)
         if (verseHindi) {
           if (this.lang === 'hi' || this.lang === 'all') {
-            verseHindi.textContent = verse.hindiMeaning || verse.meaning || '';
+            verseHindi.textContent = verse.hi || verse.hindiMeaning || verse.meaning || '';
             verseHindi.style.display = 'block';
           } else {
             verseHindi.style.display = 'none';
           }
         }
 
-        // English meaning shown in en mode, or all mode (with styling)
+        // English meaning shown in en mode, or all mode (handles both 'en' and 'meaning' fields)
         if (verseMeaning) {
           if (this.lang === 'en' || this.lang === 'all') {
-            verseMeaning.textContent = verse.meaning || '';
+            verseMeaning.textContent = verse.en || verse.meaning || '';
             verseMeaning.style.display = 'block';
           } else {
             verseMeaning.style.display = 'none';
@@ -757,15 +916,26 @@
 
       if (this.currentIndex < this.totalPages) {
         const nextChapter = this.chapters[this.currentIndex];
-        if (nextChapter) {
-          if (nextChapter.type === 'verse') {
-            // Find next chapter with verses
-            this.renderPage(nextChapter.data[0] || nextChapter.data);
-          } else {
-            this.renderPage(nextChapter.data);
-          }
+        const chapterKey = nextChapter.key;
+        const that = this;
+
+        if (chapterKey) {
+          this.loadChapter(this.currentBook.id, chapterKey)
+            .then(chunkData => {
+              that.currentChapter = {
+                title: chunkData.title,
+                illustration: chunkData.illustration,
+                verses: chunkData.verses
+              };
+              that.currentVerse = null;
+              that.renderPage(that.currentChapter, that.currentVerse);
+              that.playPageTurn();
+            })
+            .catch(err => {
+              console.error('Failed to load next chapter:', err);
+              that.currentIndex--;
+            });
         }
-        this.playPageTurn();
       } else {
         this.closeBook();
       }
@@ -777,14 +947,26 @@
       if (this.currentIndex > 0) {
         this.currentIndex--;
         const prevChapter = this.chapters[this.currentIndex];
-        if (prevChapter) {
-          if (prevChapter.type === 'verse') {
-            this.renderPage(prevChapter.data[0] || prevChapter.data);
-          } else {
-            this.renderPage(prevChapter.data);
-          }
+        const chapterKey = prevChapter.key;
+        const that = this;
+
+        if (chapterKey) {
+          this.loadChapter(this.currentBook.id, chapterKey)
+            .then(chunkData => {
+              that.currentChapter = {
+                title: chunkData.title,
+                illustration: chunkData.illustration,
+                verses: chunkData.verses
+              };
+              that.currentVerse = null;
+              that.renderPage(that.currentChapter, that.currentVerse);
+              that.playPageTurn();
+            })
+            .catch(err => {
+              console.error('Failed to load previous chapter:', err);
+              that.currentIndex++;
+            });
         }
-        this.playPageTurn();
       }
     },
 
@@ -792,15 +974,26 @@
       if (chapterIdx >= 0 && chapterIdx < this.totalPages) {
         this.currentIndex = chapterIdx;
         const chapter = this.chapters[chapterIdx];
-        if (chapter) {
-          if (chapter.type === 'verse') {
-            this.renderPage(chapter.data[0]);
-          } else {
-            this.renderPage(chapter.data);
-          }
+        const chapterKey = chapter.key;
+        const that = this;
+
+        if (chapterKey) {
+          this.loadChapter(this.currentBook.id, chapterKey)
+            .then(chunkData => {
+              that.currentChapter = {
+                title: chunkData.title,
+                illustration: chunkData.illustration,
+                verses: chunkData.verses
+              };
+              that.currentVerse = null;
+              that.renderPage(that.currentChapter, that.currentVerse);
+              that.toggleTOC();
+              that.playPageTurn();
+            })
+            .catch(err => {
+              console.error('Failed to jump to chapter:', err);
+            });
         }
-        this.toggleTOC();
-        this.playPageTurn();
       }
     },
 
@@ -847,7 +1040,11 @@
     copyVerse: function() {
       if (!this.currentVerse) return;
 
-      const text = `${this.currentVerse.sanskrit}\n${this.currentVerse.transliteration}\n${this.currentVerse.meaning}`;
+      const sanskrit = this.currentVerse.sa || this.currentVerse.sanskrit || '';
+      const transliteration = this.currentVerse.tr || this.currentVerse.transliteration || '';
+      const meaning = this.currentVerse.en || this.currentVerse.hi || this.currentVerse.meaning || '';
+
+      const text = `${sanskrit}\n${transliteration}\n${meaning}`;
 
       navigator.clipboard.writeText(text).then(() => {
         this.showToast('Verse copied to clipboard');
@@ -866,7 +1063,15 @@
     shareWhatsApp: function() {
       if (!this.currentBook || !this.currentVerse) return;
 
-      const text = `${this.currentBook.title}:${this.currentVerse.sanskrit}\n${this.currentVerse.transliteration}\n${this.currentVerse.meaning}`;
+      const bookTitle = typeof this.currentBook.title === 'object'
+        ? this.currentBook.title.hi || this.currentBook.title.en || 'Scripture'
+        : this.currentBook.title || 'Scripture';
+
+      const sanskrit = this.currentVerse.sa || this.currentVerse.sanskrit || '';
+      const transliteration = this.currentVerse.tr || this.currentVerse.transliteration || '';
+      const meaning = this.currentVerse.en || this.currentVerse.hi || this.currentVerse.meaning || '';
+
+      const text = `${bookTitle}:${sanskrit}\n${transliteration}\n${meaning}`;
       const url = `https://wa.me/?text=${encodeURIComponent(text)}`;
       window.open(url, '_blank');
     },
