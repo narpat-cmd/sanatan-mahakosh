@@ -3,6 +3,8 @@
 
 (function() {
   'use strict';
+  // FIX: arrays ko string banate waqt commas na aayein
+  const joinMap = (arr, fn) => arr.map(fn).join('');
 
   class SanatanApp {
     constructor() {
@@ -91,7 +93,7 @@
         }
 
         // Scripture card / READ button
-        const readBtn = e.target.closest('.read-btn, .scripture-card');
+        const readBtn = e.target.closest('.scripture-card');
         if (readBtn) {
           e.preventDefault();
           const bookId = readBtn.dataset.book || readBtn.dataset.id;
@@ -251,7 +253,7 @@
       const gridEl = document.getElementById('scripturesGrid');
       if (!gridEl || !window.SCRIPTURES_DATA) return;
 
-      gridEl.innerHTML = window.SCRIPTURES_DATA.map(book => {
+      gridEl.innerHTML = joinMap(window.SCRIPTURES_DATA, book => {
         const lang = this.currentLang || 'hi';
         const titleObj = typeof book.title === 'object' ? book.title : { hi: book.title, en: book.title, sa: book.title };
         const subtitleObj = typeof book.subtitle === 'object' ? book.subtitle : { hi: book.subtitle || '', en: book.subtitle || '' };
@@ -297,7 +299,7 @@
       const gridEl = document.getElementById('templesGrid');
       if (!gridEl || !window.TEMPLES_DATA) return;
 
-      gridEl.innerHTML = window.TEMPLES_DATA.map(temple => {
+      gridEl.innerHTML = joinMap(window.TEMPLES_DATA, temple => {
         const nameDisplay = lang === 'en' ? temple.nameEnglish || temple.name : temple.name;
         const deityDisplay = lang === 'en' ? temple.deityEnglish || temple.deity : temple.deity;
         const descDisplay = lang === 'en' ? temple.descriptionEnglish || temple.description : temple.description;
@@ -305,8 +307,8 @@
         return `
           <div class="temple-card group bg-parchment-bg dark:bg-sandalwood rounded-xl shadow-lg overflow-hidden hover:shadow-2xl transition-shadow" data-category="${temple.category}" data-id="${temple.id}">
             <div class="relative">
-              <img src="${temple.images?.[0] || ''}" alt="${nameDisplay}" class="w-full h-48 object-cover group-hover:opacity-90 transition-opacity"
-                   onerror="this.style.display='none'; this.parentNode.innerHTML='<div class=\"no-gallery flex items-center justify-center h-48 bg-gold/10\"><svg class=\"w-12 h-12 text-gold/50\" viewBox=\"0 0 24 24\"><circle cx=\"12\" cy=\"12\" r=\"10\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.5\"/><path d=\"M12 8v4l2 2\" stroke=\"currentColor\" stroke-width=\"1.5\" fill=\"none\"/><circle cx=\"12\" cy=\"14\" r=\"1\" fill=\"currentColor\"/></svg></div>'">
+              <img src="${temple.images?.[0] || temple.gallery?.[0]?.url || ''}" alt="${nameDisplay}" class="w-full h-48 object-cover group-hover:opacity-90 transition-opacity"
+                   onerror="this.style.display='none'; this.insertAdjacentHTML('afterend','<div class=\"no-gallery flex items-center justify-center h-48 bg-gold/10\"><svg class=\"w-12 h-12 text-gold/50\" viewBox=\"0 0 24 24\"><circle cx=\"12\" cy=\"12\" r=\"10\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.5\"/><path d=\"M12 8v4l2 2\" stroke=\"currentColor\" stroke-width=\"1.5\" fill=\"none\"/><circle cx=\"12\" cy=\"14\" r=\"1\" fill=\"currentColor\"/></svg></div>')">
               <div class="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent"></div>
               <div class="absolute bottom-4 left-4 right-4 text-parchment">
                 <h3 class="font-cinzel text-lg mb-1">${nameDisplay}</h3>
@@ -454,7 +456,7 @@
       const gridEl = document.getElementById('sanskarsGrid');
       if (!gridEl || !window.SANSKARS_DATA) return;
 
-      gridEl.innerHTML = window.SANSKARS_DATA.map(sanskar => {
+      gridEl.innerHTML = joinMap(window.SANSKARS_DATA, sanskar => {
         const nameDisplay = lang === 'en' ? sanskar.nameEnglish || sanskar.name : sanskar.name;
         const meaningDisplay = lang === 'en' ? sanskar.meaningEnglish || sanskar.meaning : sanskar.meaning || sanskar.description;
 
@@ -489,7 +491,7 @@
       const gridEl = document.getElementById('aartiGrid');
       if (!gridEl || !window.AARTI_DATA) return;
 
-      gridEl.innerHTML = window.AARTI_DATA.map(item => {
+      gridEl.innerHTML = joinMap(window.AARTI_DATA, item => {
         const titleDisplay = lang === 'en' ? item.titleEnglish : item.title;
         const significanceDisplay = lang === 'en' ? item.translation : item.significance;
 

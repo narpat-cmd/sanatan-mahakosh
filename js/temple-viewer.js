@@ -18,10 +18,14 @@
     },
 
     bindEvents: function() {
+      if (this._bound) return;
+      this._bound = true;
+      document.addEventListener('keydown', (ev) => { if (ev.key === 'Escape') this.closeViewer(); });
       const that = this;
 
       document.addEventListener('click', function(e) {
-        const darshanBtn = e.target.closest('.darshan-btn');
+        if (e.target.closest('.temple-close, .temple-close-section')) { that.closeViewer(); return; }
+        const darshanBtn = null; // darshan click app.js handle karta hai
         if (darshanBtn) {
           const templeId = darshanBtn.dataset.temple;
           that.loadTemple(templeId);
@@ -79,6 +83,7 @@
     },
 
     loadTemple: function(templeId) {
+      this.bindEvents();
       const temples = window.TEMPLES_DATA || [];
       this.currentTemple = temples.find(t => t.id === templeId) || temples[0];
 
@@ -122,9 +127,9 @@
 
       if (modalDescription) {
         if (this.lang === 'hi' || this.lang === 'all') {
-          modalDescription.textContent = temple.description || temple.descriptionHindi || '';
+          modalDescription.textContent = temple.description || temple.descriptionHindi || temple.originStory || '';
         } else if (this.lang === 'en') {
-          modalDescription.textContent = temple.descriptionEnglish || temple.description || '';
+          modalDescription.textContent = temple.descriptionEnglish || temple.description || temple.originStory || '';
         }
       }
 
@@ -277,8 +282,8 @@
 
           <div class="temple-viewer-content">
             <div class="temple-info-section">
-              <div class="temple-deity">${this.lang === 'en' ? temple?.deityEnglish : temple?.deity}</div>
-              <div class="temple-location"></div>
+              <div class="temple-deity temple-modal-deity"></div>
+              <div class="temple-location temple-modal-location"></div>
               <div class=" temple-language-selector">
                 <div class="book-lang-toggle">
                   <span class="book-lang-option ${this.lang === 'hi' ? 'active' : ''}" data-lang="hi">HI</span>
