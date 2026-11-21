@@ -22,7 +22,7 @@ window.TRADITIONS = {
                 "Face East at sunrise",
                 "Offer water in a copper vessel while chanting Surya Sahasranama",
                 "Sprinkle water on feet and hands",
-                "Conclude with "Om Sri Surya Namah" 108 times"
+                "Conclude with 'Om Sri Surya Namah' 108 times"
             ],
             scientificBasis: "Vitamin D synthesis, eye health, circadian rhythm regulation"
         },
