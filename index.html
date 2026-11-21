@@ -1,0 +1,334 @@
+<!DOCTYPE html>
+<html lang="en" class="scroll-smooth">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, user-scalable=yes">
+    <meta name="theme-color" content="#2C1810">
+    <meta name="description" content="Sanatan - Sampoorna Sanatan Dharma. The Complete Encyclopedia of Sanatan Dharma Knowledge, Scriptures, Sacred Pilgrimages, and Philosophy of Life">
+    <meta name="keywords" content="Sanatan, Dharma, Hinduism, Bhagavad Gita, Ramayan, Temples, Pilgrimage">
+    <title>Sanatan - Sampoorna Sanatan Dharma Mahakosh</title>
+
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Tiro+Devanagari+Sanskrit:wght@400;600;700&family=Noto+Serif+Devanagari:wght@400;500;700&family=Rozha+One:wght@400;700&family=Cinzel:wght@400;500;600;700&family=Baloo+Bhagavatam:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        'sanskrit': ['"Tiro Devanagari Sanskrit"', 'Noto Sans Devanagari', 'Baloo Bhagavatam', 'sans-serif'],
+                        'serif-dev': ['"Noto Serif Devanagari"', 'serif'],
+                        'heading': ['Cinzel', 'Rozha One', 'serif'],
+                        'baloo': ['Baloo Bhagavatam', 'cursive']
+                    },
+                    colors: {
+                        temple: {
+                            maroon: '#6B0F1A',
+                            sacrament: '#800000',
+                            saffron: '#E85D04',
+                            gold: '#D4AF37',
+                            antique: '#C59B27',
+                            parchment: '#FAF3E0',
+                            sandalwood: '#2C1810'
+                        }
+                    },
+                    backdropBlur: {
+                        xl: '20px'
+                    }
+                }
+            }
+        }
+    </script>
+
+    <!-- StPageFlip CDN -->
+    <script src="https://cdn.jsdelivr.net/npm/page-flip@1.0.4/build/pageflip.min.js"></script>
+
+    <!-- Favicon -->
+    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text x='50' y='70' font-size='60' text-anchor='middle' fill='%23D4AF37'>�੧</text></svg>">
+
+    <style>
+        @import url('./styles/main.css');
+    </style>
+</head>
+<body class="min-h-screen bg-sandalwood-dark text-parchment font-sansans relative overflow-x-hidden">
+    <!-- Audio context for ambient sounds -->
+    <audio id="templeAudio" preload="none" class="hidden">
+        <source src="https://cdn.jsdelivr.net/gh/jhonnathan94/free-sound-effects@main/ambient-temple.mp3" type="audio/mpeg">
+    </audio>
+
+    <!-- Modal Overlay for Book Reader -->
+    <div id="bookModal" class="fixed inset-0 bg-black/80 backdrop-blur-xl hidden z-[100]">
+        <div class="relative w-full h-full max-w-6xl mx-auto p-4">
+            <button id="closeBook" class="absolute top-6 right-6 z-40 text-gold hover:text-saffron transition-colors" aria-label="Close">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-10 w-10" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                </svg>
+            </button>
+            <div id="bookContainer" class="w-full h-full bg-black rounded-2xl shadow-2xl overflow-hidden"></div>
+        </div>
+    </div>
+
+    <!-- Modal Overlay for Temple Viewer -->
+    <div id="templeModal" class="fixed inset-0 bg-black/80 backdrop-blur-xl hidden z-[100]">
+        <div class="relative w-full h-full max-w-6xl mx-auto p-4">
+            <button id="closeTemple" class="absolute top-6 right-6 z-40 text-gold hover:text-saffron transition-colors" aria-label="Close">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-10 w-10" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                </svg>
+            </button>
+            <div id="templeContainer" class="w-full h-full bg-black rounded-2xl shadow-2xl overflow-hidden"></div>
+        </div>
+    </div>
+
+    <!-- Top Navigation Bar -->
+    <nav class="fixed top-0 left-0 right-0 z-50 bg-maroon/90 backdrop-blur-xl border-b-2 border-gold/30 shadow-xl">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex items-center justify-between h-16">
+                <!-- Left: Sacred Emblem -->
+                <div class="flex items-center space-x-3">
+                    <div class="w-12 h-12 rounded-full bg-gold/20 flex items-center justify-center shadow-lg border-2 border-gold/40">
+                        <svg class="w-8 h-8 text-gold" viewBox="0 0 24 24" fill="currentColor">
+                            <path d="M12 2L2 7l10 5 10-5-10-5zm0 9.5L4.5 7l7.5-4 7.5 4-7.5 2.5z"/>
+                        </svg>
+                    </div>
+                    <span class="text-gold text-xl font-heading font-bold hidden sm:block">Sanatan Mahakosh</span>
+                </div>
+
+                <!-- Center: Navigation Bars -->
+                <div class="hidden md:flex items-center space-x-1">
+                    <button class="nav-tab px-4 py-2 rounded-full text-sm font-medium transition-all hover:bg-gold/20 text-parchment" data-tab="home">Home</button>
+                    <button class="nav-tab px-4 py-2 rounded-full text-sm font-medium transition-all hover:bg-gold/20 text-parchment" data-tab="scriptures">Scriptures</button>
+                    <button class="nav-tab px-4 py-2 rounded-full text-sm font-medium transition-all hover:bg-gold/20 text-parchment" data-tab="temples">Temples</button>
+                    <button class="nav-tab px-4 py-2 rounded-full text-sm font-medium transition-all hover:bg-gold/20 text-parchment" data-tab="traditions">Traditions</button>
+                    <button class="nav-tab px-4 py-2 rounded-full text-sm font-medium transition-all hover:bg-gold/20 text-parchment" data-tab="sanskars">Sanskars</button>
+                    <button class="nav-tab px-4 py-2 rounded-full text-sm font-medium transition-all hover:bg-gold/20 text-parchment" data-tab="aarti">Aarti & Stotras</button>
+                </div>
+
+                <!-- Right: Controls -->
+                <div class="flex items-center space-x-3">
+                    <!-- Ambient Sound Toggle -->
+                    <button id="soundToggle" class="w-10 h-10 rounded-full bg-gold/20 hover:bg-gold/30 flex items-center justify-center transition-all" aria-label="Toggle Ambient Sound">
+                        <svg id="soundIcon" class="w-5 h-5 text-gold" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 10a2 2 0 01-2 2h-4a2 2 0 01-2-2v-4a2 2 0 012-2h4a2 2 0 012 2v4z"/>
+                        </svg>
+                    </button>
+
+                    <!-- Font Size Adjuster -->
+                    <div class="flex items-center bg-gold/10 rounded-full p-1">
+                        <button id="fontDec" class="w-8 h-8 rounded-full hover:bg-gold/30 flex items-center justify-center transition-all" aria-label="Decrease Font">
+                            <svg class="w-4 h-4 text-gold" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                            </svg>
+                        </button>
+                        <span class="px-2 text-sm font-bold text-gold">A</span>
+                        <button id="fontInc" class="w-8 h-8 rounded-full hover:bg-gold/30 flex items-center justify-center transition-all" aria-label="Increase Font">
+                            <svg class="w-4 h-4 text-gold" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 5v14m7-7H5" />
+                            </svg>
+                        </button>
+                    </div>
+
+                    <!-- Dark Mode Toggle -->
+                    <button id="darkModeToggle" class="w-10 h-10 rounded-full bg-gold/20 hover:bg-gold/30 flex items-center justify-center transition-all" aria-label="Toggle Dark Mode">
+                        <svg id="moonIcon" class="w-5 h-5 text-gold" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v1m0 16v1m8.66-12.66l-.7.71M4.34 18.66l-.7-.71m15.71 8.29l-3.72-3.72M6.34 6.34l-3.72-3.72M17 12H3m4 7v-1m4 4v-1M9 2h1v1M4 9h1v-1m12 0h1v1M4 15h1v-1m12 0h1v1" />
+                        </svg>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Mobile Navigation Drawer -->
+    <div id="mobileNav" class="fixed inset-0 bg-black/80 z-40 hidden">
+        <div class="flex items-center justify-between h-16 px-4 border-b-2 border-gold/30 bg-maroon/90">
+            <span class="text-gold text-lg font-heading">Menu</span>
+            <button id="closeMobileNav" class="w-10 h-10 rounded-full bg-gold/20 flex items-center justify-center" aria-label="Close Menu">
+                <svg class="w-6 h-6 text-gold" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                </svg>
+            </button>
+        </div>
+        <div class="flex flex-col p-6 space-y-4">
+            <button class="mobile-nav-btn w-full py-3 rounded-full bg-gold/10 hover:bg-gold/20 text-parchment text-lg font-medium" data-tab="home">Home</button>
+            <button class="mobile-nav-btn w-full py-3 rounded-full bg-gold/10 hover:bg-gold/20 text-parchment text-lg font-medium" data-tab="scriptures">Scriptures</button>
+            <button class="mobile-nav-btn w-full py-3 rounded-full bg-gold/10 hover:bg-gold/20 text-parchment text-lg font-medium" data-tab="temples">Temples</button>
+            <button class="mobile-nav-btn w-full py-3 rounded-full bg-gold/10 hover:bg-gold/20 text-parchment text-lg font-medium" data-tab="traditions">Traditions</button>
+            <button class="mobile-nav-btn w-full py-3 rounded-full bg-gold/10 hover:bg-gold/20 text-parchment text-lg font-medium" data-tab="sanskars">Sanskars</button>
+            <button class="mobile-nav-btn w-full py-3 rounded-full bg-gold/10 hover:bg-gold/20 text-parchment text-lg font-medium" data-tab="aarti">Aarti & Stotras</button>
+        </div>
+    </div>
+
+    <!-- Main Content -->
+    <main class="pt-20 pb-12">
+        <!-- Hero Section with Search -->
+        <section class="relative bg-[url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMTI4MCIgaGVpZ2h0PSI4MDAiIHZpZXdCb3g9IjAgMCAxMjggODAwIi8+')] bg-cover bg-center min-h-[80vh] flex items-center">
+            <div class="absolute inset-0 bg-maroon/60"></div>
+            <div class="absolute inset-0 opacity-10" style="background-image: radial-gradient(circle at 20% 30%, gold 1px, transparent 1px), radial-gradient(circle at 80% 70%, gold 1px, transparent 1px)"></div>
+
+            <div class="max-w-4xl mx-auto px-4 text-center relative z-10">
+                <h1 class="text-5xl md:text-7xl font-heading text-gold mb-8 drop-shadow-2xl">
+                    Sanatan <span class="text-saffron">Dharma Mahakosh</span>
+                </h1>
+                <p class="text-xl text-parchment mb-10 max-w-3xl mx-auto">
+                    The Complete Encyclopedia of Sanatan Dharma Knowledge, Scriptures, Sacred Pilgrimages, and Philosophy of Life
+                </p>
+
+                <!-- Universal Instant Search Bar -->
+                <div class="relative max-w-2xl mx-auto">
+                    <input type="text" id="universalSearch" placeholder="Search scriptures, temples, traditions, sanskars, aartis..."
+                           class="w-full py-4 px-6 rounded-full bg-parchment text-maroon text-lg font-medium focus:outline-none focus:ring-4 focus:ring-gold/50 shadow-xl">
+                    <div id="searchResults" class="absolute top-full mt-2 w-full bg-parchment/95 backdrop-blur rounded-full shadow-2xl max-h-96 overflow-y-auto hidden z-50"></div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Shloka of the Day -->
+        <section class="py-16 px-4 bg-sandalwood-dark">
+            <div class="max-w-5xl mx-auto">
+                <div id="dailyShloka" class="bg-maroon/50 border-2 border-gold/30 rounded-3xl p-8 md:p-12 shadow-2xl">
+                    <h2 class="text-3xl font-heading text-gold mb-6 flex items-center">
+                        <span class="w-12 h-12 rounded-full bg-saffron/20 flex items-center justify-center mr-4">ॐ</span>
+                        Shloka of the Day
+                    </h2>
+                    <div class="space-y-4 text-center">
+                        <blockquote class="text-2xl md:text-3xl font-sanskrit text-sacrament italic leading-relaxed">
+                            <span class="block mb-2">"<!-- Placeholder for daily shloka -->
+                        </blockquote>
+                        <p class="text-lg text-parchment/90">
+                            <strong class="text-gold">Meaning:</strong> <span id="shlokaMeaning">Loading...</span>
+                        </p>
+                        <div class="flex justify-center space-x-4 pt-6">
+                            <button class="copy-btn px-6 py-3 rounded-full bg-gold/20 hover:bg-gold/30 text-gold transition-all" data-clipboard-text="" aria-label="Copy to clipboard">
+                                Copy
+                            </button>
+                            <button class="whatsapp-share px-6 py-3 rounded-full bg-green-500/20 hover:bg-green-500/30 text-green-400 transition-all flex items-center">
+                                <svg class="w-5 h-5 mr-2" fill="currentColor" viewBox="0 0 24 24">
+                                    <path d="M12 2C6.48 2 2 6.48 2 12c0 3.56 2.17 6.69 5.21 8.71-.38.76-.54 1.64-.54 2.55 0 .36.07.73.2 1.09L2 21l4.47-2.1c.36.16.75.25 1.14.25 6.62 0 12-5.38 12-12V6c0-3.31-2.69-6-6-6zm0 2c3.31 0 6 2.69 6 6 0 2.22-1.36 4.15-3.22 5.31-.13.07-.28.12-.43.16-.47.13-.95.2-1.43.2-.67 0-1.33-.1-1.97-.32-.93-.29-1.75-.77-2.42-1.43-.66-.66-1.14-1.48-1.43-2.42-.22-.64-.32-1.3-.32-1.97 0-.48.07-.97.2-1.43.16-.43.37-.82.61-1.14C8.37 10.3 10.22 11 12 11c2.21 0 4-1.79 4-4S14.21 4 12 4z"/>
+                                </svg>
+                                WhatsApp
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Royal 3D Bookshelf Grid -->
+        <section class="py-16 px-4">
+            <div class="max-w-7xl mx-auto">
+                <h2 class="text-4xl font-heading text-center text-gold mb-12">
+                    <span class="bg-gold/10 px-6 py-4 rounded-full inline-block">
+                        Scripture Library
+                    </span>
+                </h2>
+
+                <div class="bookshelf-container">
+                    <div id="bookshelf" class="bookshelf">
+                        <!-- Books will be dynamically populated here -->
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Major Temples & Pilgrimage Explorer -->
+        <section class="py-16 px-4 bg-sandalwood-dark">
+            <div class="max-w-7xl mx-auto">
+                <h2 class="text-4xl font-heading text-center text-gold mb-12">
+                    <span class="bg-gold/10 px-6 py-4 rounded-full inline-block">
+                        Divine Temples & Pilgrimages
+                    </span>
+                </h2>
+
+                <div class="flex flex-col md:flex-row gap-4 mb-8 justify-center">
+                    <select id="templeFilter" class="py-3 px-6 rounded-full bg-parchment text-maroon border-2 border-gold/30 focus:outline-none focus:ring-4 focus:ring-gold/50">
+                        <option value="">Filter by Category...</option>
+                        <option value="jyotirlinga">12 Jyotirlingas</option>
+                        <option value="shakti">52 Shaktipeeths</option>
+                        <option value="chardham">Char Dham</option>
+                        <option value="saptapuri">Sapta Puri</option>
+                        <option value="famous">Famous Temples</option>
+                    </select>
+                </div>
+
+                <div id="templeGrid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+                    <!-- Temple cards will be dynamically populated here -->
+                </div>
+            </div>
+        </section>
+
+        <!-- Minute Details of Sanatan Dharma -->
+        <section class="py-16 px-4">
+            <div class="max-w-7xl mx-auto">
+                <h2 class="text-4xl font-heading text-center text-gold mb-12">
+                    <span class="bg-gold/10 px-6 py-4 rounded-full inline-block">
+                        Sanatan Minute Details
+                    </span>
+                </h2>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                    <!-- Minute detail cards will be dynamically populated here -->
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <!-- Footer -->
+    <footer class="bg-maroon/90 border-t-2 border-gold/30 py-12 mt-20">
+        <div class="max-w-7xl mx-auto px-4 text-center">
+            <div class="text-gold mb-6">
+                <p class="text-3xl font-heading mb-2">Sanatan Dharma Mahakosh</p>
+                <p class="text-parchment/90">Sampoorna Sanatan Dharma Knowledge Base</p>
+            </div>
+            <div class="grid grid-cols-1 md:grid-cols-4 gap-6 text-parchment/80 text-sm">
+                <div>
+                    <h4 class="text-gold font-bold mb-3">Scriptures</h4>
+                    <ul class="space-y-2">
+                        <li><a href="#" class="hover:text-gold transition-colors">Bhagavad Gita</a></li>
+                        <li><a href="#" class="hover:text-gold transition-colors">Ramayan</a></li>
+                        <li><a href="#" class="hover:text-gold transition-colors">Vedas</a></li>
+                        <li><a href="#" class="hover:text-gold transition-colors">Puranas</a></li>
+                    </ul>
+                </div>
+                <div>
+                    <h4 class="text-gold font-bold mb-3">Temples</h4>
+                    <ul class="space-y-2">
+                        <li><a href="#" class="hover:text-gold transition-colors">Jyotirlingas</a></li>
+                        <li><a href="#" class="hover:text-gold transition-colors">Shaktipeeths</a></li>
+                        <li><a href="#" class="hover:text-gold transition-colors">Char Dham</a></li>
+                        <li><a href="#" class="hover:text-gold transition-colors">Pilgrimages</a></li>
+                    </ul>
+                </div>
+                <div>
+                    <h4 class="text-gold font-bold mb-3">Traditions</h4>
+                    <ul class="space-y-2">
+                        <li><a href="#" class="hover:text-gold transition-colors">Daily Rituals</a></li>
+                        <li><a href="#" class="hover:text-gold transition-colors">Sanskars</a></li>
+                        <li><a href="#" class="hover:text-gold transition-colors">Philosophy</a></li>
+                        <li><a href="#" class="hover:text-gold transition-colors">Mantras</a></li>
+                    </ul>
+                </div>
+                <div>
+                    <h4 class="text-gold font-bold mb-3">Connect</h4>
+                    <ul class="space-y-2">
+                        <li><a href="#" class="hover:text-gold transition-colors">About Us</a></li>
+                        <li><a href="#" class="hover:text-gold transition-colors">Contact</a></li>
+                        <li><a href="#" class="hover:text-gold transition-colors">Privacy</a></li>
+                        <li><a href="#" class="hover:text-gold transition-colors">Contribute</a></li>
+                    </ul>
+                </div>
+            </div>
+            <div class="mt-12 pt-6 border-t border-gold/20 text-parchment/60">
+                <p>&copy; 2024 Sanatan Dharma Mahakosh. All rights reserved. Made with love for Sanatan Dharma.</p>
+            </div>
+        </div>
+    </footer>
+
+    <script src="./js/app.js"></script>
+    <script src="./js/search-engine.js"></script>
+    <script src="./js/book-reader.js"></script>
+    <script src="./js/temple-viewer.js"></script>
+</body>
+</html>
