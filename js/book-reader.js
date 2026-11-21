@@ -1,448 +1,573 @@
-// Sanatan Dharma Mahakosh - Book Reader Module
-// 3D Page-flip physics using StPageFlip CDN
+// Sanatan Dharma Mahakosh - 3D Page-Flip Book Reader Engine
 
-class BookReader {
-    constructor() {
-        this.currentPage = 1;
-        this.totalPages = 0;
-        this.currentBook = null;
-        this.bookInstance = null;
-        this.audioContext = null;
-        this.pageRustle = null;
-        this.init();
-    }
+(function() {
+  'use strict';
 
-    init() {
-        this.loadAudioAssets();
-        this.setupEventListeners();
-    }
+  const BookReader = {
+    currentBook: null,
+    currentChapter: null,
+    currentVerse: null,
+    currentIndex: 0,
+    chapters: [],
+    totalPages: 0,
+    isMobile: window.innerWidth < 768,
 
-    loadAudioAssets() {
-        // Load ambient temple sounds
-        this.audioContext = new (window.AudioContext || window.webkitAudioContext)();
-    }
+    init: function() {
+      this.checkUrlParams();
+      this.bindEvents();
+      this.initAudio();
+    },
 
-    setupEventListeners() {
-        document.getElementById('closeBook')?.addEventListener('click', () => {
-            this.close();
-        });
+    checkUrlParams: function() {
+      const urlParams = new URLSearchParams(window.location.search);
+      const bookId = urlParams.get('book');
+      const chapter = urlParams.get('ch');
+      const verse = urlParams.get('v');
 
-        document.addEventListener('keydown', (e) => {
-            if (!document.getElementById('bookModal')?.classList.contains('hidden')) {
-                this.handleKeyboard(e);
-            }
-        });
-    }
+      if (bookId || chapter || verse) {
+        this.openBook(bookId || 'bhagavad-gita', parseInt(chapter) || null, parseInt(verse) || null);
+      }
+    },
 
-    open(bookId) {
-        const bookData = this.getBookData(bookId);
-        if (!bookData) return;
+    bindEvents: function() {
+      const that = this;
 
-        this.currentBook = bookData;
-        this.totalPages = bookData.verses?.length || 20;
-        this.currentPage = 1;
-
-        this.showModal();
-        this.initializePageFlip();
-    }
-
-    getBookData(bookId) {
-        // Get book data from SCRIPTURES object
-        if (window.SCRIPTURES?.bhagavadGita?.chapters) {
-            const chapter = window.SCRIPTURES.bhagavadGita.chapters.find(c => c.id === bookId);
-            if (chapter) return chapter;
+      // Event delegation for all reader controls
+      document.addEventListener('click', function(e) {
+        const nextBtn = e.target.closest('.book-next');
+        if (nextBtn) {
+          that.nextPage();
+          return;
         }
 
-        // Get from Ramayan
-        if (window.SCRIPTURES?.ramayan?.kands) {
-            const kand = window.SCRIPTURES.ramayan.kands.find(k => k.id === bookId);
-            if (kand) return { ...kand, verses: [] };
+        const prevBtn = e.target.closest('.book-prev');
+        if (prevBtn) {
+          that.prevPage();
+          return;
         }
 
-        return null;
-    }
-
-    showModal() {
-        const modal = document.getElementById('bookModal');
-        if (modal) {
-            modal.classList.remove('hidden');
-            modal.style.display = 'block';
-            document.body.style.overflow = 'hidden';
-        }
-    }
-
-    close() {
-        const modal = document.getElementById('bookModal');
-        if (modal) {
-            modal.classList.add('hidden');
-            modal.style.display = 'none';
-            document.body.style.overflow = '';
+        const closeBtn = e.target.closest('.book-close');
+        if (closeBtn) {
+          that.closeBook();
+          return;
         }
 
-        if (this.bookInstance) {
-            this.bookInstance.destroy();
-            this.bookInstance = null;
+        const tocToggle = e.target.closest('.toc-toggle');
+        if (tocToggle) {
+          that.toggleTOC();
+          return;
         }
 
-        const container = document.getElementById('bookContainer');
-        if (container) container.innerHTML = '';
-    }
-
-    initializePageFlip() {
-        const container = document.getElementById('bookContainer');
-        if (!container) return;
-
-        // Clear container
-        container.innerHTML = '';
-
-        // Create book structure
-        const bookHTML = this.createBookStructure();
-        container.innerHTML = bookHTML;
-
-        // Initialize page flip using StPageFlip
-        setTimeout(() => {
-            try {
-                const PF = window.PageFlip;
-                this.bookInstance = new PF('#book', {
-                    width: 800,
-                    height: 1000,
-                    size: 'fixed',
-                    coverOrientation: 'vertical',
-                    derivativesSizeOnDesktop: 'auto',
-                    derivativesOnMobile: 'auto',
-                    showCover: true,
-                    autoCenter: true,
-                    animationTimingFunction: 'cubic-bezier(0.3, 0, 0.25, 1)',
-                    flippingTime: 300,
-                    disableFlip: false,
-                    disableCover: false,
-                    disablePageFlip: false,
-                    clickDistance: 10,
-                    widthMaxRatio: 0.85,
-                    widthMinRatio: 0.5,
-                    minWidth: 0,
-                    heightLimitRatio: 1.3,
-                    mobileLayout: 'single page',
-                    lightMargin: 40,
-                    margin: 20
-                });
-
-                // Load pages
-                this.loadBookPages();
-
-                // Setup event listeners
-                this.setupPageListeners();
-            } catch (e) {
-                // Fallback to custom 3D implementation
-                this.createCustomBook();
-            }
-        }, 100);
-    }
-
-    createBookStructure() {
-        const book = document.createElement('div');
-        book.id = 'book';
-        book.className = 'relative';
-        book.style.width = '800px';
-        book.style.height = '1000px';
-        book.style.background = 'transparent';
-
-        // Create pages
-        for (let i = 0; i <= this.totalPages + 2; i++) {
-            const page = document.createElement('div');
-            page.className = 'page';
-            page.style.width = '100%';
-            page.style.height = '100%';
-            page.style.background = 'linear-gradient(145deg, #F9F1DF, #F2E2C4)';
-            page.style.border = '1px solid rgba(212, 155, 39, 0.3)';
-            page.style.borderLeft = '3px solid #D4AF37';
-            page.style.borderRight = '3px solid #C59B27';
-            page.style.boxShadow = '0 10px 30px rgba(0, 0, 0, 0.3)';
-            page.style.position = 'relative';
-            page.style.overflow = 'hidden';
-            page.style.display = 'flex';
-            page.style.flexDirection = 'column';
-            page.style.padding = '40px';
-            page.style.fontSize = '18px';
-
-            // Page number indicator
-            const pageNum = document.createElement('div');
-            pageNum.className = 'absolute top-4 right-4 text-gold font-bold text-sm';
-            pageNum.textContent = i === 0 ? 'Cover' : i > this.totalPages + 1 ? 'Back Cover' : `Page ${i - 1}`;
-            pageNum.style.background = 'rgba(212, 155, 39, 0.2)';
-            pageNum.style.padding = '5px 15px';
-            pageNum.style.borderRadius = '20px';
-
-            // Page content container
-            const content = document.createElement('div');
-            content.className = 'page-content flex-1';
-            content.style.color = '#6B0F1A';
-
-            page.appendChild(pageNum);
-            page.appendChild(content);
-            book.appendChild(page);
+        const tocClose = e.target.closest('.toc-close');
+        if (tocClose) {
+          that.toggleTOC();
+          return;
         }
 
-        return book.outerHTML;
-    }
-
-    loadBookPages() {
-        // Load content for each page
-        this.loadCoverPage();
-        this.loadChapterPage();
-        this.loadContentPages();
-        this.loadBackCover();
-    }
-
-    loadCoverPage() {
-        const firstPage = document.querySelector('#book .page:first-child');
-        if (firstPage) {
-            const content = firstPage.querySelector('.page-content');
-            if (content) {
-                content.innerHTML = `
-                    <div class="text-center">
-                        <div class="w-32 h-32 mx-auto mb-6 rounded-full bg-gold/20 flex items-center justify-center">
-                            <span class="text-6xl font-bold text-gold">ॐ</span>
-                        </div>
-                        <h1 class="font-heading text-4xl text-maroon mb-4">${this.currentBook?.titleEnglish || this.currentBook?.title}</h1>
-                        <p class="text-lg text-parchment/70 mb-6">${this.currentBook?.description || 'Sacred Scripture'}</p>
-                        <div class="border-2 border-gold/30 rounded-full w-16 h-16 mx-auto"></div>
-                    </div>
-                `;
-            }
-        }
-    }
-
-    loadChapterPage() {
-        const secondPage = document.querySelector('#book .page:nth-child(2)');
-        if (secondPage && this.currentBook?.verses) {
-            const content = secondPage.querySelector('.page-content');
-            if (content) {
-                const keyVerse = this.currentBook.keyVerses?.[0] || this.currentBook.verses[0];
-                content.innerHTML = this.createVersePage(keyVerse);
-            }
-        }
-    }
-
-    createVersePage(verse) {
-        return `
-            <div class="space-y-6">
-                <h2 class="font-heading text-2xl text-gold mb-4 flex items-center">
-                    <span class="w-8 h-8 rounded-full bg-gold/20 flex items-center justify-center mr-3">॥</span>
-                    ${verse.titleEnglish || 'Shloka'}
-                </h2>
-                <div class="border-l-4 border-gold/30 pl-6 mb-4">
-                    <blockquote class="font-sanskrit text-3xl text-sacrament italic mb-4 leading-relaxed">
-                        ${verse.sanskrit.replace(/\n/g, '<br>')}
-                    </blockquote>
-                    <div class="text-lg text-maroon bg-gold/10 p-4 rounded">
-                        ${verse.transliteration || ''}
-                    </div>
-                </div>
-                <div class="bg-maroon/10 p-4 rounded">
-                    <h4 class="font-bold text-gold mb-2">Translation</h4>
-                    <p class="text-parchment mb-3">${verse.translation || verse.meaning || ''}</p>
-                    <h4 class="font-bold text-gold mb-2">Meaning</h4>
-                    <p class="text-parchment">${verse.meaning || ''}</p>
-                </div>
-            </div>
-        `;
-    }
-
-    loadContentPages() {
-        const pages = document.querySelectorAll('#book .page');
-        const verseIndex = this.currentBook?.keyVerses?.length || 3;
-
-        for (let i = 2; i < pages.length - 1 && i < verseIndex; i++) {
-            const page = pages[i];
-            const content = page.querySelector('.page-content');
-            const verse = this.currentBook?.keyVerses?.[i - 2] || this.currentBook?.verses?.[i - 2];
-
-            if (content && verse) {
-                content.innerHTML = this.createVersePage(verse);
-            }
-        }
-    }
-
-    loadBackCover() {
-        const lastPage = document.querySelector('#book .page:last-child');
-        if (lastPage) {
-            const content = lastPage.querySelector('.page-content');
-            if (content) {
-                content.innerHTML = `
-                    <div class="text-center">
-                        <h3 class="font-heading text-2xl text-gold mb-6">Shraddha & Samarpanam</h3>
-                        <p class="text-parchment/80 mb-8 max-w-md">
-                            May this sacred knowledge bring you wisdom, peace, and spiritual growth.
-                            Share this knowledge with those who seek the truth.
-                        </p>
-                        <div class="flex justify-center space-x-4">
-                            <button class="copy-url px-6 py-3 rounded-full bg-gold/20 hover:bg-gold/30 text-gold transition-all">
-                                Share
-                            </button>
-                            <button class="close-book px-6 py-3 rounded-full bg-saffron/20 hover:bg-saffron/30 text-saffron transition-all"
-                                    onclick="window.sanatanApp.closeBookReader()">
-                                Close Book
-                            </button>
-                        </div>
-                    </div>
-                `;
-            }
-        }
-    }
-
-    createCustomBook() {
-        // Fallback: Create a more traditional book display without page-flip library
-        const container = document.getElementById('bookContainer');
-        if (!container) return;
-
-        container.innerHTML = `
-            <div class="flex items-center justify-center h-full bg-sandalwood-dark">
-                <div class="w-1/2 h-3/4 bg-maroon rounded-l-3xl shadow-2xl flex items-center justify-center">
-                    <div class="text-center p-8">
-                        <div class="w-24 h-24 mx-auto mb-6 rounded-full bg-gold/20 flex items-center justify-center">
-                            <span class="text-4xl font-bold text-gold">ॐ</span>
-                        </div>
-                        <h1 class="font-heading text-3xl text-gold mb-4">${this.currentBook?.titleEnglish || this.currentBook?.title}</h1>
-                        <p class="text-parchment/80">${this.currentBook?.description || 'Sacred Scripture'}</p>
-                    </div>
-                </div>
-                <div class="w-1/2 h-3/4 bg-parchment rounded-r-3xl shadow-2xl flex items-center justify-center overflow-y-auto">
-                    <div class="p-12 text-maroon">
-                        ${this.renderCurrentPage()}
-                    </div>
-                </div>
-            </div>
-        `;
-    }
-
-    renderCurrentPage() {
-        if (!this.currentBook?.verses?.[0]) {
-            return '<p class="text-parchment/60">Loading content...</p>';
+        const tocItem = e.target.closest('.toc-item');
+        if (tocItem) {
+          const chapterIdx = parseInt(tocItem.dataset.chapter);
+          that.jumpToChapter(chapterIdx);
+          return;
         }
 
-        const verse = this.currentBook.verses[0];
-        return `
-            <div class="space-y-6">
-                <h2 class="font-heading text-2xl text-gold mb-4">${this.currentBook.titleEnglish}</h2>
-                <blockquote class="font-sanskrit text-2xl text-sacrament italic mb-4">
-                    ${verse.sanskrit.replace(/\n/g, '<br>')}
-                </blockquote>
-                <div class="text-lg text-maroon bg-gold/10 p-4 rounded">
-                    ${verse.transliteration || ''}
-                </div>
-                <p class="text-base text-parchment/80">${verse.translation || verse.meaning || ''}</p>
-            </div>
-        `;
-    }
-
-    setupPageListeners() {
-        if (!this.bookInstance) return;
-
-        this.bookInstance.on('flip', (page) => {
-            this.onPageFlip(page + 1);
-        });
-    }
-
-    onPageFlip(pageNumber) {
-        this.currentPage = pageNumber;
-
-        // Play page rustle sound
-        this.playPageSound();
-
-        // Update UI
-        this.updatePageInfo();
-    }
-
-    playPageSound() {
-        // Create a simple rustle sound effect
-        if (this.audioContext) {
-            const oscillator = this.audioContext.createOscillator();
-            const gainNode = this.audioContext.createGain();
-
-            oscillator.connect(gainNode);
-            gainNode.connect(this.audioContext.destination);
-
-            oscillator.type = 'square';
-            oscillator.frequency.setValueAtTime(800, this.audioContext.currentTime);
-            oscillator.frequency.exponentialRampToValueAtTime(400, this.audioContext.currentTime + 0.1);
-
-            gainNode.gain.setValueAtTime(0, this.audioContext.currentTime);
-            gainNode.gain.linearRampToValueAtTime(0.05, this.audioContext.currentTime + 0.01);
-            gainNode.gain.exponentialRampToValueAtTime(0.001, this.audioContext.currentTime + 0.15);
-
-            oscillator.start();
-            oscillator.stop(this.audioContext.currentTime + 0.15);
+        const fontSizeInc = e.target.closest('.font-size-inc');
+        if (fontSizeInc) {
+          that.adjustFontSize(1);
+          return;
         }
-    }
 
-    updatePageInfo() {
-        document.querySelectorAll('#book .page .absolute.top-4.right-4').forEach(el => {
-            el.textContent = `\`${this.currentPage > this.totalPages + 1 ? 'Back Cover' : this.currentPage === 0 ? 'Cover' : `Page ${this.currentPage}`}`;
-        });
-    }
+        const fontSizeDec = e.target.closest('.font-size-dec');
+        if (fontSizeDec) {
+          that.adjustFontSize(-1);
+          return;
+        }
 
-    handleKeyboard(e) {
+        const copyBtn = e.target.closest('.copy-verse');
+        if (copyBtn) {
+          that.copyVerse();
+          return;
+        }
+
+        const shareBtn = e.target.closest('.share-whatsapp');
+        if (shareBtn) {
+          that.shareWhatsApp();
+          return;
+        }
+      });
+
+      // Keyboard navigation
+      document.addEventListener('keydown', function(e) {
+        if (!that.isOpen()) return;
+
         switch(e.key) {
-            case 'ArrowRight':
-            case ' ':
-                this.nextPage();
-                break;
-            case 'ArrowLeft':
-            case 'PageDown':
-                this.prevPage();
-                break;
-            case 'Home':
-                this.firstPage();
-                break;
-            case 'End':
-                this.lastPage();
-                break;
+          case 'ArrowLeft':
+            e.preventDefault();
+            that.prevPage();
+            break;
+          case 'ArrowRight':
+            e.preventDefault();
+            that.nextPage();
+            break;
+          case 'Escape':
+            e.preventDefault();
+            that.closeBook();
+            break;
         }
-        e.preventDefault();
-    }
+      });
 
-    nextPage() {
-        if (this.bookInstance && this.currentPage < this.totalPages + 2) {
-            this.bookInstance.flipToNextPage();
+      // Swipe gestures for mobile
+      let startX = 0;
+      let endX = 0;
+
+      document.addEventListener('touchstart', function(e) {
+        startX = e.touches[0].clientX;
+      }, { passive: true });
+
+      document.addEventListener('touchend', function(e) {
+        endX = e.changedTouches[0].clientX;
+        const diff = startX - endX;
+
+        if (Math.abs(diff) > 50) {
+          if (diff > 0) {
+            that.nextPage();
+          } else {
+            that.prevPage();
+          }
         }
-    }
+      }, { passive: true });
+    },
 
-    prevPage() {
-        if (this.bookInstance && this.currentPage > 1) {
-            this.bookInstance.flipToPreviousPage();
+    openBook: function(bookId, chapterNum, verseNum) {
+      // Find the book
+      const books = window.SCRIPTURES_DATA || [];
+      this.currentBook = books.find(b => (b.id || b.title) === bookId) || books[0];
+
+      if (!this.currentBook) return;
+
+      // Build chapters array
+      this.chapters = [];
+
+      // Add main chapters if they exist as separate objects
+      if (this.currentBook.chapters) {
+        this.chapters = this.currentBook.chapters.map(ch => ({ type: 'chapter', data: ch }));
+      }
+
+      // Add verses if they exist
+      if (this.currentBook.verses) {
+        this.chapters.push({ type: 'verse', data: this.currentBook.verses });
+      }
+
+      // If we have chapter structure
+      if (this.currentBook.chapters || this.currentBook.verses) {
+        // Handle chapter number from URL
+        if (chapterNum && this.currentBook.chapters) {
+          const chapterData = this.currentBook.chapters.find(c => c.chapterNumber === chapterNum);
+          if (chapterData) {
+            this.currentChapter = chapterData;
+            this.currentIndex = chapterNum - 1;
+            this.totalPages = this.currentBook.chapters.length;
+
+            // Handle verse number
+            if (verseNum && chapterData.verses) {
+              const verse = chapterData.verses.find(v => v.verseNumber === verseNum);
+              if (verse) {
+                this.currentVerse = verse;
+                this.openReader(chapterData, verse);
+                return;
+              }
+            }
+
+            this.openReader(chapterData);
+            return;
+          }
         }
-    }
+      }
 
-    firstPage() {
-        if (this.bookInstance) {
-            this.bookInstance.flipToPage(1);
+      // Fallback for simple structure
+      this.totalPages = 1;
+      this.openReader(this.currentBook);
+    },
+
+    openReader: function(chapter, verse) {
+      this.currentChapter = chapter;
+      this.currentVerse = verse;
+
+      // Create overlay
+      let overlay = document.getElementById('book-reader-overlay');
+      if (!overlay) {
+        overlay = this.createReaderOverlay();
+        document.body.appendChild(overlay);
+      }
+
+      overlay.classList.add('active');
+
+      // Update content
+      this.renderPage(chapter, verse);
+
+      // Play page turn sound
+      this.playPageTurn();
+    },
+
+    createReaderOverlay: function() {
+      const overlay = document.createElement('div');
+      overlay.id = 'book-reader-overlay';
+      overlay.className = 'book-reader-overlay';
+      overlay.innerHTML = `
+        <div class="book-reader-modal" role="dialog" aria-modal="true">
+          <div class="book-reader-content">
+            <div class="book-pages">
+              <div class="book-page left-page" id="left-page">
+                <div class="page-content">
+                  <div class="page-header"></div>
+                  <div class="page-artwork"></div>
+                  <img src="" alt="" class="page-image" onerror="this.style.display='none'">
+                </div>
+                <div class="page-folio"></div>
+              </div>
+              <div class="book-page right-page" id="right-page">
+                <div class="page-content">
+                  <div class="page-header">
+                    <span class="page-title"></span>
+                    <span class="page-number"></span>
+                  </div>
+                  <div class="verse-sanskrit"></div>
+                  <div class="verse-transliteration"></div>
+                  <div class="verse-meaning"></div>
+                </div>
+                <div class="page-folio"></div>
+              </div>
+            </div>
+
+            <div class="book-controls">
+              <button class="book-prev" aria-label="Previous Page">
+                <svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor">
+                  <path d="M20 12H3l4-4z"/>
+                </svg>
+              </button>
+
+              <div class="book-nav">
+                <button class="font-size-btn font-size-dec" aria-label="Decrease Font Size">A-</button>
+                <button class="font-size-btn font-size-inc" aria-label="Increase Font Size">A+</button>
+              </div>
+
+              <button class="book-next" aria-label="Next Page">
+                <svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor">
+                  <path d="M4 12h13l-4 4z"/>
+                </svg>
+              </button>
+            </div>
+
+            <div class="book-sidebar">
+              <button class="toc-toggle" aria-label="Table of Contents">
+                <svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor">
+                  <path d="M3 18h18v-2H3v2zm0-5h18v-2H3v2zm0-7v2h18V6H3z"/>
+                </svg>
+              </button>
+
+              <button class="copy-verse" aria-label="Copy Verse">
+                <svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor">
+                  <path d="M16 1H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V5a2 2 0 0 0-2-2zm3 4H8a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h13a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2z"/>
+                </svg>
+              </button>
+
+              <button class="share-whatsapp" aria-label="Share on WhatsApp">
+                <svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor">
+                  <path d="M20 2H4c-1.1 0-2 .9-2 2v18l4-4h14c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2zM7.3 13.7l-.8-.5-3.5 1.3 1.1-1.2 3.1-1.2 3.1 3.1-1.6 3.1-3.5-1.3 2.9-2.8-1.5-3.1-3.1 3.1z"/>
+                </svg>
+              </button>
+
+              <button class="book-close" aria-label="Close">
+                <svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor">
+                  <path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/>
+                </svg>
+              </button>
+            </div>
+          </div>
+
+          <div class="toc-container" id="toc-container">
+            <button class="toc-close" aria-label="Close TOC">
+              <svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor">
+                <path d="M18.36 6.64l-10.72 10.72M5.64 6.64l10.72 10.72"/>
+              </svg>
+            </button>
+            <h3>Table of Contents</h3>
+            <div class="toc-list" id="toc-list"></div>
+          </div>
+        </div>
+      `;
+
+      return overlay;
+    },
+
+    renderPage: function(chapter, verse) {
+      if (!chapter) return;
+
+      const leftPage = document.getElementById('left-page');
+      const rightPage = document.getElementById('right-page');
+
+      if (!leftPage || !rightPage) return;
+
+      // Update header
+      const pageHeader = rightPage.querySelector('.page-header');
+      const pageTitle = rightPage.querySelector('.page-title');
+      const pageNumber = rightPage.querySelector('.page-number');
+
+      if (pageTitle) {
+        pageTitle.textContent = this.currentBook?.title || 'Scripture';
+      }
+      if (pageHeader) {
+        pageHeader.innerHTML = `
+          <span class="book-name">${this.currentBook?.title || 'Scriptures'}</span>
+          <span class="chapter-name">${chapter.title || ''}</span>
+        `;
+      }
+      if (pageNumber) {
+        pageNumber.textContent = this.currentIndex + 1;
+      }
+
+      // Left page - artwork/illustration
+      const leftContent = leftPage.querySelector('.page-content');
+      if (leftContent) {
+        leftContent.innerHTML = `
+          <div class="page-header"></div>
+          <div class="page-artwork">
+            <img src="${chapter.illustration || ''}" alt="${chapter.title || 'Illustration'}" class="page-image" onerror="this.style.display='none'; this.parentNode.innerHTML='<div class=\"no-image\">No illustration available</div>'">
+          </div>
+          <img src="" alt="" class="page-image" style="display:none">
+        `;
+      }
+
+      // Right page - verse content
+      const verseSanskrit = rightPage.querySelector('.verse-sanskrit');
+      const verseTrans = rightPage.querySelector('.verse-transliteration');
+      const verseMeaning = rightPage.querySelector('.verse-meaning');
+
+      if (verse) {
+        if (verseSanskrit) {
+          verseSanskrit.textContent = verse.sanskrit;
         }
-    }
-
-    lastPage() {
-        if (this.bookInstance) {
-            this.bookInstance.flipToPage(this.totalPages + 2);
+        if (verseTrans) {
+          verseTrans.textContent = verse.transliteration;
         }
-    }
-
-    goToPage(page) {
-        if (this.bookInstance && page > 0 && page <= this.totalPages + 2) {
-            this.bookInstance.flipToPage(page);
+        if (verseMeaning) {
+          verseMeaning.textContent = verse.meaning;
         }
-    }
-}
 
-// Initialize book reader when DOM is ready
-if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', () => {
-        window.bookReader = new BookReader();
+        // Show copy/share buttons
+        const copyBtn = document.querySelector('.copy-verse');
+        const shareBtn = document.querySelector('.share-whatsapp');
+        if (copyBtn) copyBtn.style.display = 'block';
+        if (shareBtn) shareBtn.style.display = 'block';
+      } else {
+        if (verseSanskrit) verseSanskrit.textContent = '';
+        if (verseTrans) verseTrans.textContent = '';
+        if (verseMeaning) verseMeaning.textContent = '';
+        if (copyBtn) copyBtn.style.display = 'none';
+        if (shareBtn) shareBtn.style.display = 'none';
+      }
+    },
+
+    nextPage: function() {
+      if (!this.isOpen()) return;
+
+      this.currentIndex++;
+
+      if (this.currentIndex < this.totalPages) {
+        const nextChapter = this.chapters[this.currentIndex];
+        if (nextChapter) {
+          if (nextChapter.type === 'verse') {
+            // Find next chapter with verses
+            this.renderPage(nextChapter.data[0] || nextChapter.data);
+          } else {
+            this.renderPage(nextChapter.data);
+          }
+        }
+        this.playPageTurn();
+      } else {
+        this.closeBook();
+      }
+    },
+
+    prevPage: function() {
+      if (!this.isOpen()) return;
+
+      if (this.currentIndex > 0) {
+        this.currentIndex--;
+        const prevChapter = this.chapters[this.currentIndex];
+        if (prevChapter) {
+          if (prevChapter.type === 'verse') {
+            this.renderPage(prevChapter.data[0] || prevChapter.data);
+          } else {
+            this.renderPage(prevChapter.data);
+          }
+        }
+        this.playPageTurn();
+      }
+    },
+
+    jumpToChapter: function(chapterIdx) {
+      if (chapterIdx >= 0 && chapterIdx < this.totalPages) {
+        this.currentIndex = chapterIdx;
+        const chapter = this.chapters[chapterIdx];
+        if (chapter) {
+          if (chapter.type === 'verse') {
+            this.renderPage(chapter.data[0]);
+          } else {
+            this.renderPage(chapter.data);
+          }
+        }
+        this.toggleTOC();
+        this.playPageTurn();
+      }
+    },
+
+    toggleTOC: function() {
+      const tocContainer = document.getElementById('toc-container');
+      if (tocContainer) {
+        tocContainer.classList.toggle('open');
+
+        if (tocContainer.classList.contains('open')) {
+          this.renderTOC();
+        }
+      }
+    },
+
+    renderTOC: function() {
+      const tocList = document.getElementById('toc-list');
+      if (!tocList || !this.currentBook || !this.currentBook.chapters) return;
+
+      let html = '';
+      this.currentBook.chapters.forEach((chapter, idx) => {
+        html += `<div class="toc-item" data-chapter="${idx}">${chapter.title || `Chapter ${idx + 1}`}</div>`;
+      });
+
+      tocList.innerHTML = html;
+    },
+
+    adjustFontSize: function(delta) {
+      const body = document.body;
+      const oldSize = body.classList.contains('font-small') ? -1 :
+                      body.classList.contains('font-large') ? 1 : 0;
+      const newSize = oldSize + delta;
+
+      body.classList.remove('font-small', 'font-medium', 'font-large');
+
+      if (newSize < 0) {
+        body.classList.add('font-small');
+      } else if (newSize > 0) {
+        body.classList.add('font-large');
+      } else {
+        body.classList.add('font-medium');
+      }
+    },
+
+    copyVerse: function() {
+      if (!this.currentVerse) return;
+
+      const text = `${this.currentVerse.sanskrit}\n${this.currentVerse.transliteration}\n${this.currentVerse.meaning}`;
+
+      navigator.clipboard.writeText(text).then(() => {
+        this.showToast('Verse copied to clipboard');
+      }).catch(() => {
+        // Fallback for older browsers
+        const textarea = document.createElement('textarea');
+        textarea.value = text;
+        document.body.appendChild(textarea);
+        textarea.select();
+        document.execCommand('copy');
+        document.body.removeChild(textarea);
+        this.showToast('Verse copied to clipboard');
+      });
+    },
+
+    shareWhatsApp: function() {
+      if (!this.currentBook || !this.currentVerse) return;
+
+      const text = `${this.currentBook.title}:${this.currentVerse.sanskrit}\n${this.currentVerse.transliteration}\n${this.currentVerse.meaning}`;
+      const url = `https://wa.me/?text=${encodeURIComponent(text)}`;
+      window.open(url, '_blank');
+    },
+
+    showToast: function(message) {
+      let toast = document.getElementById('book-toast');
+      if (!toast) {
+        toast = document.createElement('div');
+        toast.id = 'book-toast';
+        document.body.appendChild(toast);
+      }
+
+      toast.textContent = message;
+      toast.className = 'toast-show';
+
+      setTimeout(() => {
+        toast.className = '';
+      }, 3000);
+    },
+
+    isOpen: function() {
+      const overlay = document.getElementById('book-reader-overlay');
+      return overlay && overlay.classList.contains('active');
+    },
+
+    closeBook: function() {
+      const overlay = document.getElementById('book-reader-overlay');
+      if (overlay) {
+        overlay.classList.remove('active');
+        // Clean up URL
+        const url = new URL(window.location);
+        url.searchParams.delete('book');
+        url.searchParams.delete('ch');
+        url.searchParams.delete('v');
+        window.history.pushState({}, '', url);
+      }
+    },
+
+    initAudio: function() {
+      // Initialize audio context for page turn sounds
+      try {
+        this.audioContext = new (window.AudioContext || window.webkitAudioContext)();
+      } catch (e) {
+        console.warn('Web Audio API not available');
+      }
+    },
+
+    playPageTurn: function() {
+      if (!this.audioContext) return;
+
+      // Create a simple page turn sound
+      const duration = 0.1;
+      const sampleRate = this.audioContext.sampleRate;
+      const buffer = this.audioContext.createBuffer(1, duration * sampleRate, sampleRate);
+      const data = buffer.getChannelData(0);
+
+      // Create a paper rustle-like sound
+      for (let i = 0; i < sampleRate * duration; i++) {
+        const t = i / sampleRate;
+        data[i] = Math.sin(2 * Math.PI * 200 * t) * Math.exp(-t * 20) * 0.1;
+      }
+
+      const source = this.audioContext.createBufferSource();
+      source.buffer = buffer;
+      source.connect(this.audioContext.destination);
+      source.start(0);
+    }
+  };
+
+  // Initialize when DOM ready
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', function() {
+      if (document.getElementById('search-input')) {
+        BookReader.init();
+      }
     });
-} else {
-    window.bookReader = new BookReader();
-}
+  } else {
+    if (document.getElementById('search-input')) {
+      BookReader.init();
+    }
+  }
 
-// Export for modules
-if (typeof module !== 'undefined' && module.exports) {
-    module.exports = BookReader;
-}
+  // Expose globally
+  window.BookReader = BookReader;
+
+})();

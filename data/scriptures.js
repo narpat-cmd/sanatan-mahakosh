@@ -1,384 +1,358 @@
-// Sanatan Dharma Mahakosh - Scriptures Library
-// Complete data for Bhagavad Gita, Ramayan, Vedas, Upanishads, and Puranas
+// Sanatan Dharma Mahakosh - Scriptures Data
+// Attaches to window.SCRIPTURES_DATA
 
-window.SCRIPTURES = {
-    bhagavadGita: {
-        title: "भगवद्गीता",
-        titleEnglish: "Bhagavad Gita",
-        chapters: [
-            {
-                id: "gita-ch1",
-                title: "अर्जुनवादानन्तरम्",
-                titleEnglish: "Arjuna's Depression",
-                verses: [
-                    {
-                        id: "gita-1-28",
-                        number: 1,
-                        numberEnglish: 28,
-                        sanskrit: "अहं कर्तारम् अस्मि लोकस्त्रियं च प्रतिष्ठिताम् ।\nमां त्यक्त्वा कर्तुं इछामि वर्धमानान् ॥",
-                        transliteration: "aham kartāram asmi lokan striṃ ca pratiṣṭhitām | māṃ tyaktva kartuṃ icchāmi vardhamānān ||",
-                        translation: "I am the creator of the world, and the queen who is established. Having abandoned Me, I desire to increase the world population.",
-                        meaning: "This verse expresses the divine perspective of the Supreme Being on the continuation of life and the preservation of the world order.",
-                        illustration: "https://upload.wikimedia.org/wikipedia/commons/thumb/2/2d/Krishna_and_Arjuna_on_ the_Battlefield_Wooden_Style.jpg/440px-Krishna_and_Arjuna_on_the_Battlefield_Wooden_Style.jpg"
-                    }
-                ]
-            },
-            {
-                id: "gita-ch2",
-                title: "संदेहोपैषादुपदेह",
-                titleEnglish: "The Introduction of Yoga",
-                numberOfVerses: 72,
-                keyVerses: [
-                    {
-                        id: "gita-2-47",
-                        number: 2,
-                        numberEnglish: 47,
-                        sanskrit: "कर्मण्य् एवाधिकारस्ते मा फलेषु कदाचन ।\nमा कर्मफलहेतुं भूयः समो ऽस्तु कर्मचर्युजः ॥",
-                        transliteration: "karmaṇy evādhikāraste mā phaleṣu kadācana | mā karmaphalāhetuṃ bhūyaḥ samo 'stu karmacarī yujas tasmād yah",
-                        translation: "You have the right to work, but never to the fruit of work. Let the fruits of action be set aside, and consider the work itself as your duty.",
-                        meaning: "This foundational verse teaches that one should perform actions without attachment to their results, dedicating all actions to the Divine.",
-                        illustration: "https://upload.wikimedia.org/wikipedia/commons/thumb/d/d4/Shri_Krishna_Telling_Bhagavad_Gita_to_Arjuna_-_WGA.jpg/440px-Shri_Krishna_Telling_Bhagavad_Gita_to_Arjuna_-_WGA.jpg"
-                    },
-                    {
-                        id: "gita-2-48",
-                        number: 48,
-                        numberEnglish: 48,
-                        sanskrit: "सम्यग् द्रष्टुं पूर्वम् उच्छ्वासितम् ।\nशान्तमेव स्थितम् इह स्वराज्यपति स्याम ॥",
-                        transliteration: "samyag draṣṭuṃ pūrvam ucchvāsitam | śāntam eva sthātam idaḥ svarājya-pati syāma ||",
-                        translation: "Seeing the enemy already beaten and at peace, the lord of the city said: 'I see the whole world subdued.'",
-                        meaning: "Perfect yoga is equanimity in success and failure, praise and blame, pleasure and pain.",
-                        illustration: "https://upload.wikimedia.org/wikipedia/commons/thumb/3/3c/Ariala_Kshetra_Parva_Krishna_and_Arjuna_02.jpg/440px-Ariala_Kshetra_Parva_Krishna_and_Arjuna_02.jpg"
-                    }
-                ]
-            },
-            {
-                id: "gita-ch10",
-                title: "विभुवर्णानं",
-                titleEnglish: "The Affirmation of Divinity",
-                numberOfVerses: 42,
-                keyVerses: [
-                    {
-                        id: "gita-10-2",
-                        number: 10,
-                        numberEnglish: 2,
-                        sanskrit: "अहं सर्वस्य प्रभवो मतिर्युज्यते महर्षयः ।\nअहं विष्णुर रक्षावीर ऋद्धो दशरथस्य वंशः ॥",
-                        transliteration: "aḥaṃ sarvasya prabhavo matiryujyate maharṣayaḥ | ahaṃ viṣṇur rakṣāvīr ṛddho daśarathasya vaṃśaḥ ||",
-                        translation: "I am the source of all beings. From Me, the entire universe emerges, exists, and returns. I am the Lord of wealth, the warrior Rama, and the progenitor of Dasharatha's lineage.",
-                        meaning: "This verse reveals the universal form of Krishna and His omnipresence in all aspects of creation and divine forms.",
-                        illustration: "https://upload.wikimedia.org/wikipedia/commons/thumb/5/5b/Vishvarupa_Dwipadgiri.jpg/440px-Vishvarupa_Dwipadgiri.jpg"
-                    }
-                ]
-            }
+window.SCRIPTURES_DATA = [
+  {
+    id: 'bhagavad-gita',
+    title: 'Shrimad Bhagavad Gita',
+    subtitle: 'The Song Divine',
+    category: 'Scripture',
+    coverColor: '#6B0F1A',
+    accentColor: '#D4AF37',
+    keywords: ['gita', 'bhagavad', 'krishna', 'arjuna', 'kurukshetra', 'dharma', 'yoga', 'karma', 'bhakti', 'jnana'],
+    chapters: [
+      {
+        chapterNumber: 1,
+        title: 'Arjuna Vishada Yoga',
+        illustrationCaption: 'Arjuna\'s despondency on the battlefield of Kurukshetra',
+        verses: [
+          { verseNumber: 1, sanskrit: 'धृतराष्ट्र उवाच । धर्मक्षेत्रे कुरुक्षेत्रे समवेता युयुत्सवः । मामकाः पाण्डवाश्चैव किमकुर्वत सञ्जय ॥', transliteration: 'Dhritarashtra uvācha: Dharmakshetre kurukshetre samavetā yuyutsavah | māmakāh pāndavāśchaiva kimakurvata sañjaya ||', meaning: 'Dhritarashtra said: O Sanjaya, assembled at Kurukshetra, the field of dharma, what did my sons and the sons of Pandu do, desiring to fight?' },
+          { verseNumber: 2, sanskrit: 'सञ्जय उवाच । दृष्टवा तु पाण्डवानीकं व्यूढं दुर्योधनस्तदा । आचार्यमुपसङ्गम्य राजा वचनमब्रवीत् ॥', transliteration: 'Sañjaya uvācha: Drishtvā tu pāndavānīkaṃ vyūḍhaṃ duryodhanastadā | āchāryamupasaṅgamya rājā vachanamabravīt ||', meaning: 'Sanjaya said: Seeing the Pandava army arrayed in battle formation, King Duryodhana approached his teacher and spoke.' }
         ]
-    },
-
-    ramayan: {
-        title: "रामयन",
-        titleEnglish: "Ramayana",
-        kands: [
-            {
-                id: "rama-balakand",
-                title: "बालकाण्डष",
-                titleEnglish: "Bala Kanda",
-                chapters: [
-                    {
-                        id: "bala-1",
-                        title: "राज्यप्रभावः",
-                        titleEnglish: "Coronation of Rama",
-                        number: 1,
-                        verses: [
-                            {
-                                id: "bala-1-1",
-                                number: 1,
-                                numberEnglish: 27,
-                                sanskrit: "दशरथश्च सुतेन बभूवुर्द्वारते शत्रुर्निहितः ।\nराजा वै श्रियां युमानं वनस्थिनि समागतः स सः ॥",
-                                transliteration: "daśarathaśca sute kubheṃ babbhūvur dvārataḥ śatrunihitaḥ | rājā vai śrīyaṃ yumānaṃ vanasthini samāgataḥ sa saḥ ||",
-                                translation: "King Dasharatha, having brought his son (Rama) who was in the forest, met Sita there, and he became very glad.",
-                                meaning: "This verse describes King Dasharatha's joyful reunion with his son Rama after a long exile.",
-                                illustration: "https://upload.wikimedia.org/wikipedia/commons/thumb/f/f5/Tulsidas_Ramayana_Bala_Kanda_Pg172.jpg/440px-Tulsidas_Ramayana_Bala_Kanda_Pg172.jpg"
-                            }
-                        ]
-                    }
-                ]
-            },
-            {
-                id: "rama-ayodhyakand",
-                title: "आयोध्याकाण्डष",
-                titleEnglish: "Ayodhya Kanda",
-                numberOfChapters: 36
-            },
-            {
-                id: "rama-aranyakand",
-                title: "आरण्यकाण्डष",
-                titleEnglish: "Aranyaka Kanda",
-                numberOfChapters: 30
-            },
-            {
-                id: "rama-kishkindhakand",
-                title: "किष्णधकाण्डष",
-                titleEnglish: "Kishkindha Kanda",
-                numberOfChapters: 25
-            },
-            {
-                id: "rama-sundarkand",
-                title: "सुन्दरकाण्डष",
-                titleEnglish: "Sundarakaanda",
-                numberOfChapters: 35,
-                keyVerses: [
-                    {
-                        id: "sundar-2-67",
-                        number: 2,
-                        numberEnglish: 67,
-                        sanskrit: "श्रीरामः स्वनराज्ये चलित्तम् कपीश्च राघवः ।\nहर्षेण च महाराजा किमु दूषितुं किमभवत् ॥",
-                        transliteration: "śrīrāmaḥ svanarājyē kalittaṃ kapiśca rāghavaḥ | harṣeṇa ca mahārājā kimu dūṣitum kimabhavat ||",
-                        translation: "Lord Rama, having entered his own kingdom, and Raghava (Hanuman), having become very glad with the king's happy state, what harm did he do?",
-                        meaning: "This verse from Sundarakanda describes Hanuman's joy at Rama's victory and his devotion to serving him.",
-                        illustration: "https://upload.wikimedia.org/wikipedia/commons/thumb/8/85/Hanuman_meets_Ravana.jpg/440px-Hanuman_meets_Ravana.jpg"
-                    }
-                ]
-            },
-            {
-                id: "rama-lankakand",
-                title: "लङ्काकाण्डष",
-                titleEnglish: "Lanka Kanda",
-                numberOfChapters: 35
-            },
-            {
-                id: "rama-uttarkand",
-                title: "उत्तरकाण्डष",
-                titleEnglish: "Uttara Kanda",
-                numberOfChapters: 25
-            }
+      },
+      {
+        chapterNumber: 2,
+        title: 'Sankhya Yoga',
+        illustrationCaption: 'Lord Krishna reveals the immortal nature of the Self',
+        verses: [
+          { verseNumber: 47, sanskrit: 'कर्मण्येवाधिकारस्ते मा फलेषु कदाचन । मा कर्मफलहेतुर्भूर्मा ते सङ्गोऽस्त्वकर्मणि ॥', transliteration: 'Karmaṇyevādhikāraste mā phaleshu kadāchana | mā karma-phala-heturbhūr mā te saṅgo\'stvakarmaṇi ||', meaning: 'You have the right to perform your prescribed duty, but you are not entitled to the fruits of action. Never consider yourself the cause of the results of your activities, and never be attached to not doing your duty.' },
+          { verseNumber: 48, sanskrit: 'योगस्थः कुरु कर्माणि सङ्गं त्यक्त्वा धनञ्जय । सिद्ध्यसिद्ध्योः समो भूत्वा समत्वं योग उच्यते ॥', transliteration: 'Yogasthaḥ kuru karmāṇi saṅgaṃ tyaktvā dhanañjaya | siddhy-asiddhyoḥ samo bhūtvā samatvaṃ yoga uchyate ||', meaning: 'Perform your duty equipoised, O Arjuna, abandoning all attachment to success or failure. Such equanimity is called yoga.' }
         ]
-    },
-
-    vedas: {
-        title: "वेदाः",
-        titleEnglish: "The Four Vedas",
-        vedas: [
-            {
-                id: "rigveda",
-                name: "रिग्वेदः",
-                nameEnglish: "Rigveda",
-                hymns: 10,
-                suktas: 1017,
-                keyHymns: ["Nasadiya Sukta", "Lalita Sukta", "Devi Sukta", "Gita Sukta"],
-                notableVerses: [
-                    {
-                        id: "rig-10-129",
-                        number: 10.129,
-                        sanskrit: "नासदीयं नासदिन्मे नासदीय इदम् पुरा ।\nनान्यः प्रकाशो विद्यते यदा वै मा न कशाचन ॥",
-                        transliteration: "nāsadīyaṃ nāsadinmē nāsadīya idam purā | nānyaḥ prakāho vidyate yadā vai mā na kaśācana ||",
-                        translation: "When from the non-being, this being was born; neither in the heavens nor on earth was there any other existence, nor did exist the same again.",
-                        meaning: "This famous verse from the Nasadiya Sukta explores the ultimate mystery of cosmic creation and the limits of human knowledge."
-                    }
-                ]
-            },
-            {
-                id: "yajurveda",
-                name: "यजुर्वेदः",
-                nameEnglish: "Yajurveda",
-                categories: ["Krishna Yajurveda", "Shukla Yajurveda"],
-                muhurtas: 13
-            },
-            {
-                id: "samaveda",
-                name: "सामवेदः",
-                nameEnglish: "Samaveda",
-                relatedTo: "Rigveda",
-                melodicCategories: 12
-            },
-            {
-                id: "atharvaveda",
-                name: "अथर्ववेदः",
-                nameEnglish: "Atharvaveda",
-                focus: "Spells, Charms, and Daily Life",
-                hymns: 200
-            }
+      },
+      {
+        chapterNumber: 3,
+        title: 'Karma Yoga',
+        illustrationCaption: 'The yoga of selfless action',
+        verses: [
+          { verseNumber: 1, sanskrit: 'अर्जुन उवाच । ज्ञायसे चेत्कर्मण्येभ्यो बुद्धिर्बलवती मता । तत्किं कर्म घोराय मां नियोजयसि केशव ॥', transliteration: 'Arjuna uvācha: Jñāyase chetkarmaṇyebhyo buddhirlabhavatī matā | tatkiṃ karma ghorāya māṃ niyojayasi keśava ||', meaning: 'Arjuna said: If You consider knowledge superior to action, O Keshava, why do You engage me in this terrible warfare?' }
         ]
-    },
-
-    upanishads: {
-        title: "उपनिषदः",
-        titleEnglish: "Principal Upanishads",
-        upanishads: [
-            {
-                id: "isha-upanishad",
-                name: "ईशावास्य UPANISHAD",
-                nameEnglish: "Isha Upanishad",
-                verseCount: 18
-            },
-            {
-                id: "katha-upanishad",
-                name: "कथाउपनिषद",
-                nameEnglish: "Katha Upanishad",
-                verseCount: 114,
-                keyConcept: "The story of Nachiketas and Yama"
-            },
-            {
-                id: "mundaka-upanishad",
-                name: "मुंडक उपनिषद",
-                nameEnglish: "Mundaka Upanishad",
-                verseCount: 384
-            },
-            {
-                id: "prashna-upanishad",
-                name: "प्रश्न उपनिषद",
-                nameEnglish: "Prashna Upanishad",
-                verseCount: 165
-            },
-            {
-                id: "mandukya-upanishad",
-                name: "माण्डूकयुपनिषद्",
-                nameEnglish: "Mandukya Upanishad",
-                verseCount: 73,
-                aphorisms: 73
-            }
+      },
+      {
+        chapterNumber: 10,
+        title: 'Vibhuti Yoga',
+        illustrationCaption: 'The divine glories of the Supreme Lord',
+        verses: [
+          { verseNumber: 2, sanskrit: 'न मे विदुः सुरगणाः प्रभवं न महर्षयः । अहमादिर्हि देवानां महर्षीणां च सर्वशः ॥', transliteration: 'Na me viduḥ suragaṇāḥ prabhavaṃ na maharṣayaḥ | ahamādirhi devānāṃ maharṣīṇāṃ cha sarvaśaḥ ||', meaning: 'Neither the hosts of demigods nor the great sages know My origin or opulences, for I am the source of all demigods and sages in every respect.' },
+          { verseNumber: 20, sanskrit: 'अहमात्मा गुडाकेश सर्वभूताशयस्थितः । अहमादिश्च मध्यं च भूतानामन्त एव च ॥', transliteration: 'Ahamātmā guḍākeśa sarvabhūtāśaya-sthitaḥ | ahamādiścha madhyaṃ cha bhūtānāmanta eva cha ||', meaning: 'I am the Self, O Gudakesha, seated in the hearts of all living entities. I am the beginning, middle and end of all beings.' }
         ]
-    }
-};
-
-// Mahapuranas
-window.MAHAPURNAS = {
-    title: "महापुराण-s",
-    titleEnglish: "The 18 Mahapuranas",
-    count: 18,
-    purnas: [
-        {
-            id: "shiv-purana",
-            name: "शिव पुराण",
-            nameEnglish: "Shiva Purana",
-            sections: ["Puranic Stories", "Lord Shiva Narrations", "Kashi Khanda"]
-        },
-        {
-            id: "vishnu-purana",
-            name: "विष्णु पुराण",
-            nameEnglish: "Vishnu Purana",
-            sections: ["Adhyaya 1-6", "Vishnu Sahasranama", "Manvantara Stories"]
-        },
-        {
-            id: "srimad-bhagavatam",
-            name: "श्रीमद् भगवद्गीता",
-            nameEnglish: "Srimad Bhagavatam",
-            cantos: 12,
-            verses: "25,771",
-            focus: "Krishna Lila and Avatara Stories"
-        },
-        {
-            id: "garuda-purana",
-            name: "गारुड पुराण",
-            nameEnglish: "Garuda Purana",
-            sections: ["Dharma Kanda", "Samhita Kanda", "Chandika Kanda"]
-        },
-        {
-            id: "devi-purana",
-            name: "देवि पुराण",
-            nameEnglish: "Devi Purana",
-            focus: "Goddess Durga/Kali worship and Shakti traditions"
-        },
-        {
-            id: "skanda-purana",
-            name: "स्कन्द पुराण",
-            nameEnglish: "Skanda Purana",
-            sections: ["Karma Kanda", "Bhavya Kanda", "Jyotirlinga Kanda"]
-        },
-        {
-            id: "agni-purana",
-            name: "अग्नि पुराण",
-            nameEnglish: "Agni Purana",
-            focus: "Architecture, Rituals, and Tantra"
-        },
-        {
-            id: "padma-purana",
-            name: "पाद्म पुराण",
-            nameEnglish: "Padma Purana",
-            focus: "Purohita traditions and sacred places"
-        }
+      },
+      {
+        chapterNumber: 11,
+        title: 'Vishvarupa Darshana Yoga',
+        illustrationCaption: 'The Universal Form revealed to Arjuna',
+        verses: [
+          { verseNumber: 12, sanskrit: 'दिवि सूर्यसहस्रस्य भवेद्युगपदुत्थिता । यदि भाः सदृशी सा स्याद्भासस्तस्य महात्मनः ॥', transliteration: 'Divi sūrya-sahasrasya bhavedyugapad-utthitā | yadi bhāḥ sadṛśī sā syādbhāsasya mahātmanaḥ ||', meaning: 'If the radiance of a thousand suns were to burst forth at once in the sky, that would be like the splendor of that mighty soul.' }
+        ]
+      },
+      {
+        chapterNumber: 18,
+        title: 'Moksha Sannyasa Yoga',
+        illustrationCaption: 'The perfection of renunciation and liberation',
+        verses: [
+          { verseNumber: 66, sanskrit: 'सर्वधर्मान्परित्यज्य मामेकं शरणं व्रज । अहं त्वा सर्वपापेभ्यो मोक्षयिष्यामि मा शुचः ॥', transliteration: 'Sarva-dharmān parityajya mām ekaṃ śaraṇaṃ vraja | ahaṃ tvā sarva-pāpebhyo mokṣayiṣyāmi mā śuchaḥ ||', meaning: 'Abandon all varieties of religion and just surrender unto Me. I shall deliver you from all sinful reactions. Do not fear.' }
+        ]
+      }
     ]
-};
-
-// Aartis, Chalisis, and Stotras
-window.AARTIS = {
-    title: "आर्तिमान्य",
-    titleEnglish: "Aartis, Chalisis and Stotras",
-    items: [
-        {
-            id: "ganesh-aarti",
-            name: "गणेश आरती",
-            nameEnglish: "Ganesh Aarti",
-            language: "Sanskrit/Hindi",
-            occasion: "Daily worship of Lord Ganesha"
-        },
-        {
-            id: "shiv-aarti",
-            name: "शिव आरती",
-            nameEnglish: "Shiva Aarti",
-            language: "Sanskrit/Hindi",
-            occasion: "Evening worship of Lord Shiva"
-        },
-        {
-            id: "laxmi-aarti",
-            name: "लक्ष्मी आरती",
-            nameEnglish: "Lakshmi Aarti",
-            language: "Sanskrit/Hindi",
-            occasion: "Worship of Goddess Lakshmi"
-        },
-        {
-            id: "hanuman-chalisa",
-            name: "हनुमत्क चालीसा",
-            nameEnglish: "Hanuman Chalisa",
-            language: "Hindi",
-            verses: 40,
-            author: "Tulsidas",
-            occasion: "Remover of difficulties, strength and courage"
-        },
-        {
-            id: "durga-chalisa",
-            name: "दुर्गा चालीसा",
-            nameEnglish: "Durga Chalisa",
-            language: "Hindi",
-            verses: 40,
-            occasion: "Worship of Goddess Durga"
-        },
-        {
-            id: "shiv-tandav-stotram",
-            name: "शिव तंडव स्तोत्र",
-            nameEnglish: "Shiva Tandava Stotram",
-            language: "Sanskrit",
-            composer: "Mallashtri",
-            occasion: "Celebration of Lord Shiva's cosmic dance"
-        },
-        {
-            id: "rudrashtakam",
-            name: "रुद्राष्टकम्",
-            nameEnglish: "Rudrashtaka",
-            language: "Sanskrit",
-            verses: 8,
-            occasion: "Worship of Lord Shiva/Rudra"
-        },
-        {
-            id: "madhurashtakam",
-            name: "मठुरःष्टकम्",
-            nameEnglish: "Madhurashtaka",
-            language: "Sanskrit",
-            verses: 8,
-            occasion: "Worship of Lord Krishna as the embodiment of love"
-        },
-        {
-            id: "gayatri-mantra",
-            name: "गायत्री मंत्र",
-            nameEnglish: "Gayatri Mantra",
-            language: "Sanskrit",
-            meters: "Trishtubhi",
-            deity: "Savitr"
-        },
-        {
-            id: "mahamrityunjaya",
-            name: "महामृत्युंजय मंत्र",
-            nameEnglish: "Mahamrityunjaya Mantra",
-            language: "Sanskrit",
-            meter: "Anushtubh",
-            deity: "Mahadeva"
-        }
+  },
+  {
+    id: 'ramayan',
+    title: 'Valmiki Ramayan & Ramcharitmanas',
+    subtitle: 'The Epic Journey of Dharma',
+    category: 'Scripture',
+    coverColor: '#8B4513',
+    accentColor: '#D4AF37',
+    keywords: ['ramayan', 'ramayana', 'rama', 'sita', 'hanuman', 'lakshman', 'ravana', 'ayodhya', 'kand', 'sundarkand', 'bal', 'ayodhya kand', 'aranya', 'kishkindha', 'lanka', 'uttar'],
+    chapters: [
+      {
+        chapterNumber: 1,
+        title: 'Bal Kand - The Childhood Episode',
+        illustrationCaption: 'The divine birth and childhood pastimes of Lord Rama',
+        verses: [
+          { verseNumber: 1, sanskrit: 'तपस्वी साधु संप्रश्नो वैदिकः सततं जपः । नारदं परिपप्रच्छ वाल्मीकिर्मुनिपुङ्गवम् ॥', transliteration: 'Tapasvī sādhu saṃpraśno vaidikaḥ satataṃ japaḥ | Nāradaṃ paripapraccha Vālmīkirmunipuṅgavam ||', meaning: 'The sage Valmiki, constantly engaged in vedic recitation and austerity, asked Narada the most excellent of sages.' },
+          { verseNumber: 2, sanskrit: 'कश्चिद् धर्मकृत् शिष्टो वै यः स्याद्वीर्यवान् नरः । कृतज्ञः सत्यवाक्यश्च दृढव्रतः च कः पुनः ॥', transliteration: 'Kaścid dharmakṛt śiṣṭo vai yaḥ syād vīryavān naraḥ | Kṛtajñaḥ satyavākyaścha dṛḍhavrataḥ cha kaḥ punaḥ ||', meaning: 'Who in this world is righteous, noble, heroic, grateful, truthful, and firm in his vows?' }
+        ]
+      },
+      {
+        chapterNumber: 2,
+        title: 'Ayodhya Kand - The Episode of Ayodhya',
+        illustrationCaption: 'Rama\'s exile and Bharata\'s devotion',
+        verses: [
+          { verseNumber: 1, sanskrit: 'दशरथो नृपो राजन् कोसलानामधीश्वरः । अयोध्यां नाम नगरीं मनुष्याणां निवेशनीम् ॥', transliteration: 'Daśaratho nṛpo rājan kośalānāmadhiśvaraḥ | Ayodhyā nāma nagarīṃ manuṣyāṇāṃ niveśanīm ||', meaning: 'King Dasharatha was the ruler of Kosala, and Ayodhya was the city inhabited by humans.' }
+        ]
+      },
+      {
+        chapterNumber: 3,
+        title: 'Aranya Kand - The Forest Episode',
+        illustrationCaption: 'Life in exile and Sita\'s abduction',
+        verses: [
+          { verseNumber: 1, sanskrit: 'ततः पञ्चवटीं रामो लक्ष्मणसहितोऽब्रवीत् । सुन्दरैः पुष्पितैः वृक्षैः शोभितां सरितां तटे ॥', transliteration: 'Tataḥ pañcavaṭīṃ Rāmo Lakṣmaṇasahito\'bravīt | Sundaraiḥ puṣpitaiḥ vṛkṣaiḥ śobhitāṃ saritāṃ taṭe ||', meaning: 'Then Rama, with Lakshmana, spoke of Panchavati, beautiful with flowering trees on the river bank.' }
+        ]
+      },
+      {
+        chapterNumber: 4,
+        title: 'Kishkindha Kand - The Episode of Kishkindha',
+        illustrationCaption: 'Alliance with Sugriva and search for Sita',
+        verses: [
+          { verseNumber: 1, sanskrit: 'ततः किष्किन्धनागरे हनूमन्तं कपिसत्तमम् । ददर्श रामलक्ष्मणौ तौ वीरौ राजीवलोचनौ ॥', transliteration: 'Tataḥ kiṣkindhanāgare Hanūmantaṃ kapisattamam | Dadarsha Rāma-Lakṣmaṇau tau vīrau rājīvalochanau ||', meaning: 'Then in Kishkindha city, Hanuman the best of monkeys saw those two heroes Rama and Lakshmana, lotus-eyed.' }
+        ]
+      },
+      {
+        chapterNumber: 5,
+        title: 'Sundar Kand - The Beautiful Episode',
+        illustrationCaption: 'Hanuman\'s heroic leap to Lanka and finding Sita',
+        verses: [
+          { verseNumber: 1, sanskrit: 'श्रीरामजयम् । हनुमान् महाबलः शत्रुसैन्यविनाशनः । लङ्कां गत्वा जानकीं ददर्श सीतामशोकवने ॥', transliteration: 'Shrī Rāma jayam | Hanumān mahābalaḥ śatrusainya-vināśanaḥ | Laṅkāṃ gatvā Jānakīṃ dadarsha Sītāmaśokavane ||', meaning: 'Victory to Lord Rama. Hanuman of great strength, destroyer of enemy armies, went to Lanka and saw Janaki (Sita) in the Ashoka grove.' },
+          { verseNumber: 2, sanskrit: 'हनुमान् चापि मन्त्रज्ञो वाक्यकुशलः कपिः । सीताया दूतवृत्तान्तं सर्वमाकथयत् प्रभो ॥', transliteration: 'Hanumān chāpi mantrajño vākyakuśalaḥ kapiḥ | Sītāyā dūtavṛttāntaṃ sarvamākathayat prabho ||', meaning: 'Hanuman, the knower of mantras and skilled in speech, the monkey, narrated everything about Sita\'s message, O Lord.' }
+        ]
+      },
+      {
+        chapterNumber: 6,
+        title: 'Lanka Kand - The Episode of Lanka',
+        illustrationCaption: 'The great battle and Ravana\'s defeat',
+        verses: [
+          { verseNumber: 1, sanskrit: 'ततो युद्धं महत्क्रूरा वानररक्षसां युगे । रामरावणयोः शत्रौ विजयाय महाबलौ ॥', transliteration: 'Tato yuddhaṃ mahatkrūrā vānararakṣasāṃ yuge | Rāma-Rāvaṇayoḥ śatrau vijayāya mahābalau ||', meaning: 'Then a terrible great battle between monkeys and demons took place, Rama and Ravana, both mighty, for victory.' }
+        ]
+      },
+      {
+        chapterNumber: 7,
+        title: 'Uttar Kand - The Later Episode',
+        illustrationCaption: 'Rama\'s coronation and the establishment of Ram Rajya',
+        verses: [
+          { verseNumber: 1, sanskrit: 'रामराज्ये प्रशासिते सर्वे सुखिनो भवन्तु । नरो नार्यश्च सर्वेऽपि निरामयाः सन्तु सर्वदा ॥', transliteration: 'Rāmarājye prāśāsite sarve sukhino bhavantu | Naro nāryaścha sarve\'pi nirāmayāḥ santu sarvadā ||', meaning: 'Under Rama\'s rule, may all be happy. May all men and women be forever free from disease.' }
+        ]
+      }
     ]
-};
+  },
+  {
+    id: 'vedas',
+    title: 'The Four Vedas & Principal Upanishads',
+    subtitle: 'The Eternal Knowledge',
+    category: 'Scripture',
+    coverColor: '#1B4F72',
+    accentColor: '#D4AF37',
+    keywords: ['veda', 'vedas', 'rigveda', 'yajurveda', 'samaveda', 'atharvaveda', 'upanishad', 'isha', 'katha', 'mundaka', 'prashna', 'mandukya', 'shruti', 'mantra'],
+    chapters: [
+      {
+        chapterNumber: 1,
+        title: 'Rigveda - The Veda of Hymns',
+        illustrationCaption: 'The oldest Veda containing 1028 hymns to various deities',
+        verses: [
+          { verseNumber: 1, sanskrit: 'अग्निमीळे पुरोहितं यज्ञस्य देवं ऋत्विजम् । होतारं रत्नधातमम् ॥', transliteration: 'Agni-mīḷe purohitaṃ yajñasya devaṃ ṛtvijam | Hotāraṃ ratna-dhātamam ||', meaning: 'I praise Agni, the chosen priest, god, minister of sacrifice, the invoker, bestower of greatest wealth.' },
+          { verseNumber: 2, sanskrit: 'अग्निः पूर्वेभिर्ऋषिभिरीड्यो नूतनैरुत । स देवानेह वक्षति ॥', transliteration: 'Agniḥ pūrvebhirṛṣibhirīḍyo nūtanairuta | sa devāneha vakṣati ||', meaning: 'Agni is worthy of praise by ancient and modern seers; he brings the gods hither.' }
+        ]
+      },
+      {
+        chapterNumber: 2,
+        title: 'Yajurveda - The Veda of Ritual Formulas',
+        illustrationCaption: 'Prose mantras for sacrificial rituals',
+        verses: [
+          { verseNumber: 1, sanskrit: 'इषे त्वोर्जे त्वा । वायवस्ते जोहविषे अग्नये स्वाहा ।', transliteration: 'Iṣe tvo rje tvā | Vāyavaste johaviṣe agnaye svāhā |', meaning: 'For the impulse, for the strength. To Vayu, to the oblation, to Agni, svaha.' }
+        ]
+      },
+      {
+        chapterNumber: 3,
+        title: 'Samaveda - The Veda of Melodies',
+        illustrationCaption: 'Musical chants derived from Rigveda',
+        verses: [
+          { verseNumber: 1, sanskrit: 'आग्नेयम् । अग्ने नय सुपथा राये अस्मान् विश्वानि देव वयुनानि विद्वान् ।', transliteration: 'Āgneyam | Agne naya supathā rāye asmān viśvāni deva vayunāni vidvān |', meaning: 'Agni, lead us by the good path to wealth, O God, you who know all manifestations.' }
+        ]
+      },
+      {
+        chapterNumber: 4,
+        title: 'Atharvaveda - The Veda of Knowledge',
+        illustrationCaption: 'Spells, charms, and practical wisdom for daily life',
+        verses: [
+          { verseNumber: 1, sanskrit: 'शं नो देविरभिष्टय आपो भवन्तु पीतये । शं योरभि स्रवन्तु नः ॥', transliteration: 'Śaṃ no devīrabhiṣṭaya āpo bhavantu pītaye | Śaṃ yorabhi sravantu naḥ ||', meaning: 'May the waters, goddesses, be auspicious for our drinking; may they flow auspiciously for us.' }
+        ]
+      },
+      {
+        chapterNumber: 5,
+        title: 'Isha Upanishad',
+        illustrationCaption: 'The Lord pervades all - unity of action and knowledge',
+        verses: [
+          { verseNumber: 1, sanskrit: 'ईशावास्यमिदं सर्वं यत्किञ्च जगत्यां जगत् । तेन त्यक्तेन भुञ्जीथा मा गृधः कस्यस्विद्धनम् ॥', transliteration: 'Īśāvāsyamidaṃ sarvaṃ yatkiñca jagatyāṃ jagat | Tena tyaktena bhuñjīthā mā gṛdhaḥ kasyasviddhanam ||', meaning: 'All this, whatsoever moves in this moving world, is enveloped by the Lord. Enjoy through renunciation; do not covet anybody\'s wealth.' }
+        ]
+      },
+      {
+        chapterNumber: 6,
+        title: 'Katha Upanishad',
+        illustrationCaption: 'Nachiketa\'s dialogue with Yama - the secret of death',
+        verses: [
+          { verseNumber: 2, sanskrit: 'श्रेयो हि ज्ञानं अभ्यासाज्ज्ञानाद्ध्यानं विशिष्यते । ध्यानात्कर्मफलत्यागस्त्यागात्शान्तिरनन्तरम् ॥', transliteration: 'Śreyo hi jñānaṃ abhyāsāj jñānāddhyānaṃ viśiṣyate | Dhyānāt karmaphala-tyāgas tyāgāt śāntir anantaram ||', meaning: 'Knowledge is better than practice; meditation is better than knowledge; renunciation of the fruit of action is better than meditation; peace follows renunciation immediately.' }
+        ]
+      },
+      {
+        chapterNumber: 7,
+        title: 'Mundaka Upanishad',
+        illustrationCaption: 'Two kinds of knowledge - lower and higher',
+        verses: [
+          { verseNumber: 1, sanskrit: 'द्वे विद्ये वेदितव्ये इति ह स्म यद्ब्रह्मविदो वदन्ति परा चैवापरा च ॥', transliteration: 'Dve vidye veditavye iti ha sma yad brahmavido vadanti parā caivāparā ca ||', meaning: 'Two kinds of knowledge are to be known, so say the knowers of Brahman: the higher and the lower.' }
+        ]
+      },
+      {
+        chapterNumber: 8,
+        title: 'Mandukya Upanishad',
+        illustrationCaption: 'The syllable Om and the four states of consciousness',
+        verses: [
+          { verseNumber: 1, sanskrit: 'हरिः ॐ । ॐ इति एतदक्षरमिदं सर्वम् । तस्योपव्याख्यानं भूतं भवद्भविष्यदिति सर्वमोङ्कार एव ॥', transliteration: 'Hariḥ Om | Om iti etad akṣaram idaṃ sarvam | Tasya upavyākhyānaṃ bhūtaṃ bhavad bhaviṣyad iti sarvam oṅkāra eva ||', meaning: 'Hari Om. Om, this syllable is all this. Its explanation: past, present, future - all is Om alone.' }
+        ]
+      }
+    ]
+  },
+  {
+    id: 'puranas',
+    title: 'The 18 Mahapuranas',
+    subtitle: 'Ancient Chronicles of Cosmic History',
+    category: 'Scripture',
+    coverColor: '#4B2E83',
+    accentColor: '#D4AF37',
+    keywords: ['purana', 'puranas', 'mahapurana', 'shiva', 'vishnu', 'bhagavata', 'garuda', 'markandeya', 'durga', 'saptashati', 'skanda', 'agni', 'padma', 'brahma', 'vamana', 'kurma', 'matsya', 'varaha', 'narada'],
+    chapters: [
+      {
+        chapterNumber: 1,
+        title: 'Shiva Purana - The Glory of Lord Shiva',
+        illustrationCaption: '24,000 verses on Shiva\'s forms, lingas, and devotees',
+        verses: [
+          { verseNumber: 1, sanskrit: 'नमः शिवाय च नमः शिवतराय च । नमः शिवाय शिवतराय च नमः ॥', transliteration: 'Namaḥ Śivāya ca namaḥ Śivatarāya ca | Namaḥ Śivāya Śivatarāya ca namaḥ ||', meaning: 'Salutations to Shiva, and to the more auspicious Shiva. Salutations to Shiva, the auspicious one, and to the most auspicious one.' }
+        ]
+      },
+      {
+        chapterNumber: 2,
+        title: 'Vishnu Purana - The Preserver\'s Chronicles',
+        illustrationCaption: '23,000 verses on Vishnu\'s avatars and cosmic order',
+        verses: [
+          { verseNumber: 1, sanskrit: 'नमो नारायणाय वासुदेवाय धीमहि । तन्नो विष्णुः प्रचोदयात् ॥', transliteration: 'Namo Nārāyaṇāya Vāsudevāya dhīmahi | Tanno Viṣṇuḥ pracodayāt ||', meaning: 'Salutations to Narayana, Vasudeva; we meditate on Him. May Vishnu inspire us.' }
+        ]
+      },
+      {
+        chapterNumber: 3,
+        title: 'Shrimad Bhagavata Purana - The Crown Jewel',
+        illustrationCaption: '18,000 verses on Krishna\'s divine pastimes',
+        verses: [
+          { verseNumber: 1, sanskrit: 'जनमाद्यस्य यतोऽन्वयादितरतश्चार्थेष्वभिज्ञः स्वराट् । तेने ब्रह्म हृदा य आदिकवये मुह्यन्ति यत्सूरयः ॥', transliteration: 'Janmādyasya yato\'nvayāditarataścārtheṣvabhijñaḥ svarāṭ | Tene brahma hṛdā ya ādikavaye muhyanti yatsūrayaḥ ||', meaning: 'From whom the creation, maintenance, and dissolution of this universe emanate, who is the original source, who imparted Vedic knowledge to Brahma.' }
+        ]
+      },
+      {
+        chapterNumber: 4,
+        title: 'Garuda Purana - The Dialogue with Garuda',
+        illustrationCaption: 'Afterlife, karma, and funeral rites',
+        verses: [
+          { verseNumber: 1, sanskrit: 'गरुडोवाच । भगवान् केशवो विष्णुः सर्वेशः सर्वकर्मकृत् । त्वया मे प्रश्नितो धर्मो यथातथ्यं प्रकीर्तितः ॥', transliteration: 'Garuḍovācha: Bhagavān Keśavo Viṣṇuḥ sarveśaḥ sarvakarmakṛt | Tvayā me praśnito dharmo yathātathyaṃ prakīrtitaḥ ||', meaning: 'Garuda said: Lord Keshava Vishnu, the Lord of all, doer of all actions. The dharma you asked about has been declared truly.' }
+        ]
+      },
+      {
+        chapterNumber: 5,
+        title: 'Markandeya Purana & Durga Saptashati',
+        illustrationCaption: '700 verses to the Divine Mother Durga',
+        verses: [
+          { verseNumber: 1, sanskrit: 'ॐ ऐं ह्रीं क्लीं चामुण्डायै विच्चे । नमो देव्यै महादेव्यै शिवायै सततं नमः ।', transliteration: 'Om Aim Hrim Klim Chamundayai Vichche | Namo Devyai Mahādevyai Śivāyai satataṃ namaḥ ||', meaning: 'Om Aim Hrim Klim Chamundaya Vichche. Salutations to the Goddess, the Great Goddess, Shiva\'s consort, forever.' }
+        ]
+      }
+    ]
+  },
+  {
+    id: 'aarti-chalisa',
+    title: 'Daily Aarti, Chalisa, Stotras & Mantras',
+    subtitle: 'Prayers for Every Occasion',
+    category: 'Prayer',
+    coverColor: '#8B0000',
+    accentColor: '#D4AF37',
+    keywords: ['aarti', 'chalisa', 'stotra', 'mantra', 'hanuman', 'ganesh', 'shiva', 'lakshmi', 'durga', 'gayatri', 'mahamrityunjaya', 'rudrashtakam', 'madhurashtakam', 'prayer', 'worship'],
+    chapters: [
+      {
+        chapterNumber: 1,
+        title: 'Hanuman Chalisa',
+        illustrationCaption: '40 verses in praise of Lord Hanuman by Tulsidas',
+        verses: [
+          { verseNumber: 1, sanskrit: 'श्रीगुरु चरन सरोज रज निज मनु मुकुरु सुधारि । बरनउँ रघुवर बिमल जसु जो दायकु फल चारि ॥', transliteration: 'Shrī guru charan saroj raj nija manu mukuru sudhāri | Baranaun Raghuvara bimala jasu jo dāyaku phala chāri ||', meaning: 'Having polished the mirror of my mind with the dust of my Guru\'s lotus feet, I narrate the pure glory of Lord Rama, which bestows the four fruits of life.' },
+          { verseNumber: 2, sanskrit: 'बुद्धिहीन तनु जानिके सुमिरौं पवनकुमार । बल बुद्धि विद्या देहु मोहि हरहु कलेश विकार ॥', transliteration: 'Buddhi-hīna tanu jānike sumiraun Pavanakumāra | Bala buddhi vidyā dehu mohi harahu kalesha vikāra ||', meaning: 'Knowing my body to be devoid of intelligence, I remember the son of the Wind God. Grant me strength, intelligence, and knowledge; remove my afflictions and impurities.' },
+          { verseNumber: 3, sanskrit: 'जय हनुमान ज्ञान गुन सागर । जय कपीस तिहुँ लोक उजागर ॥', transliteration: 'Jaya Hanumān jñāna guṇa sāgara | Jaya Kapīsa trihun loka ujāgara ||', meaning: 'Victory to Hanuman, the ocean of wisdom and virtues. Victory to the lord of monkeys, who illuminates the three worlds.' }
+        ]
+      },
+      {
+        chapterNumber: 2,
+        title: 'Ganesh Aarti',
+        illustrationCaption: 'Morning and evening worship of Lord Ganesha',
+        verses: [
+          { verseNumber: 1, sanskrit: 'जय गणेश जय गणेश जय गणेश देवा । माता जाकी पार्वती पिता महादेवा ॥', transliteration: 'Jaya Gaṇeśa jaya Gaṇeśa jaya Gaṇeśa devā | Mātā jākī Pārvatī pitā Mahādevā ||', meaning: 'Victory to Ganesha, victory to Ganesha, victory to Ganesha the Lord. Mother is Parvati, Father is Mahadeva.' }
+        ]
+      },
+      {
+        chapterNumber: 3,
+        title: 'Shiv Aarti',
+        illustrationCaption: 'Evening worship of Lord Shiva',
+        verses: [
+          { verseNumber: 1, sanskrit: 'जय शिव ओंकारा, स्वामी जय शिव ओंकारा । ब्रह्मा विष्णु सदाशिव, अर्धांगी धारा ॥', transliteration: 'Jaya Śiva Omkārā, Svāmī jaya Śiva Omkārā | Brahmā Viṣṇu Sadāśiva, Ardhaṅgī dhārā ||', meaning: 'Victory to Shiva Omkara, O Lord, victory to Shiva Omkara. Brahma, Vishnu, Sadashiva, and the half-bodied one (Shakti) flow.' }
+        ]
+      },
+      {
+        chapterNumber: 4,
+        title: 'Lakshmi Aarti',
+        illustrationCaption: 'Worship of Goddess Lakshmi for prosperity',
+        verses: [
+          { verseNumber: 1, sanskrit: 'ॐ जय लक्ष्मी माता, मैया जय लक्ष्मी माता । तुमको निसदिन सेवत, हर विष्णु विधाता ॥', transliteration: 'Om Jaya Lakṣmī Mātā, Maiyā jaya Lakṣmī Mātā | Tumako nisadina sevata, Hari Viṣṇu vidhātā ||', meaning: 'Om Victory to Mother Lakshmi, Mother Victory to Lakshmi. You are served daily by Hari Vishnu, the Creator.' }
+        ]
+      },
+      {
+        chapterNumber: 5,
+        title: 'Durga Chalisa',
+        illustrationCaption: '40 verses to the Divine Mother Durga',
+        verses: [
+          { verseNumber: 1, sanskrit: 'नमो नमो दुर्गे सुख करनी । नमो नमो अम्बे दुःख हरनी ॥', transliteration: 'Namo namo Durge sukha karanī | Namo namo Ambe duḥkha haranī ||', meaning: 'Salutations, salutations to Durga, the bestower of happiness. Salutations, salutations to Amba, the remover of sorrow.' }
+        ]
+      },
+      {
+        chapterNumber: 6,
+        title: 'Shiv Tandav Stotram',
+        illustrationCaption: 'Ravana\'s powerful hymn to Shiva\'s cosmic dance',
+        verses: [
+          { verseNumber: 1, sanskrit: 'जटाटवीगलज्जलप्रवाहपावितस्थले गलेऽवलम्ब्य लम्बितां भुजङ्गतुङ्गमालिकाम् । डमड्डमडड्डमड्डमन्निनादवड्डमर्वयं चकारचण्डताण्डवं तनोतु नः शिवः शिवम् ॥', transliteration: 'Jaṭāṭavīgalajjalapravāhapāvitasthale gale\'valambya lambitāṃ bhujaṅgatunga-mālikām | Ḍamaḍḍamaḍḍamaḍḍamannināḍavaḍḍamarvayaṃ chakāra caṇḍatāṇḍavaṃ tanotu naḥ Śivaḥ Śivam ||', meaning: 'From the forest of matted locks, the Ganga flows, purifying the ground. On His neck hangs the serpent garland. The damaru drums sounding, He performed the fierce Tandava. May Shiva bestow auspiciousness upon us.' }
+        ]
+      },
+      {
+        chapterNumber: 7,
+        title: 'Rudrashtakam',
+        illustrationCaption: 'Eight verses to Lord Shiva by Shankaracharya',
+        verses: [
+          { verseNumber: 1, sanskrit: 'नमामीशमीशानि निर्बसिं निर्विकल्पं निरीहं । निष्क्रियं निष्कलं निर्वाणं निर्वाणं परं परं ॥', transliteration: 'Namāmīśamīśāni nirbasiṃ nirvikalpaṃ nirīhaṃ | Niṣkriyaṃ niṣkalaṃ nirvāṇaṃ nirvāṇaṃ paraṃ param ||', meaning: 'I bow to Ishana, the Lord, without dwelling, without change, without desire. Actionless, partless, liberation, the supreme liberation.' }
+        ]
+      },
+      {
+        chapterNumber: 8,
+        title: 'Madhurashtakam',
+        illustrationCaption: 'Eight verses on the sweetness of Krishna by Vallabhacharya',
+        verses: [
+          { verseNumber: 1, sanskrit: 'अधुरं मधुरं मधुरं मधुरम् । अधुरं मधुरं मधुरं मधुरम् ॥', transliteration: 'Adhuraṃ madhuraṃ madhuraṃ madhuram | Adhuraṃ madhuraṃ madhuraṃ madhuram ||', meaning: 'His lips are sweet, His face is sweet, His eyes are sweet, His smile is sweet. His heart is sweet, His gait is sweet, everything about Him is sweet.' }
+        ]
+      },
+      {
+        chapterNumber: 9,
+        title: 'Gayatri Mantra',
+        illustrationCaption: 'The mother of all Vedic mantras',
+        verses: [
+          { verseNumber: 1, sanskrit: 'ॐ भुर्भुवः स्वः तत्सवितुर्वरेण्यं भर्गो देवस्य धीमहि धियो यो नः प्रचोदयात् ॥', transliteration: 'Om bhūr bhuvaḥ svaḥ tat savitur vareṇyaṃ bhargo devasya dhīmahi dhiyo yo naḥ pracodayāt ||', meaning: 'Om. Earth, Atmosphere, Heaven. We meditate on the adorable glory of the radiant Sun; may He inspire our intelligence.' }
+        ]
+      },
+      {
+        chapterNumber: 10,
+        title: 'Mahamrityunjaya Mantra',
+        illustrationCaption: 'The great death-conquering mantra to Lord Shiva',
+        verses: [
+          { verseNumber: 1, sanskrit: 'ॐ त्र्यम्बकं यजामहे सुगन्धिं पुष्टिवर्धनम् । उर्वारुकमिव बन्धनान्मृत्योर्मुक्षीय माऽमृतात् ॥', transliteration: 'Om tryambakaṃ yajāmahe sugandhiṃ puṣṭivardhanam | Uruvārukamiva bandhanān mṛtyormukṣīya mā\'mṛtāt ||', meaning: 'Om. We worship the three-eyed One, fragrant and nourishing all. Like a cucumber from its stem, may we be liberated from death, not from immortality.' }
+        ]
+      }
+    ]
+  }
+];
+
+console.log('SCRIPTURES_DATA loaded:', window.SCRIPTURES_DATA.length, 'books');
