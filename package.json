@@ -1,0 +1,28 @@
+{
+  "name": "sanatan-dharma-mahakosh",
+  "version": "1.0.0",
+  "description": "Complete Encyclopedia of Hindu Scriptures, Temples, and Traditions",
+  "private": true,
+  "scripts": {
+    "check-links": "node scripts/check-links.js",
+    "click-test": "node scripts/click-test.js",
+    "search-test": "node scripts/search-test.js",
+    "verify": "npm run check-links && npm run click-test && npm run search-test"
+  },
+  "keywords": [
+    "hinduism",
+    "sanatan-dharma",
+    "scriptures",
+    "gita",
+    "ramayan",
+    "vedas",
+    "puranas",
+    "temples",
+    "traditions"
+  ],
+  "author": "SANATAN Project",
+  "license": "ISC",
+  "devDependencies": {
+    "puppeteer": "^25.18.1"
+  }
+}

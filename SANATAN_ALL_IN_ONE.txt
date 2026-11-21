@@ -1,4 +1,181 @@
 #####################################################################
+# PART 0 — WORKING GUARANTEE (SABSE ZAROORI, SABSE PEHLE PADHO)
+# Har click kaam kare. Search mein sab kuch mile. Proof ke bina "done" nahi.
+#####################################################################
+
+PROBLEM JO AB TAK HUI
+---------------------------------------------------------------------
+Site banti hai par: kuch pages khulte hain, kuch click par kuch nahi
+hota, kuch cards/buttons dead hain, search mein sab nahi aata. Yani
+code "likha" gaya par kabhi asli browser mein chala kar check nahi hua.
+
+IS PART KA RULE: Ab "done" tabhi bolna jab browser mein khud chala kar
+dikha do ki har click kaam karta hai. Sirf code padhkar "sahi hai"
+bolna MANA hai.
+
+---------------------------------------------------------------------
+RULE 1 — PEHLE TEST KARO, PHIR BANAO (harness first)
+---------------------------------------------------------------------
+Kuch naya banane se PEHLE ye 3 tools banao aur chalao:
+
+ A) scripts\check-links.js  (static link checker)
+    - Har .html file padho. Har <a href>, <script src>, <link href>,
+      <img src>, onclick="location=..." nikalo.
+    - Har target file disk par hai ya nahi check karo.
+    - Har #anchor / data-id / modal id jo JS use karta hai, HTML mein
+      maujood hai ya nahi.
+    - Kuch bhi toota ho to list karo aur exit code 1 do.
+
+ B) scripts\click-test.js  (real browser, Playwright/Puppeteer)
+    - Har page file:// URL se kholo.
+    - Har clickable element (a, button, [onclick], [data-*], .card,
+      .book, .temple, tabs, nav, search result) dhundho aur ek-ek
+      CLICK karo.
+    - Har click ke baad check: URL badla? modal khula? DOM badla?
+      Agar kuch nahi hua = DEAD CLICK = FAIL.
+    - Console error, 404, uncaught exception = FAIL.
+    - Elements jo "visible" hain par kisi aur layer ke neeche hain
+      (document.elementFromPoint se pata chalta hai) = BLOCKED = FAIL.
+    - Report: page | element | kya expected | kya hua.
+
+ C) scripts\search-test.js
+    - Har data entry (har book/adhyay, aarti, mantra, mandir, devta,
+      tyohar, sanskar, tradition) ke title se search karo.
+    - Result mein wahi entry aani chahiye, aur click par sahi jagah
+      khulni chahiye.
+    - Koi entry search mein na aaye = FAIL.
+
+ npm run verify  =  check-links + click-test + search-test, teeno.
+ Jab tak npm run verify poora PASS na ho, kaam "done" nahi.
+
+---------------------------------------------------------------------
+RULE 2 — CLICK KYUN FAIL HOTE HAIN (in sab ko dhoondh kar theek karo)
+---------------------------------------------------------------------
+ 1. Overlay/pseudo-element click rok raha hai (::before/::after,
+    full-size absolute/fixed div, bina pointer-events:none).
+ 2. 3D transform (preserve-3d, perspective, backface-visibility) ki
+    wajah se invisible face upar aa gayi.
+ 3. Script load order galat: code chalta hai par DOM/data tayyar nahi.
+ 4. Event listener purane element par laga, innerHTML re-render ke
+    baad hat gaya. FIX: EVENT DELEGATION (document level par ek
+    listener, data-action attribute se).
+ 5. onclick="fn()" jahan fn global nahi hai.
+ 6. Naya page/element banaya par uska data file HTML mein include nahi.
+ 7. id/selector mismatch (HTML mein alag naam, JS mein alag).
+ 8. file:// par fetch()/ES module/import = silently fail.
+ 9. Galat relative path (pages root mein, assets styles\ js\ data\ mein).
+10. Modal/book reader khulta hai par close/back kaam nahi, ya z-index
+    ki wajah se peeche chhup jata hai.
+11. CSS display:none / opacity:0 / visibility:hidden animation ke baad
+    atka reh gaya.
+12. Same page par kai script ek hi global ko overwrite kar rahe hain.
+
+---------------------------------------------------------------------
+RULE 3 — EK HI CLICK SYSTEM (kachra mat failao)
+---------------------------------------------------------------------
+ - Poori site mein ek hi common mechanism: data-action="open-book",
+   data-id="..." jaisa. Ek hi js\router.js / js\actions.js sab
+   click handle kare (event delegation).
+ - Har clickable item ke liye ek hi URL scheme (hash routing ya query):
+     scriptures.html?book=gita&ch=2&v=47
+     temples.html?id=kashi-vishwanath
+     aarti.html?id=om-jai-jagdish
+   Taaki search, bookmark, back button, share sab usi se chalein.
+ - Back/forward button sahi kaam kare. Refresh karne par wahi page
+   wapas khule.
+ - Har data entry ka ek unique stable id ho. Duplicate id = FAIL.
+ - Koi bhi "coming soon" jaisa dead button nahi. Jo feature tayyar
+   nahi, usko ya to chhupao ya clearly "jald aa raha hai" disabled
+   dikhao (aur click test mein ise exception list mein rakho).
+
+---------------------------------------------------------------------
+RULE 4 — SEARCH MEIN SAB KUCH AAYE
+---------------------------------------------------------------------
+ - ONE central registry: data\registry.js (ya build script se auto-
+   banega) jisme har entry ek record ho:
+     { id, type, title_sa, title_hi, title_en, aliases[], keywords[],
+       url, summary }
+   type: granth | adhyay | shlok | aarti | chalisa | mantra | stotra |
+         mandir | tirth | devta | rishi | tyohar | vrat | sanskar |
+         puja | panchang | katha | gyan | tradition
+ - Registry script se banao (scripts\build-registry.js): sab data\
+   files padhe aur khud banaye. Haath se kabhi nahi, taaki koi entry
+   chhoote nahi.
+ - Search yahi registry use kare. Naya data jodne par sirf script
+   chalao, search apne aap update.
+ - Search features: Devanagari + Roman (Hinglish) + English dono;
+   spelling variants (Hanuman/Hanumaan, Ganesh/Ganesha), shlok
+   number, "gita 2.47", "ramayan sundar kand" jaise queries.
+ - Results type ke hisaab se group (Granth, Aarti, Mandir...), har
+   result par CLICK karne par seedha sahi page/adhyay/shlok khule.
+ - Khali query par suggestions/popular; no-result par "kya aap ye
+   dhundh rahe the" suggestions.
+ - Har page ke header mein search box ho aur Ctrl+K / "/" shortcut.
+ - search-test.js (Rule 1C) har entry ke liye PASS ho.
+
+---------------------------------------------------------------------
+RULE 5 — HAR PAGE KA MINIMUM KAAM (acceptance per page)
+---------------------------------------------------------------------
+ index.html       : har book shelf par click -> reader khule; Continue
+                    Reading; search; nav ke sab links.
+ scriptures.html  : har granth card -> book khule -> TOC -> adhyay ->
+                    shlok; next/prev; back; language toggle.
+ temples.html     : har mandir card -> darshan modal; gallery
+                    next/prev; close (X, ESC, bahar click).
+ traditions.html  : har tradition/vrat/tyohar entry kholne par poora
+                    content dikhe, "undefined"/khali nahi.
+ sanskars.html    : 16 ke 16 sanskar click par khulein.
+ aarti.html       : har aarti/chalisa/stotra/mantra click par khule,
+                    text dikhe, (audio ho to play/pause).
+ Har naya page: nav mein link, search mein entries, click-test PASS.
+
+---------------------------------------------------------------------
+RULE 6 — KAAM KARNE KA TARIKA (chhote chhote kadam)
+---------------------------------------------------------------------
+ - Ek baar mein ek module. Module khatam -> npm run verify -> PASS ->
+   tab aage.
+ - Ek saath poori site mat badlo. Chhota badlao, turant test.
+ - Koi purana kaam karne wala feature mat todo; todne se pehle
+   backup lo. Har step ke baad git commit ya folder backup.
+ - Agar koi click/feature theek nahi ho paa raha, chhupao mat: report
+   mein likho "FAIL: kya, kahan, kyun".
+ - Screenshots: har page ke desktop (1366x768) aur mobile (390x844)
+   ke before/after screenshots save karo (screenshots\ folder).
+
+---------------------------------------------------------------------
+RULE 7 — "DONE" KA PROOF (ye dena zaroori)
+---------------------------------------------------------------------
+Har kaam ke end mein ye sab dikhao, warna "done" maana nahi jayega:
+ [ ] npm run verify ka poora output (PASS/FAIL list)
+ [ ] click-test report: kitne clickable elements mile, kitne PASS,
+     kitne FAIL (0 FAIL chahiye)
+ [ ] search-test report: kitni entries, kitni search mein mili
+     (100% chahiye)
+ [ ] check-links report: 0 broken link
+ [ ] console errors: 0
+ [ ] screenshots
+ [ ] Kya abhi bhi adhoora hai (honestly)
+Mujhe seedha bata do: "kuch click nahi hota" jaisi koi cheez bachi hai
+to uski list, wajah aur kab tak theek hogi.
+
+---------------------------------------------------------------------
+RULE 8 — AAGE KABHI YE GALTI NA HO
+---------------------------------------------------------------------
+ - Naya feature jodte waqt uska click-test aur search entry bhi saath
+   jodo; warna feature adhoora maana jayega.
+ - npm run verify ko git pre-commit / build step banao taaki toota
+   hua code save hi na ho.
+ - README.md mein likho: naya page/entry kaise jodein, registry kaise
+   banayein, verify kaise chalayein.
+
+#####################################################################
+# END OF PART 0
+#####################################################################
+
+
+NOTE: PART 0 sabse upar hai. Iske rules baaki saare parts (1 se 5) par lagu hain. Part 0 ke tools (check-links, click-test, search-test, registry) pehle banao, phir Part 1 se shuru karo.
+
+#####################################################################
 #   SANATAN — ALL-IN-ONE MASTER INSTRUCTIONS FOR CLAUDE CODE        #
 #   Project root: E:\Sanatan\                                       #
 #####################################################################
