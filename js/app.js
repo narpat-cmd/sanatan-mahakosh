@@ -194,9 +194,20 @@
         b.classList.toggle('text-maroon', !on);
         b.classList.toggle('bg-gold/20', !on);
       });
+      const BOOKMAP = {
+        gita: ['bhagavad-gita'], ramayan: ['ramayan', 'ramcharitmanas'], mahabharat: ['mahabharata'],
+        vedas: ['vedas'], puranas: ['puranas'], aarti: ['aarti-chalisa']
+      };
       document.querySelectorAll('.temple-card, .scripture-card').forEach(card => {
-        const c = (card.dataset.category || '').toLowerCase().replace(/\s+/g, '-');
-        card.style.display = (f === 'all' || c === f || c.includes(f)) ? '' : 'none';
+        let show;
+        if (card.classList.contains('scripture-card')) {
+          const ids = BOOKMAP[f];
+          show = f === 'all' || (ids ? ids.indexOf(card.dataset.book) !== -1 : (card.dataset.book || '').indexOf(f) !== -1);
+        } else {
+          const c = (card.dataset.category || '').toLowerCase().replace(/\s+/g, '-');
+          show = f === 'all' || c === f || c.includes(f);
+        }
+        card.style.display = show ? '' : 'none';
       });
     }
 

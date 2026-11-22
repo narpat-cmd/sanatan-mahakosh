@@ -4,7 +4,7 @@
 // Ek baar load hone ke baad har adhyay localStorage mein cache hota hai.
 (function () {
   'use strict';
-  var BASE = 'https://cdn.jsdelivr.net/gh/gita/gita@main/data/';
+  var BASE = 'https://raw.githubusercontent.com/gita/gita/main/data/';
   var CACHE = 'sanatan_gita_ch_v1_';
   var all = null;
 

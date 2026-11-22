@@ -61,6 +61,12 @@
   const origLoad = BR.loadChapter;
   BR.loadChapter = function(bookId, chapterKey) {
     const self = this;
+    if (window.TextsRemote && window.TextsRemote.remoteBooks.indexOf(bookId) !== -1) {
+      self.chapterCache = self.chapterCache || {};
+      const ck = bookId + ':' + chapterKey;
+      if (self.chapterCache[ck]) return Promise.resolve(self.chapterCache[ck]);
+      return window.TextsRemote.chunk(bookId, chapterKey).then(chunk => { self.chapterCache[ck] = chunk; return chunk; });
+    }
     return origLoad.call(this, bookId, chapterKey).catch(err => {
       if (bookId === 'bhagavad-gita' && window.GitaRemote) {
         const n = parseInt(String(chapterKey).replace(/\D/g, ''), 10);
@@ -192,7 +198,7 @@
         vh.style.display = show ? 'block' : 'none';
       }
       if (vm) {
-        const show = (this.lang === 'en' || this.lang === 'all') && en;
+        const show = (this.lang === 'en' || this.lang === 'all' || !hi) && en;
         vm.textContent = en;
         vm.style.display = show ? 'block' : 'none';
       }
