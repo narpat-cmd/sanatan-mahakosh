@@ -14,6 +14,7 @@
     },
 
     bindEvents: function() {
+      this.bindOverlayEvents();
       const that = this;
 
       // Search input events
@@ -57,6 +58,89 @@
           that.closeSearch();
         }
       });
+    },
+
+    // FIX: pages ka apna #openSearch / #searchOverlay / #universalSearch ab asli mein juda hai
+    bindOverlayEvents: function() {
+      const that = this;
+      const overlay = () => document.getElementById('searchOverlay');
+      const box = () => document.getElementById('searchResults');
+      const input = () => document.getElementById('universalSearch');
+
+      const open = () => {
+        const o = overlay();
+        if (!o) return;
+        o.classList.remove('hidden');
+        const i = input();
+        if (i) setTimeout(() => i.focus(), 50);
+      };
+      const close = () => {
+        const o = overlay();
+        if (!o) return;
+        o.classList.add('hidden');
+        const i = input();
+        if (i) i.value = '';
+        const b = box();
+        if (b) { b.innerHTML = ''; b.classList.add('hidden'); }
+      };
+      this.openOverlay = open;
+      this.closeOverlay = close;
+
+      document.addEventListener('click', function(e) {
+        if (e.target.closest('#openSearch')) { open(); return; }
+        if (e.target.closest('#closeSearch')) { close(); return; }
+        const o = overlay();
+        if (o && !o.classList.contains('hidden') && e.target.closest('#searchOverlay') && !e.target.closest('.glassmorphic')) {
+          close();
+        }
+      });
+
+      document.addEventListener('keydown', function(e) {
+        if (e.key === 'Escape') { close(); return; }
+        const tag = (document.activeElement && document.activeElement.tagName) || '';
+        if (e.key === '/' && !/INPUT|TEXTAREA/.test(tag)) { e.preventDefault(); open(); }
+      });
+
+      document.addEventListener('input', function(e) {
+        if (!e.target || e.target.id !== 'universalSearch') return;
+        const q = e.target.value.trim();
+        const b = box();
+        if (!b) return;
+        if (!q) { b.innerHTML = ''; b.classList.add('hidden'); return; }
+        that.performSearch(q);
+        b.classList.remove('hidden');
+        that.renderInto(b, q);
+      });
+    },
+
+    renderInto: function(container, query) {
+      const fixUrl = (r) => {
+        let u = r.url;
+        if (r.page === 'aarti') u = u.replace('?id=', '?modal=aarti&id=');
+        else if (r.page === 'sanskars') u = u.replace('?id=', '?modal=sanskar&id=');
+        else if (r.page === 'traditions') u = u.replace('?id=', '?modal=tradition&id=');
+        else if (r.page === 'temples') u = u.replace('?id=', '?temple=');
+        return u;
+      };
+      // duplicate hatao
+      const seen = new Set();
+      const list = this.results.filter(r => {
+        const k = r.url + '|' + r.title;
+        if (seen.has(k)) return false;
+        seen.add(k);
+        return true;
+      }).slice(0, 30);
+
+      if (list.length === 0) {
+        container.innerHTML = '<div style="padding:16px;text-align:center;opacity:.7">No results found</div>';
+        return;
+      }
+      container.innerHTML = list.map(r => `
+        <a href="${fixUrl(r)}" class="search-result-item" data-page="${r.page}" data-url="${fixUrl(r)}"
+           style="display:flex;align-items:center;justify-content:space-between;gap:12px;padding:12px 16px;cursor:pointer;text-decoration:none;color:inherit;border-bottom:1px solid rgba(212,175,55,.2)">
+          <span>${this.escapeHtml(r.title)}</span>
+          <span style="font-size:12px;color:#D4AF37">${r.category}</span>
+        </a>`).join('');
     },
 
     initGlobalSearch: function() {

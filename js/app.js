@@ -42,6 +42,12 @@
 
       // Set language mode
       this.setLanguageMode();
+
+      // search result se ?temple=id aaye to darshan seedha khule
+      try {
+        const tid = new URLSearchParams(location.search).get('temple');
+        if (tid && window.TempleViewer) setTimeout(() => window.TempleViewer.loadTemple(tid), 0);
+      } catch (e) {}
     }
 
     setLanguageMode() {
@@ -151,12 +157,12 @@
         const filterBtn = e.target.closest('.filter-btn');
         if (filterBtn) {
           e.preventDefault();
-          that.filterGrid(filterBtn.dataset.category, filterBtn);
+          that.filterTemples(filterBtn);
           return;
         }
 
         // Search icon button
-        if (e.target.id === 'openSearch' || e.target.closest('#openSearch')) {
+        if (false) { // search ab search-engine.js sambhalta hai
           if (window.SearchEngine) {
             const searchBtn = document.querySelector('[id="global-search-btn"]');
             if (searchBtn) {
@@ -174,6 +180,23 @@
           }
           return;
         }
+      });
+    }
+
+    // FIX: buttons data-filter use karte hain aur cards .temple-card hain
+    filterTemples(btn) {
+      const f = (btn.dataset.filter || btn.dataset.category || 'all').toLowerCase();
+      document.querySelectorAll('.filter-btn').forEach(b => {
+        const on = b === btn;
+        b.setAttribute('aria-pressed', String(on));
+        b.classList.toggle('bg-maroon', on);
+        b.classList.toggle('text-parchment', on);
+        b.classList.toggle('text-maroon', !on);
+        b.classList.toggle('bg-gold/20', !on);
+      });
+      document.querySelectorAll('.temple-card, .scripture-card').forEach(card => {
+        const c = (card.dataset.category || '').toLowerCase().replace(/\s+/g, '-');
+        card.style.display = (f === 'all' || c === f || c.includes(f)) ? '' : 'none';
       });
     }
 
@@ -237,7 +260,7 @@
       if (templesPreviewEl && window.TEMPLES_DATA) {
         templesPreviewEl.innerHTML = window.TEMPLES_DATA.slice(0, 6).map(temple => `
           <div class="temple-preview-card" data-id="${temple.id}">
-            <img src="${temple.images?.[0] || ''}" alt="${temple.name}" onerror="this.src=''; this.parentNode.classList.add('no-img'); this.parentNode.innerHTML='<div class=\"no-gallery\">Image not available</div>'">
+            <img src="${temple.images?.[0] || ''}" alt="${temple.name}" onerror="this.onerror=null; this.style.display='none'">
             <div class="temple-preview-info">
               <span class="temple-cat">${temple.category}</span>
               <h4>${temple.name}</h4>

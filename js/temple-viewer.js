@@ -25,6 +25,9 @@
 
       document.addEventListener('click', function(e) {
         if (e.target.closest('.temple-close, .temple-close-section')) { that.closeViewer(); return; }
+        const langOpt = e.target.closest('#temple-viewer-overlay .book-lang-option');
+        if (langOpt) { that.setLanguage(langOpt.dataset.lang); document.querySelectorAll('#temple-viewer-overlay .book-lang-option').forEach(o => o.classList.toggle('active', o === langOpt)); return; }
+        if (e.target.id === 'temple-viewer-overlay') { that.closeViewer(); return; }
         const darshanBtn = null; // darshan click app.js handle karta hai
         if (darshanBtn) {
           const templeId = darshanBtn.dataset.temple;
@@ -91,6 +94,20 @@
 
       this.renderTemple(this.currentTemple);
       this.playOpeningBell();
+
+      // asli photos Wikimedia Commons se lao (cache ke saath)
+      const cur = this.currentTemple;
+      if (window.TempleImages && cur) {
+        window.TempleImages.gallery(cur).then(g => {
+          if (g && g.length && this.currentTemple === cur) {
+            cur.gallery = g;
+            this.renderGallery(g);
+          } else if (g && !g.length && this.currentTemple === cur) {
+            const c = document.querySelector('#temple-viewer-overlay .gallery-caption');
+            if (c) c.textContent = '📷 इस मंदिर की फ़ोटो अभी नहीं मिलीं (या इंटरनेट बंद है)।';
+          }
+        });
+      }
     },
 
     renderTemple: function(temple) {
@@ -110,7 +127,7 @@
       const galleryContainer = overlay.querySelector('.temple-gallery-container');
 
       if (modalTitle) {
-        modalTitle.textContent = temple.name || temple.nameEnglish || 'Temple';
+        modalTitle.textContent = (temple.name || temple.nameEnglish || 'Temple') + (temple.nameEnglish && temple.name !== temple.nameEnglish ? ' | ' + temple.nameEnglish : '');
       }
 
       if (modalDeity) {
@@ -126,21 +143,49 @@
       }
 
       if (modalDescription) {
-        if (this.lang === 'hi' || this.lang === 'all') {
-          modalDescription.textContent = temple.description || temple.descriptionHindi || temple.originStory || '';
-        } else if (this.lang === 'en') {
-          modalDescription.textContent = temple.descriptionEnglish || temple.description || temple.originStory || '';
-        }
+        modalDescription.innerHTML = this.buildDetails(temple);
       }
 
       // Render gallery
       if (temple.gallery && temple.gallery.length > 0) {
         this.renderGallery(temple.gallery);
       } else {
-        if (galleryContainer) {
-          galleryContainer.innerHTML = '<div class="no-gallery">No gallery images available</div>';
-        }
+        const cap = overlay.querySelector('.gallery-caption');
+        const mi = overlay.querySelector('.gallery-main-img');
+        const th = overlay.querySelector('.gallery-thumbnails');
+        if (th) th.innerHTML = '';
+        if (mi) { mi.removeAttribute('src'); mi.style.display = 'none'; }
+        if (cap) cap.textContent = '📷 फ़ोटो लोड हो रही हैं... (इंटरनेट चाहिए, स्रोत: Wikimedia Commons)';
       }
+    },
+
+    esc: function(s) {
+      return String(s == null ? '' : s).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
+    },
+
+    buildDetails: function(t) {
+      const e = this.esc.bind(this);
+      const en = this.lang === 'en';
+      const both = this.lang === 'all';
+      const sec = (title, body) => body ? '<div style="margin-bottom:1rem"><h4 style="font-family:Cinzel,serif;color:#6B0F1A;font-weight:700;margin:0 0 .35rem">' + title + '</h4>' + body + '</div>' : '';
+      const cats = (t.categories || []).map(id => '<span style="display:inline-block;margin:0 .3rem .3rem 0;padding:.1rem .6rem;border-radius:999px;background:rgba(212,175,55,.25);font-size:.8rem">' + e((window.TEMPLE_CAT_LABEL || {})[id] || id) + '</span>').join('');
+      const where = '<p style="margin:0">' + e(t.location || '') + '</p>' +
+        (t.mapUrl ? '<p style="margin:.4rem 0 0"><a href="' + e(t.mapUrl) + '" target="_blank" rel="noopener" style="color:#E85D04;text-decoration:underline">🗺 Google Maps पर देखें</a></p>' : '');
+      let html = '';
+      html += sec('📍 ' + (en ? 'Where is it' : 'कहाँ है'), where + (cats ? '<p style="margin:.5rem 0 0">' + cats + '</p>' : ''));
+      if (en || both) html += sec('About', '<p style="margin:0">' + e(t.descriptionEnglish || t.description || '') + '</p>');
+      if (!en) html += sec('🪔 कथा / इतिहास', '<p style="margin:0">' + e(t.originStory || t.description || '') + '</p>');
+      if (t.localBeliefs && t.localBeliefs.length) {
+        html += sec('🙏 ' + (en ? 'Beliefs (Manyata)' : 'मान्यताएँ'), '<ul style="margin:0;padding-left:1.2rem;list-style:disc">' + t.localBeliefs.map(b => '<li style="margin-bottom:.25rem">' + e(b) + '</li>').join('') + '</ul>');
+      }
+      const times = [];
+      if (t.bestSeason) times.push((en ? 'Best time: ' : 'सर्वोत्तम समय: ') + e(t.bestSeason));
+      if (t.festivals) times.push((en ? 'Festivals: ' : 'प्रमुख उत्सव: ') + e(t.festivals));
+      if (t.timings) times.push((en ? 'Timings: ' : 'समय: ') + e(t.timings));
+      if (t.worshipRules) times.push(e(t.worshipRules));
+      if (times.length) html += sec('🗓 ' + (en ? 'Visit & Festivals' : 'यात्रा और उत्सव'), times.map(x => '<p style="margin:0 0 .25rem">' + x + '</p>').join(''));
+      html += '<p style="margin:.75rem 0 0;font-size:.8rem;opacity:.75">ℹ️ संक्षिप्त जानकारी। समय, कपाट और नियम आधिकारिक वेबसाइट या स्थानीय पुजारी से पुष्टि करें। फ़ोटो: Wikimedia Commons (लाइसेंस अनुसार)।</p>';
+      return html;
     },
 
     renderGallery: function(gallery) {
@@ -155,7 +200,11 @@
           mainImg.src = photo.url || photo.thumb || '';
           mainImg.alt = photo.caption || 'Temple Photo';
           mainImg.dataset.idx = '0';
+          mainImg.style.display = '';
+          mainImg.onerror = function() { this.style.display = 'none'; };
         }
+        const capEl = galleryContainer.querySelector('.gallery-caption');
+        if (capEl) capEl.textContent = gallery[0].caption || '';
         this.currentPhotoIndex = 0;
         this.galleryPhotos = gallery;
       }
@@ -182,7 +231,7 @@
     },
 
     openGallery: function(startIndex) {
-      const galleryOverlay = document.getElementById('gallery-overlay');
+      let galleryOverlay = document.getElementById('gallery-overlay');
       if (!galleryOverlay) {
         galleryOverlay = this.createGalleryOverlay();
         document.body.appendChild(galleryOverlay);
@@ -312,8 +361,8 @@
             </div>
 
             <div class="temple-description-section">
-              <h3 class="description-title">${this.lang === 'en' ? 'About the Temple' : 'कोटिल के बारे में'}</h3>
-              <p class="temple-modal-description"></p>
+              <h3 class="description-title">${this.lang === 'en' ? 'About the Temple' : 'मंदिर के बारे में'}</h3>
+              <div class="temple-modal-description"></div>
             </div>
           </div>
 
@@ -419,6 +468,8 @@
           color: var(--maroon, #6B0F1A);
           margin: 0;
         }
+        .temple-info-section .temple-deity { color: #F4D58D !important; }
+        .temple-info-section .temple-location { color: #E8DCC0 !important; }
         .temple-location {
           font-family: 'Noto Serif', sans-serif;
           font-size: 0.95rem;
@@ -469,7 +520,7 @@
           text-align: center;
           font-family: 'Noto Serif', sans-serif;
           font-size: 0.9rem;
-          color: var(--sandalwood, #2C1810);
+          color: #F4D58D;
           padding: 0.5rem;
         }
         .gallery-thumbnails {

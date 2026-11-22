@@ -139,7 +139,7 @@
               <h2 class="rp-title font-cinzel"></h2>
               <button class="rp-close" aria-label="Close">
                 <svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor">
-                  <path d="M18.36 6.64l-10.72 10.72M5.64 6.64l10.72 10.72"/>
+                  <path d="M6 6l12 12M18 6L6 18" stroke="currentColor" stroke-width="2" fill="none"/>
                 </svg>
               </button>
             </div>
@@ -295,6 +295,8 @@
         body.dark .rp-sidebar {
           background: rgba(45, 31, 18, 0.5);
         }
+        .rp-content, .rp-sidebar { background: #FAF3E0; border-radius: 0.5rem; }
+        body.dark .rp-content, body.dark .rp-sidebar { background: #2d1f12; }
         .rp-meta {
           display: flex;
           flex-direction: column;
